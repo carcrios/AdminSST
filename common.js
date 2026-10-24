@@ -27,7 +27,8 @@ function esc(v){
 (function () {
   if (typeof window === 'undefined' || !window.fetch) return;
   const original = window.fetch.bind(window);
-  const RE = /^(https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[\w-]+\/exec)\/([a-z]+)\/?(\?.*)?$/;
+  // Cualquier servidor «…/exec/<módulo>» (Google, y la demo, que así prueba este mismo camino).
+  const RE = /^(https?:\/\/[^?#]+\/exec)\/([a-z]+)\/?(\?.*)?$/;
   window.fetch = function (entrada, opciones) {
     const url = typeof entrada === 'string' ? entrada : '';
     const m = RE.exec(url);
@@ -578,7 +579,7 @@ function formatSavedAt(iso) {
  * Requiere sw.js v2 (que no hace skipWaiting automático).
  */
 /* Versión del portal (sitio). El panel del asesor la compara con la del servidor de cada cliente. */
-const VERSION_PORTAL_WEB = 'v120';
+const VERSION_PORTAL_WEB = 'v122';
 
 const UpdateManager = {
   init() {

@@ -99,7 +99,7 @@
       const P = proveedor;
       if (!P.servidor) return null;
       try {
-        const u = String(P.servidor).replace(/\/+$/, '') + '/sgsst?action=empresaPublica&codigo=' + encodeURIComponent(c) + '&token=' + encodeURIComponent(P.apiToken || '');
+        const u = String(P.servidor).replace(/\/+$/, '') + '?modulo=sgsst&action=empresaPublica&codigo=' + encodeURIComponent(c) + '&token=' + encodeURIComponent(P.apiToken || '');
         const r = await fetch(u, { cache: 'no-store' });
         const j = await r.json();
         return j && j.ok && j.empresa ? j : (j && j.codigoError === 'NOEXISTE' ? { noExiste: true } : null);
