@@ -118,13 +118,14 @@ details.c-card summary{cursor:pointer;font-weight:800;font-size:16px;}
       <a class="btn ghost" href="configurar-empresa.html?tipo=proveedor">Abrir «Tu sitio multiempresa (tu marca)»</a>
     </details>
   </div>
-  <div class="c-pie">Consola · <a href="index.html">Ver el portal como cliente</a> · versión v114</div>
+  <div class="c-pie">Consola · <a href="index.html">Ver el portal como cliente</a> · versión <span id="cVer"></span></div>
 </div>
 
 <script src="empresa.js"></script>
 <script src="empresa-motor.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
 <script src="valida.js"></script>
 <script src="sgsst-ui.js"></script>
 <script src="auditorias-plantillas.js"></script>
@@ -142,6 +143,7 @@ if (typeof UpdateManager !== 'undefined') UpdateManager.init();
 const $ = (id)=> document.getElementById(id);
 const PROD = (typeof Empresa !== 'undefined' && Empresa.producto) || 'Portal SSTA';
 $('cProd').textContent = PROD;
+$('cVer').textContent = (typeof VERSION_PORTAL_WEB !== 'undefined' && VERSION_PORTAL_WEB) || '';
 const ME = typeof MultiEmpresa !== 'undefined' && MultiEmpresa.activo;
 const RAIZ = location.href.split(/[?#]/)[0].replace(/[^/]*$/, '');
 const segHtml = (g)=> '<span class="seg s' + g + '">' + g + ' est.</span>';

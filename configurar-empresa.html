@@ -255,6 +255,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
 <script src="empresa.js"></script>
 <script src="empresa-motor.js"></script>
 <script src="qr.js"></script>
+<script src="iconos-emoji.js"></script>
 <script src="auditorias-plantillas.js"></script>
 <script>
 (function () {
@@ -558,10 +559,10 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
   /* ── v116: guardar el cliente en TU servidor desde la consola (sin archivos) ── */
   const ADMIN = (function () { try { const x = JSON.parse(localStorage.getItem('ssta-admin-sesion') || 'null'); return x && x.token && x.exp > Date.now() && x.yo && x.yo.rol === 'admin' ? x : null; } catch (e) { return null; } })();
   const PROV = ME ? MultiEmpresa.proveedor : null;
-  const urlConsola = PROV && PROV.servidor ? String(PROV.servidor).replace(/\/+$/, '') + '/sgsst' : '';
+  const urlConsola = PROV && PROV.servidor ? String(PROV.servidor).replace(/\/+$/, '') + '?modulo=sgsst' : '';   // v121: ?modulo= (con /sgsst Google pedía iniciar sesión)
   const claveConsola = (function () { try { return localStorage.getItem('ssta-admin-clave-portal') || (PROV && PROV.apiToken) || ''; } catch (e) { return (PROV && PROV.apiToken) || ''; } })();
   const opId = () => 'cfg-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-  async function getConsola(q) { const r = await fetch(urlConsola + '?' + Object.keys(q).map((k) => k + '=' + encodeURIComponent(q[k])).join('&') + '&token=' + encodeURIComponent(claveConsola) + '&sesion=' + encodeURIComponent(ADMIN.token)); return r.json(); }
+  async function getConsola(q) { const r = await fetch(urlConsola + '&' + Object.keys(q).map((k) => k + '=' + encodeURIComponent(q[k])).join('&') + '&token=' + encodeURIComponent(claveConsola) + '&sesion=' + encodeURIComponent(ADMIN.token)); return r.json(); }
   async function postConsola(b) { const r = await fetch(urlConsola, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ token: claveConsola, sesion: ADMIN.token, opId: opId() }, b)) }); return r.json(); }
   const enConsola = () => !!(ADMIN && urlConsola && tipo === 'cliente');
   function pintarConsola() { $('bConsola').hidden = !enConsola(); aplicarTipo(); }

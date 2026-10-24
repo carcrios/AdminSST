@@ -71,13 +71,14 @@ body{margin:0;background:var(--bg,#eef1f4);color:var(--ink);font-family:var(--fo
     <div id="equipo"></div>
   </div>
   <p class="nota">Esta página solo LEE de cada servidor: no guarda ni cambia nada. Si un servidor sale en rojo, toca «Abrir enlace de prueba»: lo que muestre esa página (datos o una pantalla de Google) es exactamente lo que recibe el portal.</p>
-  <div class="nota" style="text-align:center;">Portal SSTA · versión v119</div>
+  <div class="nota" style="text-align:center;">Portal SSTA · versión v122</div>
 </div>
 
 <script src="empresa.js"></script>
 <script src="empresa-motor.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
 <script src="valida.js"></script>
 <script>
 OfflineBanner.init();
@@ -92,7 +93,7 @@ if (typeof UpdateManager !== 'undefined') UpdateManager.init();
    asistencia quedaba "pendiente" y solo abriendo el enlace a mano se vio
    que la implementación no era pública.
    ============================================================ */
-const VERSION = 'v119';
+const VERSION = 'v122';
 const $ = (id)=>document.getElementById(id);
 // Qué se consulta en cada uno (siempre algo de solo lectura).
 const PRUEBAS = [
@@ -167,7 +168,7 @@ function pintar(){
     <div class="srv ${r.estado || 'gris'}">
       <div class="fila">${Iconos.senal(r.t.k === 'sgsst' ? 'tablero' : r.t.k, 'chico')}<span class="nom">${esc(r.nombre)}</span><span class="chip">${esc(r.chip || 'Probando…')}</span></div>
       ${r.det ? `<div class="det">${esc(r.det)}</div>` : ''}
-      ${TECNICO && r.url && r.estado !== 'ok' && r.estado ? `<div class="acc"><a href="${esc(r.url)}" target="_blank" rel="noopener">Abrir enlace de prueba ↗</a>${r.clave ? '<button type="button" data-clave>🔑 Escribir clave</button>' : ''}</div>` : ''}
+      ${TECNICO && r.url && r.estado !== 'ok' && r.estado ? `<div class="acc"><a href="${esc(String(r.url).replace(/\/exec\/([a-z]+)\?/, '/exec?modulo=$1&'))}" target="_blank" rel="noopener">Abrir enlace de prueba ↗</a>${r.clave ? '<button type="button" data-clave>🔑 Escribir clave</button>' : ''}</div>` : ''}
     </div>`).join('');
   $('servidores').querySelectorAll('[data-clave]').forEach(b=> b.addEventListener('click', ()=> ClavePortal.pedir()));
   const listos = resultados.filter(r=>r.estado);
