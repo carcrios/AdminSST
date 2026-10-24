@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Preoperacionales · Portal SSTA</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>
+.grupo-h{font-size:14px;font-weight:600;margin:16px 0 6px;}
+.forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.forms button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;cursor:pointer;color:inherit;min-height:60px;}
+.forms button:hover{border-color:#9aa5af;}
+.forms .t{font-weight:600;font-size:14.5px;}
+.forms .m{font-size:12.5px;color:var(--muted);}
+.pf-cab{margin-bottom:6px;}
+.pf-cab .cod{font-size:12.5px;color:var(--muted);}
+.pf-desc{white-space:pre-line;font-size:13.5px;color:#334;margin:6px 0 2px;}
+.pasos{font-size:12.5px;color:var(--muted);margin:6px 0 10px;}
+.pasos b{color:var(--ink);}
+.barra-av{height:5px;background:#e6eaee;border-radius:3px;overflow:hidden;margin-bottom:12px;}
+.barra-av i{display:block;height:100%;background:#2d5f8b;transition:width .2s;}
+.pg-tit{font-size:17px;font-weight:600;margin:4px 0 2px;}
+.pg-desc{white-space:pre-line;font-size:13.5px;color:var(--muted);margin-bottom:8px;}
+.q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;}
+.q.error{border-color:#c0392b;box-shadow:0 0 0 2px rgba(192,57,43,.12);}
+.q .qt{font-weight:600;font-size:14.5px;line-height:1.35;}
+.q .qt .ob{color:#c0392b;margin-left:3px;}
+.q .qa{font-size:12.5px;color:var(--muted);margin-top:2px;white-space:pre-line;}
+.q .qe{font-size:12.5px;color:#c0392b;margin-top:6px;display:none;}
+.q.error .qe{display:block;}
+.q input[type=text],.q input[type=date],.q input[type=time],.q input[type=datetime-local],.q textarea,.q select{width:100%;margin-top:8px;font:inherit;font-size:16px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;}
+.ops{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.ops label{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;min-height:44px;cursor:pointer;font-size:14.5px;background:#fff;flex:1 1 auto;}
+.ops input{width:18px;height:18px;margin:0;flex:0 0 auto;}
+.ops label:has(input:checked){border-color:#2d5f8b;background:#eef4fa;}
+.ops label.mala:has(input:checked){border-color:#b3261e;background:#fbe9e6;}
+.ops .otra-t{flex:1;min-width:120px;margin:0;}
+.cuad{margin-top:8px;}
+.cuad .fila{border-top:1px solid #edf0f2;padding:8px 0;}
+.cuad .fila:first-child{border-top:0;}
+.cuad .fn{font-size:14px;margin-bottom:4px;}
+.hallazgo{margin-top:8px;border-left:3px solid #b3261e;padding-left:10px;}
+.hallazgo label{font-size:12.5px;font-weight:600;color:#9c2a1f;}
+.esc{display:flex;gap:4px;margin-top:8px;align-items:center;flex-wrap:wrap;}
+.esc .et{font-size:12px;color:var(--muted);}
+.nav-pf{display:flex;gap:8px;margin-top:6px;}
+.nav-pf .btn{flex:1;}
+.subt{font-size:15px;font-weight:600;margin:14px 0 6px;}
+.res-v{display:flex;gap:8px;padding:7px 0;border-bottom:1px dashed #e6eaee;font-size:13.5px;line-height:1.4;}
+.res-v .p{flex:1;color:#334;}
+.res-v .r{flex:0 0 40%;font-weight:600;text-align:right;white-space:pre-line;}
+.res-v.mala .r{color:#b3261e;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="screen active" id="scrLista">
+  <div class="hdr">
+    <a class="back" href="index.html">← Volver al portal</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">En cada jornada</div>
+    <h1>Preoperacionales</h1>
+    <p>Antes de usar el equipo: la inspección de siempre, ahora dentro del portal</p></div></div>
+  </div>
+  <div id="avisoSrv"></div><div id="avisoCopia"></div>
+  <div class="tabs" id="tabs"><button type="button" data-tab="formularios" class="on">Formularios</button><button type="button" data-tab="registros">Registros</button></div>
+  <div id="panel"><div class="empty">Cargando…</div></div>
+  <div class="version-portal">Portal SSTA · versión v119</div>
+</div>
+
+<div class="screen" id="scrForm">
+  <div class="hdr">
+    <a class="back" href="#" data-volver>← Preoperacionales</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow" id="fGrupo"></div>
+    <h1 id="fTitulo"></h1><p id="fCodigo"></p></div></div>
+  </div>
+  <div id="fCuerpo"></div>
+</div>
+
+<div class="screen" id="scrVer">
+  <div class="hdr">
+    <a class="back" href="#" data-volver>← Preoperacionales</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow" id="vGrupo"></div>
+    <h1 id="vTitulo"></h1><p id="vSub"></p></div></div>
+  </div>
+  <div id="vCuerpo"></div>
+</div>
+</div>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script src="registros.js"></script>
+<script src="preop-formularios.js"></script>
+<script>
+OfflineBanner.init();
+OutboxBadge.init();
+if (typeof Outbox !== 'undefined') Outbox.flush();
+if (typeof UpdateManager !== 'undefined') UpdateManager.init();
+
+/* ── Preoperacionales ──
+   Los formularios de Google de la empresa, tal cual (preop-formularios.js, generado
+   con herramientas/importar-formularios.js), llenados aquí: funcionan sin señal, se
+   guardan en el SG-SST (tipo "preop"; el de condiciones de salud, "preopsalud", que
+   solo ven Administrador y SST), con fotos de lo que está mal, PDF y su hoja. */
+const $ = UI.$;
+const FORMS = typeof PREOP_FORMULARIOS !== 'undefined' ? PREOP_FORMULARIOS : [];
+const formDe = (id)=> FORMS.find((f)=> f.id === id);
+const esSst = ()=> !Sesion.modo() || !Sesion.yo() || ['admin', 'sst'].indexOf(Sesion.rol()) !== -1;
+let rows = [], equipos = [], tab = 'formularios', actual = null, resp = {}, hall = {}, pila = [0], pagina = 0, firmaPad = false;
+
+function show(id){ document.querySelectorAll('.screen').forEach((s)=> s.classList.toggle('active', s.id === id)); window.scrollTo(0, 0); }
+/** Código del formato: el que la empresa le puso en empresa.js. */
+function codigoDe(f){ if (!f.codigo) return ''; const x = EMPRESA.formatos && EMPRESA.formatos[f.codigo]; return x && x.codigo && x.codigo !== f.codigo ? x.codigo : ''; }
+/** Los centros de trabajo salen de empresa.js (centrosCosto), no de la lista del formulario original. */
+function opcionesDe(q){
+  if (q.rol === 'centro') { const c = EMPRESA.centrosCosto || []; return c.length ? c.map((x)=> typeof x === 'string' ? x : (x.nombre || x.cliente || String(x))) : null; }
+  return q.opciones || [];
+}
+
+async function cargar(){
+  if (!FORMS.length) { $('panel').innerHTML = '<div class="aviso info">Aún no hay preoperacionales cargados. Se generan con <code>herramientas/importar-formularios.js</code> a partir de los formularios de Google de la empresa.</div>'; return; }
+  if (UI.avisoServidor($('avisoSrv'))) { pintar(); return; }
+  const r = await SGSST.listar(esSst() ? 'preop,preopsalud,equipo' : 'preop,equipo');
+  UI.avisoCopia($('avisoCopia'), r);
+  rows = (r.rows || []).filter((x)=> x.tipo === 'preop' || x.tipo === 'preopsalud');
+  equipos = (r.rows || []).filter((x)=> x.tipo === 'equipo' && x.resumen.activo !== false);
+  pintar();
+}
+function pintar(){
+  document.querySelectorAll('#tabs button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === tab));
+  const p = $('panel');
+  if (tab === 'formularios') {
+    const grupos = []; FORMS.forEach((f)=> { if (grupos.indexOf(f.grupo) === -1) grupos.push(f.grupo); });
+    p.innerHTML = '<input type="search" class="buscar" id="bForm" placeholder="Buscar equipo (pulidora, andamio, taladro…)">' + grupos.map((g)=> '<div data-g><h2 class="grupo-h">' + esc(g) + '</h2><div class="forms">' +
+      FORMS.filter((f)=> f.grupo === g).map((f)=> { const n = rows.filter((x)=> x.resumen.formulario === f.id && String(x.resumen.fecha) === UI.hoy()).length;
+        return '<button type="button" data-f="' + esc(f.id) + '" data-q="' + esc(UI.norm(f.nombre + ' ' + f.titulo + ' ' + f.grupo)) + '"><span class="t">' + esc(f.nombre) + '</span><span class="m">' + esc(codigoDe(f) || f.titulo) + (n ? ' · ' + n + ' hoy' : '') + '</span></button>'; }).join('') + '</div></div>').join('');
+    $('bForm').addEventListener('input', ()=> { const q = UI.norm($('bForm').value); p.querySelectorAll('[data-f]').forEach((b)=> { b.hidden = q && b.dataset.q.indexOf(q) === -1; }); p.querySelectorAll('[data-g]').forEach((g)=> { g.hidden = !g.querySelector('[data-f]:not([hidden])'); }); });
+  } else {
+    const l = rows.slice().sort((a, b)=> String(b.resumen.fecha).localeCompare(String(a.resumen.fecha)) || String(b.creado).localeCompare(String(a.creado)));
+    p.innerHTML = '<div class="grid2"><div class="field"><select id="rForm"><option value="">Todos los formularios</option>' + FORMS.filter((f)=> !f.salud || esSst()).map((f)=> '<option value="' + esc(f.id) + '">' + esc(f.nombre) + '</option>').join('') + '</select></div>' +
+      '<div class="field"><input type="search" class="buscar" id="rBus" placeholder="Equipo, responsable o fecha" style="margin:0;"></div></div>' +
+      '<button type="button" class="btn ghost" id="rCsv">⬇️ Descargar las respuestas (CSV para Excel)</button><div id="rLista"></div>';
+    const ver = ()=> { const f = $('rForm').value, q = UI.norm($('rBus').value);
+      const v = l.filter((x)=> (!f || x.resumen.formulario === f) && (!q || UI.norm([x.resumen.codigoEquipo, x.resumen.responsable, x.resumen.fecha, x.resumen.nombreFormulario, x.resumen.centro].join(' ')).indexOf(q) !== -1));
+      $('rLista').innerHTML = v.length ? v.slice(0, 300).map((x)=> { const s = x.resumen, mal = Number(s.malos) > 0;
+        return '<button type="button" class="item ' + (x.pendiente ? 'gris' : mal ? 'mal' : 'ok') + '" data-r="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + esc(s.nombreFormulario || s.formulario) + (s.codigoEquipo ? ' · ' + esc(s.codigoEquipo) : '') + '</div>' +
+          '<div class="m">' + esc(UI.corta(s.fecha)) + (s.responsable ? ' · ' + esc(s.responsable) : '') + (s.centro ? ' · ' + esc(s.centro) : '') + '</div></div><span class="chip ' + (mal ? 'mal' : 'ok') + '">' + (x.pendiente ? '⏳ Pendiente' : mal ? s.malos + ' en mal estado' : 'Sin novedad') + '</span></div></button>'; }).join('') : '<div class="empty">Sin registros.</div>'; };
+    $('rForm').addEventListener('change', ver); $('rBus').addEventListener('input', ver); ver();
+    $('rCsv').addEventListener('click', ()=> csv($('rForm').value));
+  }
+}
+$('tabs').addEventListener('click', (e)=> { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; pintar(); });
+document.addEventListener('click', (e)=> {
+  const f = e.target.closest('[data-f]'); if (f) { abrirForm(f.dataset.f); return; }
+  const r = e.target.closest('[data-r]'); if (r) { verRegistro(r.dataset.r); return; }
+  if (e.target.closest('.screen.active [data-volver]')) { e.preventDefault(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); show('scrLista'); cargar(); }
+});
+
+/* ── Llenar un formulario ── */
+function abrirForm(id){
+  const f = formDe(id); if (!f) { UI.toast('Ese formulario no existe en este portal.', 'mal'); return; }
+  if (f.salud && Sesion.modo() && !Sesion.yo()) { /* se puede llenar sin usuario; lo que se guarda solo lo ven Administrador y SST */ }
+  actual = f; resp = {}; hall = {}; pila = [0]; pagina = 0; firmaPad = false;
+  // Valores por defecto: la fecha de hoy y, con usuario, quien inspecciona.
+  f.paginas.forEach((pg)=> pg.items.forEach((q)=> { if (q.tipo === 'fecha' && q.rol === 'fecha') resp[q.k] = UI.hoy(); if (q.tipo === 'persona' && Sesion.yo()) resp[q.k] = { nombre: Sesion.nombre(), cedula: '' }; }));
+  $('fGrupo').textContent = f.grupo; $('fTitulo').textContent = f.titulo; $('fCodigo').textContent = codigoDe(f);
+  if (location.hash.slice(1) !== f.id) history.replaceState(null, '', '#' + f.id);
+  show('scrForm'); pintarPagina();
+}
+const valor = (q)=> resp[q.k];
+const esMala = (q, v)=> {
+  if (v == null || v === '') return false;
+  if (q.malas && (Array.isArray(v) ? v : [v]).some((x)=> q.malas.indexOf(x) !== -1)) return true;
+  if (q.malasCol && v && typeof v === 'object' && !Array.isArray(v)) return Object.keys(v).some((fi)=> [].concat(v[fi]).some((c)=> q.malasCol.indexOf(c) !== -1));
+  return false;
+};
+function qHTML(q){
+  const v = valor(q), ob = q.obligatoria ? '<span class="ob" aria-hidden="true">*</span>' : '', id = 'q_' + q.k;
+  if (q.tipo === 'titulo') return '<h3 class="subt">' + esc(q.titulo) + '</h3>' + (q.ayuda ? '<p class="pg-desc">' + esc(q.ayuda) + '</p>' : '');
+  let h = '<div class="q" data-k="' + q.k + '"><div class="qt" id="' + id + '_t">' + esc(q.titulo) + ob + '</div>' + (q.ayuda ? '<div class="qa">' + esc(q.ayuda) + '</div>' : '');
+  const ops = opcionesDe(q);
+  if (q.tipo === 'texto' || (q.tipo === 'lista' && !ops)) h += '<input type="text" data-in="' + q.k + '" value="' + esc(v || '') + '"' + (q.rol === 'equipo' ? ' list="dlEquipos" autocapitalize="characters"' : '') + ' aria-labelledby="' + id + '_t">';
+  else if (q.tipo === 'parrafo') h += '<textarea data-in="' + q.k + '" rows="3" aria-labelledby="' + id + '_t">' + esc(v || '') + '</textarea>';
+  else if (q.tipo === 'fecha') h += '<input type="date" data-in="' + q.k + '" value="' + esc(v || '') + '" aria-labelledby="' + id + '_t">';
+  else if (q.tipo === 'hora') h += '<input type="time" data-in="' + q.k + '" value="' + esc(v || '') + '" aria-labelledby="' + id + '_t">';
+  else if (q.tipo === 'fechahora') h += '<input type="datetime-local" data-in="' + q.k + '" value="' + esc(v || '') + '" aria-labelledby="' + id + '_t">';
+  else if (q.tipo === 'persona') h += '<div class="field" style="margin:0;"><input type="text" data-persona="' + q.k + '" value="' + esc(v && v.nombre ? v.nombre : '') + '" placeholder="Escribe el nombre o la cédula" aria-labelledby="' + id + '_t"></div><input type="text" data-cedula="' + q.k + '" inputmode="numeric" value="' + esc(v && v.cedula ? v.cedula : '') + '" placeholder="Cédula" aria-label="Cédula">';
+  else if (q.tipo === 'lista') h += '<select data-in="' + q.k + '" aria-labelledby="' + id + '_t"><option value="">Elegir</option>' + ops.map((o)=> '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
+  else if (q.tipo === 'opcion' || q.tipo === 'casillas') {
+    const multi = q.tipo === 'casillas', sel = multi ? (v || []) : [v], otra = q.otra ? (multi ? (v || []).find((x)=> ops.indexOf(x) === -1) : (v && ops.indexOf(v) === -1 ? v : '')) : '';
+    h += '<div class="ops" role="' + (multi ? 'group' : 'radiogroup') + '" aria-labelledby="' + id + '_t">' + ops.map((o)=> '<label class="' + ((q.malas || []).indexOf(o) !== -1 ? 'mala' : '') + '"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + q.k + '" value="' + esc(o) + '"' + (sel.indexOf(o) !== -1 ? ' checked' : '') + '>' + esc(o) + '</label>').join('') +
+      (q.otra ? '<label><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + q.k + '" value="__otra"' + (otra ? ' checked' : '') + '>Otra: <input type="text" class="otra-t" data-otra="' + q.k + '" value="' + esc(otra || '') + '" aria-label="Otra respuesta"></label>' : '') + '</div>';
+  } else if (q.tipo === 'escala') {
+    h += '<div class="esc ops" role="radiogroup" aria-labelledby="' + id + '_t">' + (q.etiquetaDesde ? '<span class="et">' + esc(q.etiquetaDesde) + '</span>' : '');
+    for (let n = q.desde; n <= q.hasta; n++) h += '<label style="flex:0 0 auto;"><input type="radio" name="' + q.k + '" value="' + n + '"' + (String(v) === String(n) ? ' checked' : '') + '>' + n + '</label>';
+    h += (q.etiquetaHasta ? '<span class="et">' + esc(q.etiquetaHasta) + '</span>' : '') + '</div>';
+  } else if (q.tipo === 'cuadricula' || q.tipo === 'cuadricula-casillas') {
+    const multi = q.tipo === 'cuadricula-casillas', o = v || {};
+    h += '<div class="cuad">' + q.filas.map((fi, i)=> '<div class="fila"><div class="fn">' + esc(fi) + '</div><div class="ops" role="' + (multi ? 'group' : 'radiogroup') + '" aria-label="' + esc(fi) + '">' + q.columnas.map((c)=> '<label class="' + ((q.malasCol || []).indexOf(c) !== -1 ? 'mala' : '') + '"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + q.k + '_' + i + '" data-fila="' + i + '" value="' + esc(c) + '"' + ([].concat(o[fi] || []).indexOf(c) !== -1 ? ' checked' : '') + '>' + esc(c) + '</label>').join('') + '</div></div>').join('') + '</div>';
+  } else if (q.tipo === 'foto') h += '<div data-fotos="' + q.k + '" style="margin-top:8px;"></div>';
+  // Lo que está mal: qué se encontró y foto (como en las inspecciones del portal).
+  if (esMala(q, v)) { const x = hall[q.k] || {}; h += '<div class="hallazgo"><label for="h_' + q.k + '">¿Qué encontraste? (para corregirlo)</label><textarea id="h_' + q.k + '" data-hall="' + q.k + '" rows="2">' + esc(x.obs || '') + '</textarea><div data-hfotos="' + q.k + '"></div></div>'; }
+  return h + '<div class="qe">Esta pregunta es obligatoria.</div></div>';
+}
+function pintarPagina(){
+  const f = actual, pg = f.paginas[pagina], ult = siguiente() === 'fin', total = f.paginas.length;
+  $('fCuerpo').innerHTML = (pagina === 0 && f.descripcion ? '<div class="card"><div class="pf-desc">' + esc(f.descripcion) + '</div></div>' : '') +
+    '<div class="pasos">Página <b>' + (pila.length) + '</b>' + (total > 1 ? ' · ' + total + ' en el formulario' : '') + '</div><div class="barra-av"><i style="width:' + Math.round(pila.length * 100 / Math.max(total, 1)) + '%"></i></div>' +
+    (pg.titulo ? '<div class="pg-tit">' + esc(pg.titulo) + '</div>' : '') + (pg.descripcion ? '<div class="pg-desc">' + esc(pg.descripcion) + '</div>' : '') +
+    pg.items.map(qHTML).join('') +
+    (ult ? '<div class="card"><h2 style="font-size:15px;">Firma de quien inspecciona (opcional)</h2>' + UI.padHTML('pfFirma') + '</div>' : '') +
+    '<datalist id="dlEquipos">' + equipos.map((e)=> '<option value="' + esc(e.resumen.codigo || '') + '">' + esc(e.resumen.nombre || '') + '</option>').join('') + '</datalist>' +
+    '<div class="nav-pf">' + (pila.length > 1 ? '<button type="button" class="btn ghost" id="pfAtras">Atrás</button>' : '') + '<button type="button" class="btn amber" id="pfSig">' + (ult ? 'Enviar' : 'Siguiente') + '</button></div><div class="status-msg" id="pfMsg"></div>';
+  enlazar(pg);
+  if (ult) { UI.activarPad('pfFirma', resp.__firma || ''); firmaPad = true; } else firmaPad = false;
+  if ($('pfAtras')) $('pfAtras').addEventListener('click', ()=> { leer(pg); pila.pop(); pagina = pila[pila.length - 1]; pintarPagina(); window.scrollTo(0, 0); });
+  $('pfSig').addEventListener('click', ()=> { leer(pg); if (!validar(pg)) return; const s = siguiente(); if (s === 'fin') { enviar(); return; } pila.push(s); pagina = s; pintarPagina(); window.scrollTo(0, 0); });
+}
+function enlazar(pg){
+  const c = $('fCuerpo');
+  c.querySelectorAll('[data-persona]').forEach((inp)=> UI.autocompletar(inp, (p)=> { inp.value = p.nombre; const ce = c.querySelector('[data-cedula="' + inp.dataset.persona + '"]'); if (ce && p.cedula) ce.value = p.cedula; }));
+  pg.items.filter((q)=> q.tipo === 'foto').forEach((q)=> { const el = c.querySelector('[data-fotos="' + q.k + '"]'); if (el) q._f = UI.fotos(el, { inicial: resp[q.k] || [], max: 4 }); });
+  pg.items.forEach((q)=> { const el = c.querySelector('[data-hfotos="' + q.k + '"]'); if (el) q._h = UI.fotos(el, { inicial: (hall[q.k] || {}).fotos || [], max: 3 }); else q._h = null; });
+  // Al cambiar una respuesta se vuelve a pintar esa pregunta (aparece o se quita el «qué encontraste»).
+  c.querySelectorAll('.q input[type=radio], .q input[type=checkbox], .q select').forEach((i)=> i.addEventListener('change', ()=> {
+    const box = i.closest('.q'), q = pg.items.find((x)=> x.k === box.dataset.k); leer(pg);
+    const antes = !!box.querySelector('.hallazgo'), ahora = esMala(q, valor(q));
+    if (antes !== ahora) { const t = document.createElement('div'); t.innerHTML = qHTML(q); box.replaceWith(t.firstChild); enlazar(pg); }
+    if ($('pfSig')) $('pfSig').textContent = siguiente() === 'fin' ? 'Enviar' : 'Siguiente';
+  }));
+}
+function leer(pg){
+  const c = $('fCuerpo');
+  pg.items.forEach((q)=> {
+    const box = c.querySelector('.q[data-k="' + q.k + '"]'); if (!box) return;
+    if (q.tipo === 'persona') resp[q.k] = { nombre: (box.querySelector('[data-persona]').value || '').trim(), cedula: (box.querySelector('[data-cedula]').value || '').trim() };
+    else if (q.tipo === 'opcion' || q.tipo === 'escala') { const x = box.querySelector('input[name="' + q.k + '"]:checked'); resp[q.k] = !x ? '' : x.value === '__otra' ? (box.querySelector('[data-otra]').value || '').trim() : x.value; }
+    else if (q.tipo === 'casillas') resp[q.k] = [...box.querySelectorAll('input[name="' + q.k + '"]:checked')].map((x)=> x.value === '__otra' ? (box.querySelector('[data-otra]').value || '').trim() : x.value).filter(Boolean);
+    else if (q.tipo === 'cuadricula' || q.tipo === 'cuadricula-casillas') { const o = {}; q.filas.forEach((fi, i)=> { const l = [...box.querySelectorAll('input[data-fila="' + i + '"]:checked')].map((x)=> x.value); if (l.length) o[fi] = q.tipo === 'cuadricula' ? l[0] : l; }); resp[q.k] = o; }
+    else if (q.tipo === 'foto') resp[q.k] = q._f ? q._f.get() : [];
+    else { const x = box.querySelector('[data-in]'); if (x) resp[q.k] = x.value.trim ? x.value.trim() : x.value; }
+    const h = box.querySelector('[data-hall]');
+    if (h) hall[q.k] = { obs: h.value.trim(), fotos: q._h ? q._h.get() : [] }; else delete hall[q.k];
+  });
+  if (firmaPad) resp.__firma = UI.firma('pfFirma') || '';
+}
+const vacio = (q, v)=> v == null || v === '' || (Array.isArray(v) && !v.length) || (q.tipo === 'persona' && !(v && v.nombre)) || ((q.tipo === 'cuadricula' || q.tipo === 'cuadricula-casillas') && Object.keys(v || {}).length < q.filas.length);
+function validar(pg){
+  let primero = null;
+  pg.items.forEach((q)=> { const box = $('fCuerpo').querySelector('.q[data-k="' + q.k + '"]'); if (!box) return; const mal = q.obligatoria && vacio(q, valor(q)); box.classList.toggle('error', mal); if (mal && !primero) primero = box; });
+  if (primero) { primero.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('pfMsg').textContent = 'Faltan respuestas obligatorias.'; return false; }
+  return true;
+}
+/** A dónde va el formulario después de esta página: el salto de la última pregunta con saltos que se respondió, o el de la página. */
+function siguiente(){
+  const f = actual, pg = f.paginas[pagina];
+  let d;
+  pg.items.forEach((q)=> { if (!q.saltos) return; const v = valor(q), i = (opcionesDe(q) || []).indexOf(v); if (i !== -1 && q.saltos[i] != null) d = q.saltos[i]; });
+  if (d === undefined && pg.despues != null) d = pg.despues;
+  if (d === undefined || d === null) d = pagina + 1;
+  return d === 'fin' || d >= f.paginas.length ? 'fin' : d;
+}
+function texto(q, v){
+  if (v == null || v === '') return '';
+  if (q.tipo === 'persona') return [v.nombre, v.cedula].filter(Boolean).join(' - ');
+  if (q.tipo === 'fecha') return UI.corta(v);
+  if (Array.isArray(v)) return q.tipo === 'foto' ? v.length + ' foto(s)' : v.join(', ');
+  if (typeof v === 'object') return Object.keys(v).map((fi)=> fi + ': ' + [].concat(v[fi]).join(', ')).join('\n');
+  return String(v);
+}
+async function enviar(){
+  const f = actual, msg = $('pfMsg'), b = $('pfSig');
+  // Solo cuentan las páginas por las que se pasó (con saltos, otras quedan sin responder).
+  const qs = []; pila.forEach((i)=> f.paginas[i].items.forEach((q)=> { if (q.tipo !== 'titulo') qs.push(q); }));
+  const rolV = (rol)=> { const q = qs.find((x)=> x.rol === rol); return q ? texto(q, valor(q)) : ''; };
+  const pers = qs.find((x)=> x.rol === 'responsable' && x.tipo === 'persona'), persV = pers ? valor(pers) || {} : {};
+  const respuestas = qs.map((q)=> ({ k: q.k, p: q.titulo, t: q.tipo, v: texto(q, valor(q)), mala: esMala(q, valor(q)) || undefined }));
+  const malos = qs.filter((q)=> esMala(q, valor(q))).map((q)=> ({ k: q.k, p: q.titulo, v: texto(q, valor(q)), obs: (hall[q.k] || {}).obs || '', fotos: (hall[q.k] || {}).fotos || [] }));
+  const fotos = {}; qs.filter((q)=> q.tipo === 'foto').forEach((q)=> { fotos[q.k] = valor(q) || []; });
+  const codEq = rolV('equipo'), eq = equipos.find((e)=> codEq && UI.norm(e.resumen.codigo) === UI.norm(codEq));
+  const fecha = (()=> { const q = qs.find((x)=> x.rol === 'fecha'); return q && valor(q) ? valor(q) : UI.hoy(); })();
+  const doc = { formulario: f.id, nombreFormulario: f.nombre, titulo: f.titulo, codigo: codigoDe(f), fecha, responsable: persV.nombre || rolV('responsable'), cedula: persV.cedula || '', cargo: rolV('cargo'),
+    codigoEquipo: codEq, equipoId: eq ? eq.id : '', centro: rolV('centro'), respuestas, malos, fotos, firma: resp.__firma || '', resultado: malos.length ? 'CON NOVEDAD' : 'SIN NOVEDAD',
+    detalle: respuestas.filter((x)=> x.t !== 'foto').map((x)=> x.p + ': ' + String(x.v).replace(/\n/g, '; ')).join('\n'), paginas: pila.slice() };
+  doc.malos = malos.length;   // en la lista: cuántos; el detalle va en "hallazgos"
+  doc.hallazgos = malos;
+  b.disabled = true; msg.textContent = 'Guardando…';
+  const id = SGSST.nuevoId('PRE'), tipo = f.salud ? 'preopsalud' : 'preop';
+  const r = await SGSST.enviar({ action: 'guardar', tipo, id, doc }, { fecha, titulo: f.nombre, resumen: { formulario: f.id, nombreFormulario: f.nombre, fecha, responsable: doc.responsable, codigoEquipo: codEq, centro: doc.centro, malos: malos.length, resultado: doc.resultado } });
+  b.disabled = false;
+  if (!r.ok) { msg.textContent = 'No se guardó: ' + (r.error || ''); return; }
+  terminado(Object.assign({ id }, doc), !!r.enCola);
+}
+function terminado(d, enCola){
+  history.replaceState(null, '', location.pathname + location.search);
+  $('fCuerpo').innerHTML = '<div class="card"><h2 style="font-size:17px;">' + (enCola ? '⏳ Guardado en el equipo' : '✓ Enviado') + '</h2><p class="ayuda">' + (enCola ? 'Se envía solo cuando vuelva la señal.' : 'Quedó en el SG-SST de la empresa.') + '</p>' +
+    (d.malos ? '<div class="aviso">' + d.malos + ' punto(s) en mal estado: ' + esc(d.hallazgos.map((x)=> x.p).join('; ')) + '. Informa a tu jefe antes de usar el equipo.</div>' : '<div class="aviso info">Sin novedades.</div>') +
+    (d.malos ? '<button type="button" class="btn amber" id="tAcc">Crear una acción en el plan de acción</button>' : '') +
+    '<button type="button" class="btn ghost" id="tPdf">🖨️ PDF de este preoperacional</button><button type="button" class="btn ghost" id="tOtro">Llenar otro ' + esc(actual.nombre.toLowerCase()) + '</button><button type="button" class="btn ghost" data-volver>Volver a los preoperacionales</button></div>';
+  $('tPdf').addEventListener('click', ()=> pdf(d));
+  $('tOtro').addEventListener('click', ()=> abrirForm(actual.id));
+  if ($('tAcc')) $('tAcc').addEventListener('click', ()=> UI.nuevaAccion({ origen: 'Preoperacional', origenRef: d.id, hallazgo: d.nombreFormulario + (d.codigoEquipo ? ' ' + d.codigoEquipo : '') + ': ' + d.hallazgos.map((x)=> x.p + ' → ' + x.v + (x.obs ? ' (' + x.obs + ')' : '')).join('; '), fotos: [].concat(...d.hallazgos.map((x)=> x.fotos || [])).slice(0, 4), centro: d.centro }));
+}
+
+/* ── Ver un registro, PDF y CSV ── */
+async function verRegistro(id){
+  const d = await SGSST.doc(id); if (!d) { UI.toast('No se pudo abrir (¿sin señal o sin permiso?).', 'mal'); return; }
+  d.id = id; const f = formDe(d.formulario) || { nombre: d.nombreFormulario || d.formulario, grupo: '' };
+  $('vGrupo').textContent = f.grupo || 'Preoperacional'; $('vTitulo').textContent = d.titulo || f.nombre; $('vSub').textContent = [UI.corta(d.fecha), d.responsable, d.codigoEquipo].filter(Boolean).join(' · ');
+  $('vCuerpo').innerHTML = '<div class="card">' + (d.respuestas || []).filter((x)=> x.t !== 'foto').map((x)=> '<div class="res-v' + (x.mala ? ' mala' : '') + '"><span class="p">' + esc(x.p) + '</span><span class="r">' + esc(x.v || '—') + '</span></div>').join('') + '</div>' +
+    ((d.hallazgos || []).length ? '<div class="card"><h2 style="font-size:15px;">En mal estado</h2>' + d.hallazgos.map((x)=> '<div style="margin-bottom:8px;"><b>' + esc(x.p) + ':</b> ' + esc(x.v) + (x.obs ? '<div class="ayuda">' + esc(x.obs) + '</div>' : '') + '<div>' + UI.imgs(x.fotos, 'height:90px;margin:3px;border-radius:8px;') + '</div></div>').join('') + '</div>' : '') +
+    (UI.src(d.firma) ? '<div class="card"><div class="ayuda">Firma</div><img src="' + UI.src(d.firma) + '" alt="Firma" style="max-height:70px;"></div>' : '') +
+    '<button type="button" class="btn ghost" id="vPdf">🖨️ PDF</button>';
+  $('vPdf').addEventListener('click', ()=> pdf(d));
+  show('scrVer');
+}
+function pdf(d){
+  const f = formDe(d.formulario) || {};
+  const filas = (d.respuestas || []).filter((x)=> x.t !== 'foto').map((x)=> '<tr><td style="width:55%;">' + esc(x.p) + '</td><td' + (x.mala ? ' style="color:#b3261e;font-weight:700;"' : '') + '>' + esc(x.v || '—').replace(/\n/g, '<br>') + '</td></tr>').join('');
+  UI.imprimir([UI.cabecera(f.codigo && codigoDe(f) ? f.codigo : 'SG-PREOPERACIONAL', (d.titulo || f.titulo || 'PREOPERACIONAL').toUpperCase(), [UI.corta(d.fecha), d.codigoEquipo].filter(Boolean).join(' · ')) +
+    UI.seccion('RESPUESTAS', '<table>' + filas + '</table>') +
+    ((d.hallazgos || []).length ? UI.seccion('EN MAL ESTADO', '<table>' + d.hallazgos.map((x)=> '<tr><td style="width:35%;"><b>' + esc(x.p) + '</b></td><td>' + esc(x.v) + (x.obs ? '<br>' + esc(x.obs) : '') + '</td></tr>').join('') + '</table>' + UI.fotosHoja([].concat(...d.hallazgos.map((x)=> x.fotos || [])))) : '') +
+    UI.seccion('QUIEN INSPECCIONA', UI.tablaDatos([['Nombre', d.responsable || ''], ['Cédula', d.cedula || ''], ['Cargo', d.cargo || ''], ['Firma', UI.firmaHoja(d.firma), true]]))]);
+}
+/** Respuestas de un formulario en CSV (como la hoja de respuestas de Google): una columna por pregunta. */
+async function csv(formId){
+  const f = formDe(formId); if (!f) { UI.toast('Elige primero el formulario.', 'mal'); return; }
+  const l = rows.filter((x)=> x.resumen.formulario === f.id && !x.pendiente).sort((a, b)=> String(a.resumen.fecha).localeCompare(String(b.resumen.fecha)));
+  if (!l.length) { UI.toast('Ese formulario no tiene registros.', 'mal'); return; }
+  UI.toast('Preparando ' + l.length + ' registro(s)…');
+  const qs = []; f.paginas.forEach((pg)=> pg.items.forEach((q)=> { if (q.tipo !== 'titulo' && q.tipo !== 'foto') qs.push(q); }));
+  const docs = []; for (let i = 0; i < l.length; i += 6) docs.push(...await Promise.all(l.slice(i, i + 6).map((x)=> SGSST.doc(x.id))));
+  const c = (t)=> { t = String(t == null ? '' : t); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const filas = [['Marca temporal', 'Registro'].concat(qs.map((q)=> q.titulo)).concat(['En mal estado', 'Qué se encontró']).map(c).join(';')];
+  docs.forEach((d, i)=> { if (!d) return; const m = {}; (d.respuestas || []).forEach((x)=> { m[x.k] = x.v; });
+    filas.push([l[i].creado || d.fecha, l[i].id].concat(qs.map((q)=> m[q.k] || '')).concat([(d.hallazgos || []).map((x)=> x.p).join(' | '), (d.hallazgos || []).map((x)=> x.obs).filter(Boolean).join(' | ')]).map(c).join(';')); });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + filas.join('\n')], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'preoperacional-' + f.id + '-' + UI.hoy() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(()=> { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+window.addEventListener('outbox-enviado', ()=> { if ($('scrLista').classList.contains('active')) cargar(); });
+// #<formulario> abre ese formulario (las tarjetas del inicio); #PRE-… abre un registro (desde el plan de acción).
+cargar().then(()=> { const id = decodeURIComponent(location.hash.slice(1) || ''); if (/^PRE-/.test(id)) verRegistro(id); else if (id && formDe(id)) abrirForm(id); });
+</script>
+</body>
+</html>

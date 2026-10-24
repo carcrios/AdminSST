@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Plan de acción · Portal SSTA</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>
+.filtros{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px;}
+.filtros select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;background:#fff;font-family:inherit;color:var(--ink);}
+.seg{border-left:3px solid var(--line);padding:4px 0 8px 10px;margin-bottom:6px;font-size:13px;line-height:1.4;}
+.seg small{display:block;color:var(--muted);font-size:11.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="screen active" id="scrLista">
+  <div class="hdr">
+    <a class="back" href="index.html">← Volver al portal</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Gestión SST</div>
+    <h1>Plan de acción</h1>
+    <p>Todo hallazgo con responsable, fecha y evidencia de cierre</p></div></div>
+  </div>
+  <div id="avisoSrv"></div>
+  <div id="avisoCopia"></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="tabs" id="tabs">
+    <button type="button" class="on" data-tab="abiertas">Abiertas <span class="n" id="nAb">0</span></button>
+    <button type="button" data-tab="vencidas">Vencidas <span class="n" id="nVe">0</span></button>
+    <button type="button" data-tab="cerradas">Cerradas <span class="n" id="nCe">0</span></button>
+    <button type="button" data-tab="todas">Todas</button>
+  </div>
+  <div class="filtros">
+    <select id="fOrigen"><option value="">Todos los orígenes</option></select>
+    <select id="fResp"><option value="">Todos los responsables</option></select>
+  </div>
+  <input type="search" class="buscar" id="buscar" placeholder="Buscar en hallazgo o acción">
+  <div id="fPlan"></div>
+  <div id="lista"><div class="empty">Cargando…</div></div>
+  <button type="button" class="btn amber" id="btnNueva">+ Nueva acción</button>
+  <button type="button" class="btn ghost" id="btnPdf">🖨️ PDF del plan de acción (lo que está filtrado)</button>
+  <div class="version-portal">Portal SSTA · versión v119</div>
+</div>
+
+<div class="screen" id="scrDetalle">
+  <div class="hdr">
+    <a class="back" href="#" id="volver">← Volver al plan de acción</a>
+    <div class="eyebrow" id="dCodigo">—</div>
+    <h1 id="dTitulo">—</h1>
+    <p id="dSub">—</p>
+  </div>
+  <div class="card" id="dDatos"></div>
+  <div class="card">
+    <h2>Seguimiento</h2>
+    <div id="dSeg"></div>
+    <div class="field"><textarea id="segTexto" placeholder="Avance, compra solicitada, obstáculo…"></textarea></div>
+    <div class="fila-btn">
+      <button type="button" class="btn ghost" id="btnSeg">Anotar avance</button>
+      <button type="button" class="btn ghost" id="btnReprog">Cambiar fecha</button>
+    </div>
+  </div>
+  <div class="card" id="cardCierre">
+    <h2>Cierre</h2>
+    <div class="field"><label>Evidencia (qué se hizo)</label><textarea id="cEvid" placeholder="Ej: se instaló la guarda nueva y se reentrenó a 6 personas (ver foto y lista de asistencia)"></textarea></div>
+    <div class="field"><label>Fotos de la evidencia</label><div id="cFotos"></div></div>
+    <div class="grid2">
+      <div class="field"><label>Fecha de cierre</label><input type="date" id="cFecha"></div>
+      <div class="field"><label>¿Fue eficaz?</label><select id="cEficaz"><option>Sí</option><option>No</option><option>Pendiente de verificar</option></select></div>
+    </div>
+    <div class="field"><label>Cierra</label><input type="text" id="cQuien" placeholder="Nombre (escribe para buscar)"></div>
+    <button type="button" class="btn verde" id="btnCerrar">✅ Cerrar la acción</button>
+  </div>
+  <button type="button" class="btn ghost" id="btnReabrir" hidden>Reabrir</button>
+  <div class="status-msg" id="msgDet"></div>
+  <div class="card"><div id="dAdj"></div><div id="dHist"></div></div>
+</div>
+
+</div>
+
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script>
+OfflineBanner.init();
+OutboxBadge.init();
+if (typeof Outbox !== 'undefined') Outbox.flush();
+if (typeof UpdateManager !== 'undefined') UpdateManager.init();
+
+const $ = UI.$;
+let filas = [], tab = 'abiertas', actual = null, fotosCierre = null;
+let fCerr = '';   // v109: en «Cerradas», ver solo las que se cerraron tarde (lo deja la cifra «cerradas a tiempo»)
+window.filtrarKpi = (v)=> { fCerr = v || ''; pintar(); };
+const tarde = (x)=> x.estado === 'CERRADA' && x.resumen.fechaCierre && x.resumen.fechaCompromiso && x.resumen.fechaCierre > x.resumen.fechaCompromiso;
+
+function show(id){ document.querySelectorAll('.screen').forEach((s)=>s.classList.toggle('active', s.id === id)); window.scrollTo(0, 0); }
+const vencida = (x)=> x.estado !== 'CERRADA' && x.resumen.fechaCompromiso && x.resumen.fechaCompromiso < UI.hoy();
+function claseDe(x){ return x.estado === 'CERRADA' ? 'ok' : UI.semaforo(x.resumen.fechaCompromiso, 5); }
+function enlaceOrigen(ref){
+  if (!ref) return '';
+  if (/^REP-/.test(ref)) return 'reportes.html#' + encodeURIComponent(ref);
+  if (/^INS-/.test(ref)) return 'inspecciones.html#' + encodeURIComponent(ref);
+  if (/^PRE-/.test(ref)) return 'preoperacional.html#' + encodeURIComponent(ref);
+  if (/^AUD-/.test(ref)) return 'auditorias.html#' + encodeURIComponent(ref);
+  if (/^PEL-/.test(ref)) return 'peligros.html#' + encodeURIComponent(ref);
+  if (/^(SIM|EME)-/.test(ref)) return 'emergencias.html';
+  if (/^(CAM|PRV|LEG|DOC|POL)-/.test(ref)) return 'documental.html';
+  if (/^(PSI|EXA)-/.test(ref)) return 'salud.html';
+  if (/^REV-/.test(ref)) return 'revision-direccion.html';
+  if (/^PRG-/.test(ref)) return 'programas.html';
+  if (/^(PESV|VEH|CON|SIN)-/.test(ref)) return 'pesv.html';
+  if (/^(CTR|ING)-/.test(ref)) return 'contratistas.html';
+  if (/^(ASP|RES|CNS)-/.test(ref)) return 'ambiental.html';
+  if (/^(SUS|QUIMICOS)-/.test(ref)) return 'quimicos.html#' + encodeURIComponent(ref);
+  if (/^(PNC|PQR|RIC|OBC|CTX|ENC)-/.test(ref)) return 'calidad.html#' + encodeURIComponent(ref);
+  if (/^(PIN|PLI)-/.test(ref)) return 'inspecciones.html';
+  if (/^REU-/.test(ref)) return actual && actual.origen === 'Comité de convivencia' ? 'convivencia.html' : 'copasst.html';
+  return '';
+}
+
+async function cargar(){
+  if (UI.avisoServidor($('avisoSrv'))) { $('lista').innerHTML = ''; $('btnNueva').disabled = true; return; }
+  const r = await SGSST.listar('accion');
+  UI.avisoCopia($('avisoCopia'), r);
+  filas = r.rows;
+  const ori = [...new Set(filas.map((x)=> x.resumen.origen).filter(Boolean))].sort();
+  const res = [...new Set(filas.map((x)=> x.resumen.responsable).filter(Boolean))].sort((a, b)=> a.localeCompare(b));
+  const vO = $('fOrigen').value, vR = $('fResp').value;
+  $('fOrigen').innerHTML = '<option value="">Todos los orígenes</option>' + ori.map((o)=> '<option>' + esc(o) + '</option>').join('');
+  $('fResp').innerHTML = '<option value="">Todos los responsables</option>' + res.map((o)=> '<option>' + esc(o) + '</option>').join('');
+  $('fOrigen').value = vO; $('fResp').value = vR;
+  pintar();
+}
+function filtradas(){
+  const q = UI.norm($('buscar').value).trim(), o = $('fOrigen').value, rp = $('fResp').value;
+  let l = filas.filter((x)=> tab === 'todas' || (tab === 'abiertas' && x.estado !== 'CERRADA') || (tab === 'vencidas' && vencida(x)) || (tab === 'cerradas' && x.estado === 'CERRADA'));
+  if (tab === 'cerradas' && fCerr === 'tarde') l = l.filter(tarde);
+  if (o) l = l.filter((x)=> x.resumen.origen === o);
+  if (rp) l = l.filter((x)=> x.resumen.responsable === rp);
+  if (q) l = l.filter((x)=> UI.norm([x.resumen.hallazgo, x.resumen.accion, x.resumen.origenRef].join(' ')).includes(q));
+  return l.sort((a, b)=> (a.estado === 'CERRADA') - (b.estado === 'CERRADA') || String(a.resumen.fechaCompromiso).localeCompare(String(b.resumen.fechaCompromiso)));
+}
+function pintar(){
+  const ab = filas.filter((x)=> x.estado !== 'CERRADA'), ve = filas.filter(vencida), ce = filas.filter((x)=> x.estado === 'CERRADA');
+  const aTiempo = ce.filter((x)=> !x.resumen.fechaCierre || !x.resumen.fechaCompromiso || x.resumen.fechaCierre <= x.resumen.fechaCompromiso).length;
+  $('nAb').textContent = ab.length; $('nVe').textContent = ve.length; $('nCe').textContent = ce.length;
+  const cumplimiento = filas.length ? Math.round(ce.length * 100 / filas.length) : 0;
+  // v109: cada cifra abre la pestaña con esa lista.
+  $('kpis').innerHTML = '<div class="kpi" data-ir="tab:abiertas"><div class="v">' + ab.length + '</div><div class="n">abiertas</div></div>' +
+    '<div class="kpi ' + (ve.length ? 'mal' : 'ok') + '" data-ir="tab:vencidas"><div class="v">' + ve.length + '</div><div class="n">vencidas</div></div>' +
+    '<div class="kpi" data-ir="tab:todas"><div class="v">' + cumplimiento + '%</div><div class="n">cumplimiento</div><div class="f">cerradas / total</div></div>' +
+    '<div class="kpi" data-ir="tab:cerradas|filtro:' + (ce.some(tarde) ? 'tarde' : '') + '"><div class="v">' + (ce.length ? Math.round(aTiempo * 100 / ce.length) : 0) + '%</div><div class="n">cerradas a tiempo</div></div>';
+  // Tareas que dejó el asesor externo (panel del asesor)
+  const ase = ab.filter((x)=> x.resumen.origen === 'Asesor SST');
+  let av = $('avisoAsesor'); if (!av) { av = document.createElement('div'); av.id = 'avisoAsesor'; $('kpis').insertAdjacentElement('beforebegin', av); }
+  av.innerHTML = ase.length ? '<div class="aviso info">📌 Tu asesor de SST te dejó <b>' + ase.length + '</b> tarea(s) abiertas' + (ase.some(vencida) ? ', ' + ase.filter(vencida).length + ' vencida(s)' : '') + '. <button type="button" class="btn-mini" id="verAsesor">Verlas</button></div>' : '';
+  if ($('verAsesor')) $('verAsesor').addEventListener('click', ()=> { $('fOrigen').value = 'Asesor SST'; pintar(); });
+  $('fPlan').innerHTML = tab === 'cerradas' && ce.length ? UI.chipsFiltro([['', 'Todas las cerradas (' + ce.length + ')'], ['tarde', 'Cerradas tarde (' + ce.filter(tarde).length + ')']], fCerr) : '';
+  $('fPlan').querySelectorAll('[data-f]').forEach((b)=> b.addEventListener('click', ()=> window.filtrarKpi(b.dataset.f)));
+  const l = filtradas();
+  $('lista').innerHTML = l.length ? l.map((x)=>{
+    const s = x.resumen, c = claseDe(x);
+    return '<button type="button" class="item ' + c + '" data-id="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + esc(s.accion || s.hallazgo) + '</div>' +
+      (s.hallazgo && s.accion ? '<div class="m">Hallazgo: ' + esc(s.hallazgo) + '</div>' : '') +
+      '<div class="m">👤 ' + esc(s.responsable || '—') + ' · ' + esc(s.origen || '') + (s.prioridad ? ' · prioridad ' + esc(s.prioridad.toLowerCase()) : '') + (x.pendiente ? ' · <span class="pend">⏳ pendiente de enviar</span>' : '') + '</div></div>' +
+      '<span class="chip ' + c + '">' + (x.estado === 'CERRADA' ? 'Cerrada ' + esc(UI.corta(s.fechaCierre)) : (vencida(x) ? 'Venció ' : '') + esc(UI.corta(s.fechaCompromiso))) + '</span></div></button>';
+  }).join('') : '<div class="empty">' + (filas.length ? 'Nada con estos filtros.' : 'El plan de acción está vacío. Las acciones se crean aquí o desde reportes, inspecciones y EPP.') + '</div>';
+}
+
+/* ── Detalle ── */
+async function abrir(id){
+  $('dDatos').innerHTML = '<div class="status-msg">Abriendo…</div>'; $('dSeg').innerHTML = '';
+  show('scrDetalle');
+  const d = await SGSST.doc(id);
+  if (!d) { const f = filas.find((x)=> x.id === id); $('dDatos').innerHTML = '<div class="aviso">No se pudo abrir' + (f && f.pendiente ? ' (aún está pendiente de enviar desde este equipo)' : '') + '.</div>'; return; }
+  actual = d; pintarDetalle();
+}
+function dato(et, v, html){ return v ? '<div class="dato"><span>' + esc(et) + '</span><b>' + (html ? v : esc(v)) + '</b></div>' : ''; }
+function pintarDetalle(){
+  const d = actual, cerrada = d.estado === 'CERRADA';
+  $('dCodigo').textContent = d.id + (cerrada ? ' · CERRADA' : '');
+  $('dTitulo').textContent = d.accion || d.hallazgo || 'Acción';
+  const c = cerrada ? 'ok' : UI.semaforo(d.fechaCompromiso, 5);
+  $('dSub').textContent = cerrada ? 'Cerrada el ' + UI.corta(d.cierre && d.cierre.fecha) : (d.fechaCompromiso < UI.hoy() ? '⚠ Vencida: ' : 'Compromiso: ') + UI.corta(d.fechaCompromiso) + ' (' + UI.cuandoTexto(d.fechaCompromiso) + ')';
+  const link = enlaceOrigen(d.origenRef);
+  $('dDatos').innerHTML = '<h2>Acción</h2>' + (d.hallazgo ? '<div class="field"><label>Hallazgo</label><div class="texto-largo">' + esc(d.hallazgo) + '</div></div>' : '') +
+    '<div class="field"><label>Acción</label><div class="texto-largo">' + esc(d.accion) + '</div></div>' +
+    (d.fotos && d.fotos.length ? '<div class="fotos" style="margin-bottom:8px;">' + d.fotos.map(UI.src).filter(Boolean).map((f)=> '<div class="f"><img src="' + f + '" alt="Foto"></div>').join('') + '</div>' : '') +
+    dato('Responsable', d.responsable) + dato('Tipo', d.tipoAccion) + dato('Prioridad', d.prioridad) + dato('Origen', d.origen) +
+    dato('Referencia', d.origenRef ? (link ? '<a href="' + link + '">' + esc(d.origenRef) + ' ↗</a>' : esc(d.origenRef)) : '', true) + dato('Centro de costo', d.centro) + dato('Creada', UI.corta(d.fecha)) + dato('La dejó', d.asignadaPor ? d.asignadaPor + ' (asesor)' : '') +
+    (d.verificada && d.verificada.fecha ? '<div class="aviso ok" style="margin-top:8px;">✓ Verificada por el asesor el ' + esc(UI.corta(d.verificada.fecha)) + (d.verificada.por ? ' · ' + esc(d.verificada.por) : '') + (d.verificada.nota ? ': ' + esc(d.verificada.nota) : '') + '</div>' : '') +
+    (cerrada ? '<div class="aviso ok" style="margin-top:10px;"><b>Evidencia:</b> ' + esc((d.cierre || {}).evidencia || '—') + '<br>Eficaz: ' + esc((d.cierre || {}).eficaz || '—') + ' · Cerró: ' + esc((d.cierre || {}).quien || '—') + '</div>' +
+      ((d.cierre || {}).fotos && d.cierre.fotos.length ? '<div class="fotos">' + d.cierre.fotos.map(UI.src).filter(Boolean).map((f)=> '<div class="f"><img src="' + f + '" alt="Evidencia"></div>').join('') + '</div>' : '') : '');
+  $('dSeg').innerHTML = (d.seguimiento || []).length ? d.seguimiento.slice().reverse().map((s)=> '<div class="seg">' + esc(s.texto) + '<small>' + esc(UI.corta(s.fecha)) + (s.quien ? ' · ' + esc(s.quien) : '') + '</small></div>').join('') : '<div class="m" style="font-size:13px;color:var(--muted);margin-bottom:8px;">Sin avances anotados.</div>';
+  $('cardCierre').hidden = cerrada; $('btnReabrir').hidden = !cerrada;
+  $('cFecha').value = UI.hoy(); $('cEvid').value = ''; $('cEficaz').value = 'Sí';
+  $('cQuien').value = quien();
+  fotosCierre = UI.fotos($('cFotos'), { max: 4 });
+  $('msgDet').textContent = '';
+  if (!d.pendiente) { UI.adjuntos($('dAdj'), { id: d.id, lista: d.adjuntos || [], titulo: 'Evidencias y soportes', alCambiar: (l)=> { d.adjuntos = l; } }); $('dHist').innerHTML = ''; $('dHist').appendChild(UI.botonHistorial(d.id, d.accion)); }
+}
+async function parche(campos, ok, nota){
+  $('msgDet').textContent = 'Guardando…';
+  // El avance se AGREGA en el servidor (no se manda la lista entera): dos
+  // celulares que anotan a la vez no se borran entre sí.
+  const agregar = nota ? { seguimiento: [Object.assign({ uid: SGSST.nuevoOpId(), fecha: UI.hoy(), quien: quien() }, nota)] } : undefined;
+  const r = await SGSST.enviar({ action:'parche', tipo:'accion', id: actual.id, campos, agregar });
+  if (!r.ok) { $('msgDet').textContent = 'No se guardó: ' + (r.error || ''); return false; }
+  Object.assign(actual, campos);
+  if (agregar) { actual.seguimiento = (actual.seguimiento || []).concat(agregar.seguimiento); if (!campos.estado && (actual.estado || 'ABIERTA') === 'ABIERTA') actual.estado = 'EN PROCESO'; }
+  const i = filas.findIndex((x)=> x.id === actual.id);
+  if (i !== -1) { if (r.resumen) filas[i].resumen = r.resumen; if (r.estado) filas[i].estado = r.estado; else if (campos.estado) filas[i].estado = campos.estado; if (campos.fechaCompromiso) filas[i].resumen.fechaCompromiso = campos.fechaCompromiso; }
+  pintarDetalle();
+  $('msgDet').textContent = r.enCola ? '⏳ Guardado en el equipo; se envía al volver la señal.' : ok;
+  return true;
+}
+const quien = ()=> { try { return Sesion.nombre() || localStorage.getItem('ssta-reporta') || ''; } catch (e) { return ''; } };
+$('btnSeg').addEventListener('click', async ()=>{
+  const t = $('segTexto').value.trim(); if (!t) { $('segTexto').focus(); return; }
+  if (await parche({}, '✓ Avance anotado', { texto: t })) $('segTexto').value = '';
+});
+$('btnReprog').addEventListener('click', ()=>{
+  const m = UI.modal('<h3>Cambiar fecha de compromiso</h3><div class="field"><label>Nueva fecha</label><input type="date" id="rpF" value="' + esc(actual.fechaCompromiso || UI.hoy()) + '"></div>' +
+    '<div class="field"><label>Motivo (queda en el seguimiento)</label><input type="text" id="rpM" placeholder="Ej: el proveedor entrega el 20"></div>' +
+    '<button type="button" class="btn amber" id="rpOk">Guardar</button><button type="button" class="btn ghost" data-cerrar>Cancelar</button>');
+  m.el.querySelector('#rpOk').addEventListener('click', async ()=>{
+    const f = m.el.querySelector('#rpF').value, mo = m.el.querySelector('#rpM').value.trim();
+    if (!f || !mo) { UI.toast('Fecha y motivo son obligatorios.', 'mal'); return; }
+    m.cerrar();
+    await parche({ fechaCompromiso: f }, '✓ Fecha cambiada', { texto: 'Fecha cambiada de ' + UI.corta(actual.fechaCompromiso) + ' a ' + UI.corta(f) + ': ' + mo });
+  });
+});
+UI.autocompletar($('cQuien'), (p)=> { $('cQuien').value = p.nombre; });
+$('btnCerrar').addEventListener('click', async ()=>{
+  const ev = $('cEvid').value.trim(), fotos = fotosCierre.get();
+  if (!ev) { $('msgDet').textContent = 'Describe la evidencia: sin evidencia no se cierra.'; $('cEvid').focus(); return; }
+  if (!$('cQuien').value.trim()) { $('msgDet').textContent = 'Falta quién cierra.'; return; }
+  if (!fotos.length && !confirm('¿Cerrar sin foto de evidencia?')) return;
+  await parche({ estado: 'CERRADA', cierre: { fecha: $('cFecha').value || UI.hoy(), evidencia: ev, fotos, eficaz: $('cEficaz').value, quien: $('cQuien').value.trim() } }, '✓ Acción cerrada');
+});
+$('btnReabrir').addEventListener('click', async ()=>{
+  const mo = prompt('¿Por qué se reabre? (queda en el seguimiento)'); if (!mo) return;
+  await parche({ estado: 'ABIERTA', cierre: { fecha: '', evidencia: '', fotos: [], eficaz: '', quien: '' } }, '✓ Reabierta', { texto: 'Reabierta: ' + mo });
+});
+
+/* ── Nueva acción (sin origen) ── */
+$('btnNueva').addEventListener('click', ()=>{
+  const m = UI.modal('<h3>¿De dónde sale esta acción?</h3><div class="chips" id="oriChips">' + UI.ORIGENES.map((o)=> '<button type="button" data-o="' + esc(o) + '">' + esc(o) + '</button>').join('') + '</div>' +
+    '<button type="button" class="btn ghost" data-cerrar>Cancelar</button>');
+  m.el.querySelector('#oriChips').addEventListener('click', (e)=>{ const b = e.target.closest('[data-o]'); if (!b) return; m.cerrar(); UI.nuevaAccion({ origen: b.dataset.o }, ()=> cargar()); });
+});
+
+/* ── PDF ── */
+$('btnPdf').addEventListener('click', ()=>{
+  const l = filtradas();
+  if (!l.length) { UI.toast('No hay acciones con estos filtros.'); return; }
+  let t = '<table><tr><th style="width:3%">N°</th><th style="width:11%">Origen</th><th style="width:22%">Hallazgo</th><th style="width:24%">Acción</th><th style="width:7%">Tipo</th><th style="width:11%">Responsable</th><th style="width:8%">Compromiso</th><th style="width:7%">Estado</th><th style="width:7%">Cierre</th></tr>';
+  l.forEach((x, i)=>{ const s = x.resumen, v = vencida(x);
+    t += '<tr><td class="a">' + (i + 1) + '</td><td>' + esc(s.origen) + (s.origenRef ? '<br><span class="nota">' + esc(s.origenRef) + '</span>' : '') + '</td><td>' + esc(s.hallazgo) + '</td><td>' + esc(s.accion) + '</td><td>' + esc(s.tipoAccion) + '</td><td>' + esc(s.responsable) + '</td>' +
+      '<td' + (v ? ' style="background:#f6d4cf;"' : '') + '>' + esc(UI.corta(s.fechaCompromiso)) + '</td><td>' + esc(x.estado) + (v ? ' (VENCIDA)' : '') + '</td><td>' + esc(UI.corta(s.fechaCierre)) + (s.eficaz ? '<br>Eficaz: ' + esc(s.eficaz) : '') + '</td></tr>'; });
+  t += '</table>';
+  const filtro = [{ abiertas:'Abiertas', vencidas:'Vencidas', cerradas:'Cerradas', todas:'Todas' }[tab], $('fOrigen').value, $('fResp').value].filter(Boolean).join(' · ');
+  UI.imprimir([UI.cabecera('SG-PLAN', 'PLAN DE ACCIÓN DEL SG-SST', 'Corte ' + UI.corta(UI.hoy()) + ' · ' + filtro + ' · ' + l.length + ' acción(es)') + t], true);
+});
+
+$('tabs').addEventListener('click', (e)=>{ const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; document.querySelectorAll('#tabs button').forEach((x)=> x.classList.toggle('on', x === b)); pintar(); });
+['buscar', 'fOrigen', 'fResp'].forEach((id)=> $(id).addEventListener(id === 'buscar' ? 'input' : 'change', pintar));
+$('lista').addEventListener('click', (e)=>{ const b = e.target.closest('[data-id]'); if (b) abrir(b.dataset.id); });
+$('volver').addEventListener('click', (e)=>{ e.preventDefault(); show('scrLista'); pintar(); });
+window.addEventListener('outbox-enviado', ()=> cargar());
+cargar().then(()=>{ if (location.hash.length > 1) abrir(decodeURIComponent(location.hash.slice(1))); });
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Aviso de privacidad · Portal SSTA</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>
+.aviso-priv h2{font-size:17px;margin:18px 0 6px;}
+.aviso-priv p,.aviso-priv li{font-size:14.5px;line-height:1.55;}
+.aviso-priv ul{padding-left:20px;}
+.aviso-priv .quien{background:#f4f7fb;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <a class="back" href="index.html">← Volver al portal</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Ley 1581 de 2012</div>
+    <h1>Aviso de privacidad</h1>
+    <p>Qué datos personales trata este portal, para qué y cómo ejercer tus derechos</p></div></div>
+  </div>
+  <div class="card aviso-priv" id="aviso"></div>
+  <div class="version-portal">Portal SSTA · versión v119</div>
+</div>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+OfflineBanner.init();
+if (typeof UpdateManager !== 'undefined') UpdateManager.init();
+/* ============================================================
+   AVISO DE PRIVACIDAD (v116) — Ley 1581 de 2012 y Decreto 1074 de 2015
+   (art. 2.2.2.25.3.3: contenido mínimo). Se arma con los datos de la empresa
+   (responsable) y, en un sitio multiempresa, de quien presta el portal
+   (encargado). Es una plantilla: la empresa la revisa con su asesor legal.
+   ============================================================ */
+(function () {
+  const E = EMPRESA, P = (typeof MultiEmpresa !== 'undefined' && MultiEmpresa.activo && MultiEmpresa.proveedor) || null;
+  const pv = E.privacidad || {};
+  const resp = esc(E.nombre || 'La empresa') + (E.nit ? ' (NIT ' + esc(E.nit) + ')' : '');
+  const contacto = pv.correo ? '<a href="mailto:' + esc(pv.correo) + '">' + esc(pv.correo) + '</a>' : 'el área de Seguridad y Salud en el Trabajo de la empresa';
+  const enc = P && P.nombre && P.nombre !== E.nombre ? esc(P.nombre) + (P.nit ? ' (NIT ' + esc(P.nit) + ')' : '') : '';
+  document.getElementById('aviso').innerHTML =
+    '<div class="quien"><b>Responsable del tratamiento:</b> ' + resp + '.<br><b>Consultas y reclamos:</b> ' + contacto + '.' +
+      (enc ? '<br><b>Encargado del tratamiento:</b> ' + enc + ', que presta la plataforma del portal por cuenta de la empresa.' : '') + '</div>' +
+    '<h2>Qué datos se tratan</h2><ul>' +
+      '<li>Identificación y contacto: nombre, cédula, cargo, área, empresa y firma.</li>' +
+      '<li>Registros de seguridad y salud en el trabajo: permisos, ATS, inspecciones, preoperacionales, reportes de actos, condiciones, incidentes y accidentes, inducciones, asistencia y entregas de EPP.</li>' +
+      '<li><b>Datos sensibles</b> (solo los registra el área SST): conceptos médicos de aptitud y restricciones, exámenes, ausentismo y vigilancia de la salud. Nunca el diagnóstico.</li>' +
+      '<li>Fotografías que tú adjuntes como evidencia.</li></ul>' +
+    '<h2>Para qué</h2><p>Para cumplir las obligaciones del Sistema de Gestión de la Seguridad y Salud en el Trabajo (Decreto 1072 de 2015 y Resolución 0312 de 2019): controlar los trabajos de alto riesgo, reportar e investigar eventos, verificar que el personal esté habilitado, hacer seguimiento a la salud en el trabajo, conservar los registros que exige la ley y rendir cuentas a las autoridades y a la ARL.</p>' +
+    '<h2>Tus derechos</h2><ul><li>Conocer, actualizar y rectificar tus datos.</li><li>Pedir prueba de la autorización que diste.</li><li>Saber qué uso se les ha dado.</li><li>Presentar quejas ante la Superintendencia de Industria y Comercio.</li><li>Revocar la autorización o pedir que se supriman cuando no haya un deber legal o contractual de conservarlos (hay registros de SST que se conservan 20 años: Decreto 1072 de 2015, art. 2.2.4.6.13).</li><li>Acceder gratis a tus datos.</li></ul>' +
+    '<p>Responder las preguntas sobre datos sensibles es <b>voluntario</b>: no estás obligado a darlos (Ley 1581, art. 6), salvo lo que la ley laboral exige para tu seguridad.</p>' +
+    '<h2>Dónde quedan</h2><p>En las hojas de cálculo de la cuenta de Google de la empresa (servicios en la nube de Google), no en este celular salvo lo que espera señal para enviarse. Solo los ven las personas con usuario y rol autorizado.</p>' +
+    '<h2>Política de tratamiento</h2><p>' + (pv.politica ? 'Consulta la política completa de la empresa en <a href="' + esc(pv.politica) + '" target="_blank" rel="noopener">este enlace</a>.' : 'Pide la política de tratamiento de datos de la empresa a ' + contacto + '.') + '</p>' +
+    '<p class="ayuda">Al usar el portal y en la inducción se pide tu autorización. Este aviso se puede actualizar; la versión vigente es la de esta página.</p>';
+})();
+</script>
+</body>
+</html>

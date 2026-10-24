@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Indicadores SG-SST · Portal SSTA</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>
+.mes-sel{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.mes-sel input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;background:#fff;font-family:inherit;}
+.mes-sel button{border:1.5px solid var(--line);background:#fff;border-radius:10px;min-width:46px;min-height:46px;font-size:18px;cursor:pointer;}
+.ind{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;}
+.ind .cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.ind .nom{font-weight:700;font-size:13.5px;}
+.ind .val{font-family:var(--font-display);font-size:22px;font-weight:700;white-space:nowrap;}
+.ind .form{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4;}
+.ind .calc{font-size:12px;color:#3c4752;margin-top:3px;}
+.ind.falta .val{color:#9aa5af;font-size:15px;}
+.barras{display:flex;align-items:flex-end;gap:4px;height:70px;margin-top:8px;}
+.barras div{flex:1;background:#d6dde3;border-radius:3px 3px 0 0;min-height:2px;position:relative;}
+.barras div.sel{background:var(--ink);}
+.barras-et{display:flex;gap:4px;font-size:9.5px;color:var(--muted);}
+.barras-et span{flex:1;text-align:center;}
+table.tend{width:100%;border-collapse:collapse;font-size:12px;}
+table.tend th,table.tend td{border-bottom:1px solid #eef1f4;padding:6px 4px;text-align:right;}
+table.tend th:first-child,table.tend td:first-child{text-align:left;}
+table.tend th{font-size:10.5px;color:var(--muted);text-transform:uppercase;}
+.tabla-scroll{overflow-x:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <a class="back" href="index.html">← Volver al portal</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Gestión SST</div>
+    <h1>Indicadores del SG-SST</h1>
+    <p>Res. 0312 de 2019 (art. 30) y gestión: se calculan con lo que ya se registra</p></div></div>
+  </div>
+  <div id="avisoSrv"></div>
+  <div id="avisoCopia"></div>
+  <div class="mes-sel"><button type="button" id="mesAnt" aria-label="Mes anterior">‹</button><input type="month" id="mes"><button type="button" id="mesSig" aria-label="Mes siguiente">›</button></div>
+
+  <details class="card" id="cardDatos">
+    <summary style="cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:14.5px;">Datos del mes <span id="estadoDatos" style="font-family:var(--font-family);font-size:12px;font-weight:600;color:var(--muted);"></span></summary>
+    <p class="ayuda mt-8">Lo único que no sale solo del portal. Se llena una vez al mes (nómina y ausentismo).</p>
+    <div class="grid2">
+      <div class="field"><label>N.º de trabajadores</label><input type="number" min="0" id="dTrab"></div>
+      <div class="field"><label>Días de trabajo programados</label><input type="number" min="0" id="dDiasProg"><div class="ayuda" id="sugDias"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Días de ausencia por incapacidad (laboral y común)</label><input type="number" min="0" id="dAus"><div class="ayuda" id="sugAus"></div></div>
+      <div class="field"><label>Horas hombre trabajadas (opcional)</label><input type="number" min="0" id="dHht"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Casos de enfermedad laboral (todos, vigentes)</label><input type="number" min="0" id="dEL"></div>
+      <div class="field"><label>Casos nuevos de enfermedad laboral en el mes</label><input type="number" min="0" id="dELn"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Inspecciones programadas</label><input type="number" min="0" id="dInsProg"><div class="ayuda" id="sugIns"></div></div>
+      <div class="field"><label>Capacitaciones / charlas programadas</label><input type="number" min="0" id="dCapProg"></div>
+    </div>
+    <button type="button" class="btn" id="btnGuardar">Guardar datos del mes</button>
+    <div class="status-msg" id="msg"></div>
+  </details>
+
+  <h2 style="font-family:var(--font-display);font-size:15px;margin:16px 2px 8px;">Res. 0312 de 2019 · mínimos</h2>
+  <div id="ind0312"><div class="empty">Cargando…</div></div>
+  <h2 style="font-family:var(--font-display);font-size:15px;margin:16px 2px 8px;">Gestión del mes</h2>
+  <div id="indGestion"></div>
+  <h2 style="font-family:var(--font-display);font-size:15px;margin:16px 2px 8px;">Estructura y proceso (Dec. 1072, arts. 2.2.4.6.20 y 2.2.4.6.21)</h2>
+  <div id="indEstructura"></div>
+  <div class="card">
+    <h2>Tendencia (12 meses)</h2>
+    <div class="tabla-scroll" id="tendencia"></div>
+  </div>
+  <button type="button" class="btn amber" id="btnPdf">🖨️ Informe del mes en PDF</button>
+  <div class="version-portal">Portal SSTA · versión v119</div>
+</div>
+
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script>
+OfflineBanner.init();
+OutboxBadge.init();
+if (typeof Outbox !== 'undefined') Outbox.flush();
+if (typeof UpdateManager !== 'undefined') UpdateManager.init();
+
+const $ = UI.$;
+const AT = 'Accidente de trabajo';
+let D = { meses: [], reportes: [], acciones: [], inspecciones: [], equipos: [], trabajadores: [], charlas: [], permisos: [], otros: [] };
+
+function mesDe(iso){ return String(iso || '').slice(0, 7); }
+function mesMas(m, n){ const p = m.split('-').map(Number); const d = new Date(Date.UTC(p[0], p[1] - 1 + n, 1)); return d.toISOString().slice(0, 7); }
+function nombreMes(m){ const p = m.split('-').map(Number); return new Date(p[0], p[1] - 1, 1).toLocaleDateString('es-CO', { month:'long', year:'numeric' }); }
+function habilesDelMes(m){ let n = 0, d = m + '-01'; while (mesDe(d) === m) { if (Festivos.esHabil(d)) n++; d = Festivos.sumarDias(d, 1); } return n; }
+const datosMes = (m)=> ((D.meses.find((x)=> x.resumen.mes === m) || {}).resumen) || null;
+const fmt = (v, dec)=> v === null || v === undefined || isNaN(v) ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: dec == null ? 2 : dec, minimumFractionDigits: 0 });
+
+/* Todo lo que hace falta: SG-SST + charlas + permisos. */
+async function cargar(){
+  if (UI.avisoServidor($('avisoSrv'))) { $('ind0312').innerHTML = ''; return; }
+  const r = await SGSST.listar('mes,reporte,accion,inspeccion,equipo,trabajador,politica,plananual,peligro,revmatriz,comite,emergencia,simulacro,legal,examen,ausencia');
+  UI.avisoCopia($('avisoCopia'), r);
+  const de = (t)=> r.rows.filter((x)=> x.tipo === t);
+  Object.assign(D, { meses: de('mes'), reportes: de('reporte'), acciones: de('accion'), inspecciones: de('inspeccion'), equipos: de('equipo'), trabajadores: de('trabajador'), otros: r.rows });
+  // Charlas (asistencia) y permisos: de sus propios servidores, sin frenar la página.
+  const B = PORTAL_CONFIG.BACKENDS, tok = encodeURIComponent(PORTAL_CONFIG.API_TOKEN);
+  const pedir = async (url)=> { try { const x = await fetchWithRetry(url); const j = await x.json(); return j && j.ok ? j.rows || [] : []; } catch (e) { return null; } };
+  const [charlas, ...perms] = await Promise.all([B.asistencia && B.asistencia.url ? pedir(B.asistencia.url + '?list=1&limite=600&token=' + tok) : Promise.resolve(null)]
+    .concat(getPermitBackends(false).filter((b)=> b.url).map((b)=> pedir(b.url + '?list=1&token=' + tok))));
+  D.charlas = charlas || []; D.charlasOk = charlas !== null;
+  D.permisos = [].concat(...perms.filter(Boolean)); D.permisosOk = perms.every((x)=> x !== null);
+  pintar();
+}
+
+function calcular(m){
+  const dm = datosMes(m) || {};
+  const anio = m.slice(0, 4);
+  const at = D.reportes.filter((x)=> x.resumen.clase === AT);
+  const atMes = at.filter((x)=> mesDe(x.resumen.fecha) === m);
+  const atAnio = at.filter((x)=> String(x.resumen.fecha).slice(0, 4) === anio && mesDe(x.resumen.fecha) <= m);
+  const trab = Number(dm.trabajadores) || 0;
+  const mesesAnio = D.meses.filter((x)=> x.resumen.mes.slice(0, 4) === anio && x.resumen.mes <= m && x.resumen.trabajadores);
+  const promTrab = mesesAnio.length ? mesesAnio.reduce((s, x)=> s + Number(x.resumen.trabajadores), 0) / mesesAnio.length : trab;
+  const elNuevosAnio = mesesAnio.reduce((s, x)=> s + (Number(x.resumen.casosELNuevos) || 0), 0);
+  const diasInc = atMes.reduce((s, x)=> s + (Number(x.resumen.diasIncapacidad) || 0), 0);
+  const diasCarg = atMes.reduce((s, x)=> s + (Number(x.resumen.diasCargados) || 0), 0);
+  const mort = atAnio.filter((x)=> x.resumen.mortal).length;
+  const r = {
+    dm, trab, atMes: atMes.length, atAnio: atAnio.length, mort, diasInc, diasCarg, promTrab, elNuevosAnio,
+    frecuencia: trab ? atMes.length / trab * 100 : null,
+    severidad: trab ? (diasInc + diasCarg) / trab * 100 : null,
+    mortales: atAnio.length ? mort / atAnio.length * 100 : 0,
+    prevalencia: promTrab && dm.casosEL !== undefined && dm.casosEL !== '' ? (Number(dm.casosEL) || 0) / promTrab * 100000 : null,
+    incidencia: promTrab ? elNuevosAnio / promTrab * 100000 : null,
+    ausentismo: Number(dm.diasProgramados) ? (Number(dm.diasAusencia) || 0) / Number(dm.diasProgramados) * 100 : null,
+    iFrecHht: Number(dm.hht) ? atMes.length * 240000 / Number(dm.hht) : null
+  };
+  // Gestión
+  const repMes = D.reportes.filter((x)=> mesDe(x.resumen.fecha) === m);
+  r.actos = repMes.filter((x)=> /Acto|Condici/.test(x.resumen.clase)).length;
+  r.incidentes = repMes.filter((x)=> x.resumen.clase === 'Incidente').length;
+  const conInv = D.reportes.filter((x)=> (x.resumen.clase === AT || x.resumen.clase === 'Incidente') && mesDe(x.resumen.fecha) <= m && mesDe(x.resumen.fecha) >= mesMas(m, -11));
+  // Cuentan los cumplidos y los que ya vencieron (uno con plazo vigente aún no es incumplido).
+  const invHecha = (x)=> x.resumen.investigacion && x.resumen.investigacion.estado === 'CERRADA';
+  const conInvEval = conInv.filter((x)=> invHecha(x) || Festivos.sumarDias(x.resumen.fecha, 15) < UI.hoy());
+  r.invTotal = conInvEval.length;
+  r.invATiempo = conInvEval.filter((x)=> x.resumen.investigacion && x.resumen.investigacion.estado === 'CERRADA' && (!x.resumen.investigacion.fecha || x.resumen.investigacion.fecha <= Festivos.sumarDias(x.resumen.fecha, 15))).length;
+  const atEval = atAnio.filter((x)=> (x.resumen.furat && x.resumen.furat.radicado) || Festivos.sumarHabiles(x.resumen.fecha, 2) < UI.hoy());
+  r.furatTotal = atEval.length;
+  r.furatATiempo = atEval.filter((x)=> x.resumen.furat && x.resumen.furat.radicado && (!x.resumen.furat.fecha || x.resumen.furat.fecha <= Festivos.sumarHabiles(x.resumen.fecha, 2))).length;
+  const insMes = D.inspecciones.filter((x)=> mesDe(x.resumen.fecha) === m);
+  r.insHechas = insMes.length; r.insNC = insMes.filter((x)=> x.resumen.resultado === 'NO CONFORME').length;
+  r.insProg = Number(dm.inspeccionesProgramadas) || 0;
+  r.charlas = D.charlas.filter((s)=> mesDe(s.semanaDel) === m).reduce((s, x)=> s + (Number(x.charlas) || 0), 0);
+  r.asistentes = D.charlas.filter((s)=> mesDe(s.semanaDel) === m).reduce((s, x)=> s + (Number(x.asistentes) || 0), 0);
+  r.capProg = Number(dm.capacitacionesProgramadas) || 0;
+  const vencenMes = D.acciones.filter((x)=> mesDe(x.resumen.fechaCompromiso) === m);
+  r.accVencenMes = vencenMes.length;
+  r.accCumplidas = vencenMes.filter((x)=> x.estado === 'CERRADA').length;
+  r.accAbiertas = D.acciones.filter((x)=> x.estado !== 'CERRADA').length;
+  r.accVencidas = D.acciones.filter((x)=> x.estado !== 'CERRADA' && x.resumen.fechaCompromiso < UI.hoy()).length;
+  const act = D.trabajadores.filter((x)=> x.resumen.activo !== false);
+  r.habTotal = act.length;
+  r.habOk = act.filter((x)=> { const t = x.resumen; return Habilitacion.exigidos([]).every((k)=> { const q = (t.req || {})[k]; return q && (q.vence ? q.vence >= UI.hoy() : q.fecha) && !/no apto|aplazado/i.test(q.apto || ''); }); }).length;
+  r.permisos = D.permisos.filter((p)=> mesDe(p.openedAt || p.updatedAt) === m).length;
+  return r;
+}
+
+function tarjeta(nombre, valor, unidad, formula, calc, nota){
+  const falta = valor === null;
+  return '<div class="ind' + (falta ? ' falta' : '') + '"><div class="cab"><div class="nom">' + esc(nombre) + '</div><div class="val">' + (falta ? 'faltan datos' : esc(fmt(valor)) + (unidad || '')) + '</div></div>' +
+    (calc ? '<div class="calc">' + calc + '</div>' : '') + '<div class="form">' + esc(formula) + (nota ? ' · ' + esc(nota) : '') + '</div></div>';
+}
+const pct = (a, b)=> b ? a / b * 100 : null;
+
+function pintar(){
+  const m = $('mes').value, r = calcular(m), dm = r.dm;
+  $('dTrab').value = dm.trabajadores || ''; $('dDiasProg').value = dm.diasProgramados || ''; $('dAus').value = dm.diasAusencia === undefined ? '' : dm.diasAusencia;
+  $('dHht').value = dm.hht || ''; $('dEL').value = dm.casosEL === undefined ? '' : dm.casosEL; $('dELn').value = dm.casosELNuevos === undefined ? '' : dm.casosELNuevos;
+  $('dInsProg').value = dm.inspeccionesProgramadas || ''; $('dCapProg').value = dm.capacitacionesProgramadas || '';
+  $('cardDatos').open = !dm.trabajadores;
+  $('estadoDatos').textContent = dm.trabajadores ? '· ' + dm.trabajadores + ' trabajadores (toca para corregir)' : '· ⚠ faltan: sin ellos no se calculan los indicadores';
+  const hab = habilesDelMes(m);
+  $('sugDias').innerHTML = hab + ' días hábiles en ' + esc(nombreMes(m)) + ($('dTrab').value ? ' · <a href="#" id="usarSug">usar ' + (hab * Number($('dTrab').value)) + '</a>' : '');
+  const sug = D.equipos.filter((e)=> e.resumen.activo !== false && ['diaria', 'semanal', 'quincenal', 'mensual'].indexOf(e.resumen.frecuencia) !== -1).length;
+  $('sugIns').textContent = sug ? sug + ' equipos/áreas con inspección mensual o más seguida' : '';
+  $('ind0312').innerHTML =
+    tarjeta('Frecuencia de accidentalidad', r.frecuencia, '', '(N.º de AT en el mes ÷ N.º de trabajadores) × 100', r.trab ? r.atMes + ' AT ÷ ' + r.trab + ' trabajadores × 100' : '', 'mensual') +
+    tarjeta('Severidad de accidentalidad', r.severidad, '', '((días de incapacidad por AT + días cargados en el mes) ÷ N.º de trabajadores) × 100', r.trab ? '(' + r.diasInc + ' + ' + r.diasCarg + ') ÷ ' + r.trab + ' × 100' : '', 'mensual; los días de cada AT se cuentan en el mes del accidente') +
+    tarjeta('Proporción de AT mortales', r.mortales, '%', '(AT mortales en el año ÷ total de AT en el año) × 100', r.mort + ' ÷ ' + r.atAnio + ' en ' + m.slice(0, 4), 'anual') +
+    tarjeta('Prevalencia de enfermedad laboral', r.prevalencia, '', '(casos de EL, nuevos y antiguos ÷ promedio de trabajadores) × 100.000', r.prevalencia !== null ? fmt(dm.casosEL, 0) + ' ÷ ' + fmt(r.promTrab, 1) + ' × 100.000' : '', 'anual') +
+    tarjeta('Incidencia de enfermedad laboral', r.incidencia, '', '(casos nuevos de EL en el año ÷ promedio de trabajadores) × 100.000', r.promTrab ? r.elNuevosAnio + ' ÷ ' + fmt(r.promTrab, 1) + ' × 100.000' : '', 'anual') +
+    tarjeta('Ausentismo por causa médica', r.ausentismo, '%', '(días de ausencia por incapacidad laboral o común ÷ días de trabajo programados) × 100', dm.diasProgramados ? fmt(dm.diasAusencia || 0, 0) + ' ÷ ' + fmt(dm.diasProgramados, 0) + ' × 100' : '', 'mensual') +
+    (r.iFrecHht !== null ? tarjeta('Índice de frecuencia (por HHT)', r.iFrecHht, '', '(N.º de AT × 240.000) ÷ horas hombre trabajadas', r.atMes + ' × 240.000 ÷ ' + fmt(dm.hht, 0), 'complementario') : '');
+  $('indGestion').innerHTML = '<div class="kpis">' +
+    kpi(r.actos, 'actos y condiciones reportados') + kpi(r.incidentes, 'incidentes') + kpi(r.atMes, 'accidentes de trabajo', r.atMes ? 'mal' : 'ok') +
+    kpi(r.insProg ? fmt(pct(r.insHechas, r.insProg), 0) + '%' : r.insHechas, r.insProg ? 'inspecciones (' + r.insHechas + ' de ' + r.insProg + ')' : 'inspecciones hechas', r.insProg && r.insHechas < r.insProg ? 'mal' : '') +
+    kpi(r.insNC, 'inspecciones no conformes') +
+    kpi(r.capProg ? fmt(pct(r.charlas, r.capProg), 0) + '%' : r.charlas, r.capProg ? 'capacitación (' + r.charlas + ' de ' + r.capProg + ')' : 'charlas dictadas' + (D.charlasOk ? '' : ' (sin datos)'), r.capProg && r.charlas < r.capProg ? 'mal' : '') +
+    kpi(r.accVencenMes ? fmt(pct(r.accCumplidas, r.accVencenMes), 0) + '%' : '—', 'acciones que vencían este mes y se cerraron' + (r.accVencenMes ? ' (' + r.accCumplidas + ' de ' + r.accVencenMes + ')' : '')) +
+    kpi(r.accVencidas, 'acciones vencidas hoy', r.accVencidas ? 'mal' : 'ok') +
+    kpi(r.invTotal ? fmt(pct(r.invATiempo, r.invTotal), 0) + '%' : '—', 'investigaciones a tiempo (12 meses)') +
+    kpi(r.furatTotal ? fmt(pct(r.furatATiempo, r.furatTotal), 0) + '%' : '—', 'FURAT a tiempo (año)') +
+    kpi(r.habTotal ? fmt(pct(r.habOk, r.habTotal), 0) + '%' : '—', 'personal habilitado hoy' + (r.habTotal ? ' (' + r.habOk + ' de ' + r.habTotal + ')' : '')) +
+    kpi(r.permisos, 'permisos de trabajo emitidos' + (D.permisosOk ? '' : ' (incompleto)')) + '</div>';
+  const au = ausenciaDelMes(m);
+  $('sugAus').innerHTML = au.n ? 'Registro de ausentismo: ' + au.dias + ' días hábiles por causa médica (' + au.n + ' ausencia(s)) · <a href="#" id="usarAus">usar ' + au.dias + '</a>' : '';
+  const ep = estructuraProceso();
+  $('indEstructura').innerHTML = '<div class="card"><h2>Estructura · ' + ep.est.filter((x)=> x[1]).length + ' de ' + ep.est.length + '</h2>' + ep.est.map((x)=> '<div class="dato"><span>' + esc(x[0]) + '</span><b style="color:' + (x[1] ? 'var(--ok)' : 'var(--mal)') + ';">' + (x[1] ? '✓ Sí' : '✗ No') + '</b></div>').join('') + '</div>' +
+    '<div class="card"><h2>Proceso</h2>' + ep.pro.map((x)=> '<div class="dato"><span>' + esc(x[0]) + '</span><b>' + (x[1] === null ? '—' : esc(String(x[1])) + (x[2] === '' ? '' : ' %')) + '</b></div>').join('') + '</div>';
+  // Tendencia
+  const meses = []; for (let i = 11; i >= 0; i--) meses.push(mesMas(m, -i));
+  const filasT = meses.map((mm)=> ({ mm, r: calcular(mm) }));
+  const maxF = Math.max(0.0001, ...filasT.map((x)=> x.r.frecuencia || 0));
+  $('tendencia').innerHTML = '<div class="nom" style="font-size:12px;color:var(--muted);font-weight:700;">Frecuencia de accidentalidad</div><div class="barras">' +
+    filasT.map((x)=> '<div class="' + (x.mm === m ? 'sel' : '') + '" style="height:' + Math.round((x.r.frecuencia || 0) / maxF * 100) + '%" title="' + esc(x.mm + ': ' + fmt(x.r.frecuencia)) + '"></div>').join('') + '</div>' +
+    '<div class="barras-et">' + filasT.map((x)=> '<span>' + esc(x.mm.slice(5)) + '</span>').join('') + '</div>' +
+    '<table class="tend" style="margin-top:10px;"><tr><th>Mes</th><th>Trab.</th><th>AT</th><th>Frec.</th><th>Sev.</th><th>Ausent.</th><th>Reportes</th><th>Insp.</th></tr>' +
+    filasT.slice().reverse().map((x)=> '<tr><td>' + esc(x.mm) + '</td><td>' + (x.r.trab || '—') + '</td><td>' + x.r.atMes + '</td><td>' + fmt(x.r.frecuencia) + '</td><td>' + fmt(x.r.severidad) + '</td><td>' + (x.r.ausentismo === null ? '—' : fmt(x.r.ausentismo) + '%') + '</td><td>' + (x.r.actos + x.r.incidentes) + '</td><td>' + x.r.insHechas + '</td></tr>').join('') + '</table>';
+}
+/* Días de ausencia por causa médica de un mes, desde el registro de ausentismo (Salud). */
+function ausenciaDelMes(m){
+  const ini = m + '-01', fin = mesMas(m, 1) + '-01';
+  let dias = 0, n = 0;
+  D.otros.filter((x)=> x.tipo === 'ausencia' && ['Enfermedad general', 'Accidente de trabajo', 'Enfermedad laboral'].indexOf(x.resumen.causa) !== -1).forEach((x)=> {
+    const a = x.resumen.inicio > ini ? x.resumen.inicio : ini, b = x.resumen.fin < fin ? x.resumen.fin : Festivos.sumarDias(fin, -1);
+    // Días HÁBILES dentro del mes: los días programados también son hábiles.
+    if (b >= a) { let d = a, k = 0; while (d <= b) { if (Festivos.esHabil(d)) k++; d = Festivos.sumarDias(d, 1); } dias += k; n++; }
+  });
+  return { dias, n };
+}
+/* Indicadores de estructura y de proceso, con lo que ya está en el portal (corte de hoy). */
+function estructuraProceso(){
+  const h = UI.hoy(), anio = h.slice(0, 4), hace = Festivos.sumarDias(h, -365), de = (t)=> D.otros.filter((x)=> x.tipo === t);
+  const pol = de('politica').sort((a, b)=> String(b.resumen.fechaFirma).localeCompare(String(a.resumen.fechaFirma)))[0];
+  const pat = de('plananual').find((x)=> String(x.resumen.anio) === anio);
+  const com = (k)=> { const c = de('comite').find((x)=> x.resumen.comite === k); return !!(c && c.resumen.periodo && c.resumen.periodo.fin >= h); };
+  const legal = de('legal').filter((x)=> x.resumen.vigente !== 'No'), legalEv = legal.filter((x)=> x.resumen.cumple && x.resumen.cumple !== 'Sin evaluar' && x.resumen.cumple !== 'No aplica');
+  const est = [
+    ['Política de SST firmada y revisada en el último año', !!(pol && pol.resumen.proximaRevision >= h)],
+    ['Objetivos del SG-SST definidos', !!(pol && Number(pol.resumen.objetivos))],
+    ['Plan anual de trabajo ' + anio + ' firmado', !!(pat && pat.resumen.firmado === true)],
+    ['Responsable del SG-SST designado', !!(pat && pat.resumen.responsable)],
+    ['Matriz de peligros revisada con los trabajadores en los últimos 12 meses', de('revmatriz').some((x)=> x.resumen.fecha >= hace) && de('peligro').length > 0],
+    ['COPASST vigente', com('copasst')], ['Comité de Convivencia vigente', com('convivencia')],
+    ['Plan de emergencias vigente', de('emergencia').some((x)=> !x.resumen.proximaRevision || x.resumen.proximaRevision >= h)],
+    ['Matriz legal evaluada', legal.length > 0 && legalEv.length === legal.filter((x)=> x.resumen.cumple !== 'No aplica').length]
+  ];
+  const insAnio = D.inspecciones.filter((x)=> String(x.resumen.fecha).slice(0, 4) === anio).length;
+  const insProg = D.meses.filter((x)=> x.resumen.mes.slice(0, 4) === anio).reduce((a, x)=> a + (Number(x.resumen.inspeccionesProgramadas) || 0), 0);
+  const ult = {}; de('examen').forEach((x)=> { const k = x.resumen.cedula || x.resumen.nombre; if (!ult[k] || x.resumen.fecha > ult[k].resumen.fecha) ult[k] = x; });
+  const exVig = Object.values(ult).filter((x)=> x.resumen.tipoExamen !== 'Egreso');
+  const pel = de('peligro'), medPend = pel.reduce((a, x)=> a + (Number(x.resumen.controlesPendientes) || 0), 0);
+  const conMed = pel.filter((x)=> ['I', 'II'].indexOf(x.resumen.nivel) !== -1);
+  const pro = [
+    ['Cumplimiento del plan anual de trabajo', pat ? pat.resumen.cumplimiento : null],
+    ['Ejecución del plan de capacitación', pat && pat.resumen.capProgramadas ? Math.round(pat.resumen.capEjecutadas * 100 / pat.resumen.capProgramadas) : null],
+    ['Cobertura de capacitación', pat && pat.resumen.cobertura !== '' ? pat.resumen.cobertura : null],
+    ['Inspecciones ejecutadas / programadas ' + anio, insProg ? Math.round(insAnio * 100 / insProg) : null],
+    ['Exámenes médicos periódicos al día', exVig.length ? Math.round(exVig.filter((x)=> !x.resumen.proxima || x.resumen.proxima >= h).length * 100 / exVig.length) : null],
+    ['Riesgos no aceptables (I y II) sin medidas pendientes', conMed.length ? Math.round(conMed.filter((x)=> !Number(x.resumen.controlesPendientes)).length * 100 / conMed.length) : null],
+    ['Cumplimiento de requisitos legales', legalEv.length ? Math.round(legalEv.filter((x)=> x.resumen.cumple === 'Cumple').length * 100 / legalEv.length) : null],
+    ['Simulacros en los últimos 12 meses', de('simulacro').filter((x)=> x.resumen.fecha >= hace).length, '']
+  ];
+  return { est, pro, medPend };
+}
+function kpi(v, n, c){ return '<div class="kpi ' + (c || '') + '"><div class="v">' + esc(String(v)) + '</div><div class="n">' + esc(n) + '</div></div>'; }
+
+document.addEventListener('click', (e)=>{ if (e.target.id === 'usarSug') { e.preventDefault(); $('dDiasProg').value = habilesDelMes($('mes').value) * Number($('dTrab').value || 0); }
+  if (e.target.id === 'usarAus') { e.preventDefault(); $('dAus').value = ausenciaDelMes($('mes').value).dias; } });
+$('btnGuardar').addEventListener('click', async ()=>{
+  const m = $('mes').value, n = (id)=> $(id).value === '' ? undefined : Number($(id).value);
+  if (!n('dTrab')) { $('msg').textContent = 'Falta el número de trabajadores.'; return; }
+  const campos = { mes: m, trabajadores: n('dTrab'), diasProgramados: n('dDiasProg') || 0, diasAusencia: n('dAus') || 0, hht: n('dHht') || 0, casosEL: n('dEL') || 0, casosELNuevos: n('dELn') || 0,
+    inspeccionesProgramadas: n('dInsProg') || 0, capacitacionesProgramadas: n('dCapProg') || 0 };
+  $('btnGuardar').disabled = true; $('msg').textContent = 'Guardando…';
+  const r = await SGSST.enviar({ action:'parche', tipo:'mes', id: 'MES-' + m, campos }, { resumen: campos });
+  $('btnGuardar').disabled = false;
+  if (!r.ok) { $('msg').textContent = 'No se guardó: ' + (r.error || ''); return; }
+  const i = D.meses.findIndex((x)=> x.resumen.mes === m);
+  const fila = { id: 'MES-' + m, tipo:'mes', resumen: r.resumen || campos };
+  if (i === -1) D.meses.push(fila); else D.meses[i] = fila;
+  $('msg').textContent = r.enCola ? '⏳ Guardado en el equipo; se envía al volver la señal.' : '✓ Guardado';
+  pintar();
+});
+$('mes').addEventListener('change', pintar);
+$('mesAnt').addEventListener('click', ()=> { $('mes').value = mesMas($('mes').value, -1); pintar(); });
+$('mesSig').addEventListener('click', ()=> { $('mes').value = mesMas($('mes').value, 1); pintar(); });
+
+/* ── Informe PDF ── */
+$('btnPdf').addEventListener('click', ()=>{
+  const m = $('mes').value, r = calcular(m), dm = r.dm;
+  const fila = (n, f, calc, v, u)=> '<tr><td>' + esc(n) + '</td><td class="nota">' + esc(f) + '</td><td>' + esc(calc) + '</td><td class="a">' + (v === null ? 'Faltan datos' : esc(fmt(v)) + (u || '')) + '</td></tr>';
+  let h = UI.cabecera('SG-INDICADORES', 'INFORME DE INDICADORES DEL SG-SST', nombreMes(m).toUpperCase() + ' · Res. 0312 de 2019, art. 30');
+  h += UI.seccion('Datos del mes', UI.tablaDatos([['Trabajadores', fmt(dm.trabajadores || 0, 0)], ['Días de trabajo programados', fmt(dm.diasProgramados || 0, 0)], ['Días de ausencia por incapacidad', fmt(dm.diasAusencia || 0, 0)],
+    ['Horas hombre trabajadas', dm.hht ? fmt(dm.hht, 0) : '—'], ['Accidentes de trabajo en el mes', String(r.atMes)], ['Días de incapacidad / cargados', r.diasInc + ' / ' + r.diasCarg]]));
+  h += UI.seccion('Indicadores mínimos', '<table><tr><th style="width:22%">Indicador</th><th style="width:38%">Fórmula</th><th>Cálculo</th><th style="width:12%">Resultado</th></tr>' +
+    fila('Frecuencia de accidentalidad', '(AT en el mes ÷ trabajadores) × 100', r.atMes + ' ÷ ' + (r.trab || '—') + ' × 100', r.frecuencia) +
+    fila('Severidad de accidentalidad', '((días incapacidad AT + días cargados) ÷ trabajadores) × 100', '(' + r.diasInc + ' + ' + r.diasCarg + ') ÷ ' + (r.trab || '—') + ' × 100', r.severidad) +
+    fila('Proporción de AT mortales', '(AT mortales año ÷ AT año) × 100', r.mort + ' ÷ ' + r.atAnio, r.mortales, '%') +
+    fila('Prevalencia de enfermedad laboral', '(casos EL ÷ promedio trabajadores) × 100.000', fmt(dm.casosEL || 0, 0) + ' ÷ ' + fmt(r.promTrab, 1), r.prevalencia) +
+    fila('Incidencia de enfermedad laboral', '(casos nuevos EL año ÷ promedio trabajadores) × 100.000', r.elNuevosAnio + ' ÷ ' + fmt(r.promTrab, 1), r.incidencia) +
+    fila('Ausentismo por causa médica', '(días de ausencia ÷ días programados) × 100', fmt(dm.diasAusencia || 0, 0) + ' ÷ ' + fmt(dm.diasProgramados || 0, 0), r.ausentismo, '%') + '</table>');
+  h += UI.seccion('Gestión', UI.tablaDatos([['Actos y condiciones reportados', String(r.actos)], ['Incidentes', String(r.incidentes)],
+    ['Inspecciones hechas / programadas', r.insHechas + ' / ' + (r.insProg || '—') + (r.insProg ? ' (' + fmt(pct(r.insHechas, r.insProg), 0) + '%)' : '')], ['Inspecciones no conformes', String(r.insNC)],
+    ['Charlas dictadas / programadas', r.charlas + ' / ' + (r.capProg || '—') + (r.capProg ? ' (' + fmt(pct(r.charlas, r.capProg), 0) + '%)' : '')], ['Asistencias a charlas', String(r.asistentes)],
+    ['Acciones que vencían y se cerraron', r.accVencenMes ? r.accCumplidas + ' de ' + r.accVencenMes + ' (' + fmt(pct(r.accCumplidas, r.accVencenMes), 0) + '%)' : '—'], ['Acciones abiertas / vencidas hoy', r.accAbiertas + ' / ' + r.accVencidas],
+    ['Investigaciones a tiempo (12 meses)', r.invTotal ? r.invATiempo + ' de ' + r.invTotal : '—'], ['FURAT a tiempo (año)', r.furatTotal ? r.furatATiempo + ' de ' + r.furatTotal : '—'],
+    ['Personal habilitado hoy', r.habTotal ? r.habOk + ' de ' + r.habTotal + ' (' + fmt(pct(r.habOk, r.habTotal), 0) + '%)' : '—'], ['Permisos de trabajo emitidos', String(r.permisos)]]));
+  const ep = estructuraProceso();
+  h += UI.seccion('Estructura y proceso (corte de hoy)', '<table>' + ep.est.map((x)=> '<tr><td class="l" style="width:70%;">' + esc(x[0]) + '</td><td>' + (x[1] ? 'Sí' : 'No') + '</td></tr>').join('') +
+    ep.pro.map((x)=> '<tr><td class="l">' + esc(x[0]) + '</td><td>' + (x[1] === null ? '—' : esc(String(x[1])) + (x[2] === '' ? '' : ' %')) + '</td></tr>').join('') + '</table>');
+  const meses = []; for (let i = 11; i >= 0; i--) meses.push(mesMas(m, -i));
+  h += UI.seccion('Tendencia (12 meses)', '<table><tr><th>Mes</th><th>Trabajadores</th><th>AT</th><th>Frecuencia</th><th>Severidad</th><th>Ausentismo</th><th>Reportes</th><th>Inspecciones</th></tr>' +
+    meses.map((mm)=>{ const x = calcular(mm); return '<tr><td>' + esc(mm) + '</td><td class="a">' + (x.trab || '—') + '</td><td class="a">' + x.atMes + '</td><td class="a">' + esc(fmt(x.frecuencia)) + '</td><td class="a">' + esc(fmt(x.severidad)) + '</td><td class="a">' + (x.ausentismo === null ? '—' : esc(fmt(x.ausentismo)) + '%') + '</td><td class="a">' + (x.actos + x.incidentes) + '</td><td class="a">' + x.insHechas + '</td></tr>'; }).join('') + '</table>');
+  h += '<table style="margin-top:8px;"><tr><td class="l" style="width:30%">Análisis y conclusiones</td><td style="height:70px;"></td></tr><tr><td class="l">Elaboró (nombre y firma)</td><td style="height:40px;"></td></tr></table>';
+  UI.imprimir([h], false);
+});
+
+$('mes').value = UI.hoy().slice(0, 7);
+cargar();
+</script>
+</body>
+</html>

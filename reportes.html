@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Reportes e investigación · Portal SSTA</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>
+.clases{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px;}
+.clases button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 10px;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);min-height:74px;}
+.clases button b{display:block;font-size:14px;}
+.clases button span{font-size:11.5px;color:var(--muted);line-height:1.3;display:block;margin-top:3px;}
+.clases button.on{border-color:var(--ink);background:#f4f6f8;box-shadow:inset 0 0 0 1px var(--ink);}
+.clases button[data-c="Accidente de trabajo"].on{border-color:var(--mal);box-shadow:inset 0 0 0 1px var(--mal);background:#fff6f5;}
+.plazo{border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.45;border:1px solid var(--line);background:#fff;}
+.plazo b{display:block;font-size:14px;margin-bottom:2px;}
+.plazo.mal{background:#fdecea;border-color:#f0c8c1;color:#8a2a1c;}
+.plazo.pronto{background:#fff6dd;border-color:#f1dca4;color:#6b4e00;}
+.plazo.ok{background:#eef8f2;border-color:#bfe3cd;color:#1d5c3a;}
+.checks label{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed #eef1f4;font-size:13.5px;line-height:1.35;cursor:pointer;}
+.checks input{width:20px;height:20px;flex:0 0 auto;margin-top:1px;}
+details.grupo{border:1px solid var(--line);border-radius:10px;padding:0 12px;margin-bottom:10px;background:#fff;}
+details.grupo summary{padding:12px 0;font-weight:700;font-size:13.5px;cursor:pointer;}
+details.grupo summary .n{font-weight:600;color:var(--muted);font-size:12px;}
+.equipo-inv{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fcfbf8;}
+.equipo-inv .rol{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.otra-causa{display:flex;gap:6px;margin-top:6px;}
+.otra-causa .btn-mini{min-height:44px;margin-left:0;padding:0 14px;}
+.otra-causa input{flex:1;min-width:0;min-height:44px;border:1.5px dashed var(--line);border-radius:8px;padding:9px 10px;font-size:15px;font-family:inherit;background:#fff;}
+.checks label.propia span{font-style:italic;}
+.porque{margin-bottom:8px;}
+.porque label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:3px;}
+.porque input{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:10px;font-size:15px;font-family:inherit;background:#fcfbf8;}
+.porque + .porque{padding-left:14px;border-left:3px solid #e3e8ec;}
+.medida{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #e6eaee;font-size:14px;}
+.medida span:first-child{flex:1;min-width:0;}
+.pasos-inv{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;position:sticky;top:0;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.05);}
+.pi-top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;margin-bottom:6px;}
+.pi-top span{color:var(--muted);}
+.pi-pasos{display:flex;gap:4px;flex-wrap:wrap;}
+.pi-pasos span{font-size:12px;font-weight:600;border-radius:7px;padding:3px 7px;background:#eef1f4;color:#4a5566;}
+.pi-pasos span.ok{background:#e3f4ea;color:#1d6b45;}
+/* v109: PQRS dentro de «Reportar un evento» */
+.clases button[data-c="PQRS"]{grid-column:1 / -1;min-height:60px;}
+.clases button[data-c="PQRS"].on{border-color:#2c5d8a;box-shadow:inset 0 0 0 1px #2c5d8a;background:#f1f6fb;}
+.chips.grandes button{min-height:44px;font-size:14px;}
+.tipo-ayuda{font-size:12.5px;color:var(--muted);line-height:1.4;margin-top:6px;}
+.gracias{text-align:center;padding:22px 16px;}
+.gracias .ico{font-size:44px;line-height:1;}
+.gracias h2{margin:10px 0 6px;font-size:20px;}
+.codigo-seg{font-family:var(--font-display,inherit);font-size:20px;font-weight:800;letter-spacing:.03em;background:#f4f6f8;border:1.5px dashed #9aa8b6;border-radius:12px;padding:12px;margin:12px 0 6px;word-break:break-all;user-select:all;-webkit-user-select:all;}
+.filtro-activo{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#eef4fa;border:1px solid #c9dbec;color:#1f4466;border-radius:10px;padding:6px 6px 6px 12px;margin-bottom:10px;font-size:13px;font-weight:600;}
+.filtro-activo button{min-height:44px;border:0;background:#fff;border-radius:8px;padding:0 12px;font-weight:700;font-family:inherit;color:#1f4466;cursor:pointer;}
+.chip.info{background:#e7f1fb;color:#1f4466;}
+/* v109: 5 porqués guiados */
+.pq-paso{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fff;}
+.pq-paso.hecho{background:#fbfcfd;}
+.pq-paso.raiz{border-color:#1d6b45;background:#eef8f2;}
+.pq-q{font-size:13px;font-weight:700;line-height:1.35;color:#24313d;margin-bottom:6px;}
+.pq-q small{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;}
+.pq-paso textarea{width:100%;min-height:58px;border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-size:15px;font-family:inherit;line-height:1.35;resize:vertical;background:#fcfbf8;}
+.pq-r{font-size:14.5px;line-height:1.4;}
+.pq-bots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pq-bots button{min-height:44px;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:0 12px;font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;color:var(--ink);}
+.pq-bots button.prim{background:#18232e;border-color:#18232e;color:#fff;flex:1 1 160px;}
+.pq-bots button.raizb{border-color:#1d6b45;color:#1d6b45;flex:1 1 160px;}
+.pq-bots button.quitar{color:var(--mal);}
+.pq-sug{margin-top:8px;}
+.pq-sug .t{font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px;}
+.pq-sug .chips button{min-height:44px;text-align:left;font-weight:600;font-size:12.5px;border-radius:12px;}
+.pq-alerta{font-size:12.5px;font-weight:700;line-height:1.35;border-radius:8px;padding:7px 9px;margin-top:6px;background:#fff6dd;color:#6b4e00;border:1px solid #f1dca4;}
+.pq-alerta.mal{background:#fdecea;color:#8a2a1c;border-color:#f0c8c1;}
+.pq-paso details{margin-top:6px;font-size:12.5px;line-height:1.45;color:#3d4a57;}
+.pq-paso details summary{cursor:pointer;font-weight:700;color:#2c5d8a;min-height:36px;display:flex;align-items:center;}
+.pq-paso details p{margin:4px 0;}
+.pq-barra{display:flex;gap:4px;margin:0 0 10px;}
+.pq-barra span{flex:1;height:6px;border-radius:3px;background:#e3e8ec;}
+.pq-barra span.ok{background:#7fb08f;} .pq-barra span.r{background:#1d6b45;}
+.raiz-caja{border:1.5px solid #1d6b45;background:#eef8f2;border-radius:12px;padding:10px 12px;margin:4px 0 10px;font-size:13.5px;line-height:1.4;color:#1d5c3a;}
+.raiz-caja .btn{margin-top:8px;}
+.clases.v-falta{border:1.5px solid var(--mal);border-radius:14px;padding:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════ LISTA ═══════ -->
+<div class="screen active" id="scrLista">
+  <div class="hdr">
+    <a class="back" href="index.html">← Volver al portal</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Gestión SST</div>
+    <h1>Reportes e investigación</h1>
+    <p>Actos y condiciones inseguras, incidentes, accidentes de trabajo y PQRS</p></div></div>
+  </div>
+  <div id="avisoSrv"></div>
+  <div id="avisoCopia"></div>
+  <button type="button" class="btn amber" id="btnReportar" style="margin:0 0 12px;">⚠️ Reportar ahora</button>
+  <div class="kpis" id="kpis"></div>
+  <div id="pendLegales"></div>
+  <div class="tabs" id="tabs">
+    <button type="button" class="on" data-tab="abiertos">Abiertos <span class="n" id="nAb">0</span></button>
+    <button type="button" data-tab="accidentes">Accidentes <span class="n" id="nAt">0</span></button>
+    <button type="button" data-tab="todos">Todos <span class="n" id="nTo">0</span></button>
+    <button type="button" data-tab="pqrs">PQRS <span class="n" id="nPq">0</span></button>
+  </div>
+  <div id="filtroActivo"></div>
+  <input type="search" class="buscar" id="buscar" placeholder="Buscar por lugar, descripción o persona">
+  <div id="lista"><div class="empty">Cargando…</div></div>
+  <div class="version-portal">Portal SSTA · versión v119</div>
+</div>
+
+<!-- ═══════ NUEVO REPORTE ═══════ -->
+<div class="screen" id="scrNuevo">
+  <div class="hdr">
+    <a class="back" href="#" data-volver>← Volver</a>
+    <div class="eyebrow">Gestión SST</div>
+    <h1 id="nTitulo">Nuevo reporte</h1>
+    <p>Funciona sin señal: se envía solo al volver la conexión</p>
+  </div>
+  <div class="clases" id="clases">
+    <button type="button" data-c="Acto inseguro"><b>🙅 Acto inseguro</b><span>Algo que una persona hace mal (sin arnés, sin bloqueo…)</span></button>
+    <button type="button" data-c="Condición insegura"><b>⚠️ Condición insegura</b><span>Algo del sitio o equipo que puede causar daño</span></button>
+    <button type="button" data-c="Incidente"><b>😮 Incidente</b><span>Casi accidente: pudo haber lesión y no la hubo</span></button>
+    <button type="button" data-c="Accidente de trabajo"><b>🚑 Accidente de trabajo</b><span>Hubo lesión. Plazo de reporte a la ARL: 2 días hábiles</span></button>
+    <button type="button" data-c="PQRS"><b>💬 PQRS (petición, queja, reclamo o sugerencia)</b><span>De un cliente, trabajador, contratista o vecino. Te damos un código para hacerle seguimiento</span></button>
+  </div>
+  <div class="card" id="cardPqrs" hidden>
+    <h2>💬 PQRS</h2>
+    <div class="field"><label>¿Qué es? *</label>
+      <div class="chips grandes" id="pTipo"><button type="button" data-v="Petición">Petición</button><button type="button" data-v="Queja">Queja</button><button type="button" data-v="Reclamo">Reclamo</button><button type="button" data-v="Sugerencia">Sugerencia</button><button type="button" data-v="Felicitación">Felicitación</button></div>
+      <div class="tipo-ayuda" id="pTipoAyuda">Elige una opción: abajo te explicamos cada una.</div></div>
+    <div class="field"><label>¿Quién la presenta? *</label>
+      <div class="chips grandes" id="pPresenta"><button type="button" data-v="Cliente">Cliente</button><button type="button" data-v="Trabajador">Trabajador</button><button type="button" data-v="Contratista">Contratista</button><button type="button" data-v="Comunidad">Comunidad o vecino</button><button type="button" data-v="Otro">Otro</button></div></div>
+    <div class="checks" style="margin-bottom:6px;"><label><input type="checkbox" id="pAnonima"> <span>Presentarla de forma <b>anónima</b> (no podremos responderte directamente: guarda el código que te damos al final)</span></label></div>
+    <div id="pDatos">
+      <div class="field" id="pFilaEmpresa" hidden><label>Empresa (cliente o contratista)</label><input type="text" id="pEmpresa" maxlength="100" placeholder="Ej: Alimentos del Norte S.A.S."></div>
+      <div class="field"><label>Tu nombre (opcional)</label><input type="text" id="pNombre" maxlength="80" autocomplete="name"></div>
+      <div class="field"><label>Correo o teléfono para responderte (opcional)</label><input type="text" id="pContacto" maxlength="120" autocomplete="email" placeholder="nombre@empresa.com o 300 000 0000"></div>
+    </div>
+    <div class="field"><label>Área o proceso relacionado</label><input type="text" id="pArea" list="areasPqrs" maxlength="80" placeholder="Ej: Operaciones en obra, Compras, Atención al cliente"><datalist id="areasPqrs"></datalist></div>
+    <div class="field"><label>Cuéntanos qué pasa o qué propones *</label><textarea id="pDesc" maxlength="1500" placeholder="Qué pasó, cuándo y dónde. Si es una petición, qué necesitas."></textarea></div>
+    <div class="field"><label>Foto o soporte (opcional)</label><div id="pFotos"></div></div>
+    <p class="ayuda" id="pPlazo"></p>
+  </div>
+  <div class="card" id="cardEvento">
+    <div class="grid2">
+      <div class="field"><label>Fecha</label><input type="date" id="nFecha"></div>
+      <div class="field"><label>Hora</label><input type="time" id="nHora"></div>
+    </div>
+    <div class="field"><label>Lugar / área</label><input type="text" id="nLugar" placeholder="Ej: Cuarto de calderas, andamio norte"></div>
+    <div class="field"><label>Centro de costo / cliente</label><input type="text" id="nCentro" list="centros" placeholder="Opcional"><datalist id="centros"></datalist></div>
+    <div class="field"><label>¿Qué pasó o qué se vio?</label><textarea id="nDesc" placeholder="Describe con hechos: qué, dónde, quién (si aplica) y cómo"></textarea></div>
+    <div class="field"><label>Fotos</label><div id="nFotos"></div></div>
+    <div class="field"><label>Potencial de daño</label><div class="chips" id="nPot"><button type="button" data-v="Alto">Alto</button><button type="button" data-v="Medio" class="on">Medio</button><button type="button" data-v="Bajo">Bajo</button></div></div>
+    <div class="field"><label>Acción inmediata tomada</label><textarea id="nInmediata" placeholder="Ej: se suspendió la tarea y se aisló el área"></textarea></div>
+  </div>
+  <div class="card" id="cardLesion" hidden>
+    <h2>🚑 Persona lesionada</h2>
+    <div class="field"><label>Nombre</label><input type="text" id="lNombre" placeholder="Escribe para buscar"></div>
+    <div class="grid2">
+      <div class="field"><label>Cédula</label><input type="text" id="lCedula" inputmode="numeric"></div>
+      <div class="field"><label>Cargo</label><input type="text" id="lCargo"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Parte del cuerpo</label><select id="lParte"></select></div>
+      <div class="field"><label>Tipo de lesión</label><select id="lTipo"></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Mecanismo</label><select id="lMecanismo"></select></div>
+      <div class="field"><label>Agente</label><select id="lAgente"></select></div>
+    </div>
+    <div class="field"><label>Atención</label><select id="lAtencion"><option>Primeros auxilios en sitio</option><option>Remitido a IPS / urgencias</option><option>Hospitalizado</option><option>Sin atención</option></select></div>
+    <div class="checks">
+      <label><input type="checkbox" id="lGrave"> <span><b>Accidente grave</b> (amputación, fractura de huesos largos, trauma craneoencefálico, quemadura de 2.º o 3.º grado, lesión severa de mano, columna u ojos…)</span></label>
+      <label><input type="checkbox" id="lMortal"> <span><b>Accidente mortal</b></span></label>
+    </div>
+  </div>
+  <div class="card" id="cardQuien">
+    <div class="field"><label>Quién reporta</label><input type="text" id="nQuien" placeholder="Tu nombre (escribe para buscar)"></div>
+    <label class="checks" id="filaAnonimo"><label style="border:0;padding:0;"><input type="checkbox" id="nAnonimo"> <span>Reportar de forma anónima (solo actos y condiciones)</span></label></label>
+  </div>
+  <button type="button" class="btn amber" id="btnEnviar">Enviar reporte</button>
+  <div class="status-msg" id="msgNuevo"></div>
+</div>
+
+<!-- ═══════ GRACIAS (PQRS) ═══════ -->
+<div class="screen" id="scrGracias">
+  <div class="hdr">
+    <a class="back" href="#" data-volver>← Volver</a>
+    <div class="eyebrow">PQRS</div>
+    <h1>¡Gracias!</h1>
+    <p>Recibimos tu PQRS</p>
+  </div>
+  <div class="card gracias">
+    <div class="ico">✅</div>
+    <h2 id="gTitulo">Tu PQRS quedó registrada</h2>
+    <div class="m" style="font-size:13.5px;color:var(--muted);">Este es tu código de seguimiento. Guárdalo (tómale foto) para preguntar por ella:</div>
+    <div class="codigo-seg" id="gCodigo">—</div>
+    <button type="button" class="btn ghost" id="gCopiar">Copiar el código</button>
+    <div class="aviso info" id="gPlazo" style="text-align:left;margin-top:10px;"></div>
+  </div>
+  <div class="fila-btn">
+    <button type="button" class="btn ghost" id="gOtra">Reportar otra cosa</button>
+    <a class="btn" href="index.html" style="text-align:center;">Ir al inicio</a>
+  </div>
+</div>
+
+<!-- ═══════ DETALLE ═══════ -->
+<div class="screen" id="scrDetalle">
+  <div class="hdr">
+    <a class="back" href="#" data-volver>← Volver a la lista</a>
+    <div class="eyebrow" id="dCodigo">—</div>
+    <h1 id="dTitulo">—</h1>
+    <p id="dSub">—</p>
+  </div>
+  <div id="dPlazos"></div>
+  <div class="card" id="dDatos"></div>
+  <div class="card" id="dFurat" hidden></div>
+  <div class="card" id="dInv" hidden></div>
+  <div class="card">
+    <h2>Acciones del plan de acción</h2>
+    <div id="dAcciones"><div class="status-msg">Cargando…</div></div>
+    <button type="button" class="btn ghost" id="btnAccion">+ Agregar acción</button>
+  </div>
+  <div class="fila-btn">
+    <button type="button" class="btn ghost" id="btnPdfRep">🖨️ PDF</button>
+    <button type="button" class="btn" id="btnCerrarRep">✅ Cerrar reporte</button>
+  </div>
+  <div class="status-msg" id="msgDet"></div>
+  <div class="card"><div id="dAdj"></div><div id="dHist"></div></div>
+</div>
+
+<!-- ═══════ INVESTIGACIÓN ═══════ -->
+<div class="screen" id="scrInv">
+  <div class="hdr">
+    <a class="back" href="#" id="volverInv">← Volver al reporte</a>
+    <div class="eyebrow" id="iCodigo">—</div>
+    <h1>Investigación</h1>
+    <p>Res. 1401 de 2007: dentro de los 15 días siguientes al evento</p>
+  </div>
+  <div class="pasos-inv" id="iPasos"></div>
+  <div class="card">
+    <h2>Equipo investigador</h2>
+    <p class="ayuda mt-menos4">Jefe inmediato o supervisor, un representante del COPASST o vigía, y el responsable de SST. Si fue grave o mortal, también un profesional con licencia en SST.</p>
+    <div id="iEquipo"></div>
+    <button type="button" class="btn ghost" id="btnMasEquipo">+ Agregar integrante</button>
+  </div>
+  <div class="card">
+    <h2>Descripción de los hechos</h2>
+    <div class="field"><textarea id="iHechos" style="min-height:110px;"></textarea></div>
+  </div>
+  <div class="card">
+    <h2>Causas</h2>
+    <details class="grupo" open><summary>Inmediatas · actos subestándar <span class="n" data-n="actos"></span></summary><div class="checks" id="cActos"></div></details>
+    <details class="grupo"><summary>Inmediatas · condiciones subestándar <span class="n" data-n="condiciones"></span></summary><div class="checks" id="cCondiciones"></div></details>
+    <details class="grupo"><summary>Básicas · factores personales <span class="n" data-n="personales"></span></summary><div class="checks" id="cPersonales"></div></details>
+    <details class="grupo"><summary>Básicas · factores del trabajo <span class="n" data-n="trabajo"></span></summary><div class="checks" id="cTrabajo"></div></details>
+    <p class="ayuda">Marca las que apliquen. Si la causa no está en la lista, escríbela en «Otra» de cada grupo.</p>
+  </div>
+  <div class="card">
+    <h2>¿Por qué pasó? · 5 porqués</h2>
+    <p class="ayuda mt-menos4">Escribe qué pasó y responde «¿por qué?» paso a paso: cada respuesta se vuelve la siguiente pregunta. Para cuando llegues a la causa raíz (lo que, si se corrige, evita que se repita); no hace falta llegar a 5.</p>
+    <div class="pq-barra" id="iPqBarra" aria-hidden="true"></div>
+    <div id="iPorques"></div>
+    <div id="iRaizCaja"></div>
+    <div class="field"><label>Causa raíz (puedes ajustarla)</label><input type="text" id="iRaiz" maxlength="300" placeholder="Ej.: la compra de discos no exige revisar que sirvan para el equipo"></div>
+    <div class="field"><label>Análisis adicional (opcional)</label><textarea id="iAnalisis" style="min-height:80px;"></textarea></div>
+    <div class="field"><label>Conclusiones y lecciones aprendidas</label><textarea id="iConclusiones"></textarea></div>
+  </div>
+  <div class="card">
+    <h2>Medidas por causa</h2>
+    <p class="ayuda mt-menos4">Cada causa encontrada necesita su medida. Toca «+ Acción» y queda en el plan de acción con responsable y fecha.</p>
+    <div id="iMedidas"></div>
+  </div>
+  <div class="fila-btn">
+    <button type="button" class="btn ghost" id="btnGuardarInv">Guardar avance</button>
+    <button type="button" class="btn verde" id="btnCerrarInv">Terminar investigación</button>
+  </div>
+  <div class="status-msg" id="msgInv"></div>
+</div>
+
+</div>
+
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script>
+OfflineBanner.init();
+OutboxBadge.init();
+if (typeof Outbox !== 'undefined') Outbox.flush();
+if (typeof UpdateManager !== 'undefined') UpdateManager.init();
+
+const $ = UI.$;
+const AT = 'Accidente de trabajo';
+const LISTAS = {
+  parte: ['Cabeza', 'Ojos', 'Cuello', 'Tronco', 'Tórax', 'Abdomen', 'Miembros superiores', 'Manos', 'Miembros inferiores', 'Pies', 'Ubicaciones múltiples', 'Lesiones generales u otras'],
+  tipo: ['Golpe, contusión o aplastamiento', 'Herida', 'Trauma superficial (raspón, rasguño)', 'Fractura', 'Luxación', 'Torcedura, esguince o desgarro muscular', 'Quemadura', 'Amputación o enucleación',
+    'Conmoción o trauma interno', 'Envenenamiento o intoxicación', 'Efecto de la electricidad', 'Asfixia', 'Cuerpo extraño en ojo', 'Lesiones múltiples', 'Otra'],
+  mecanismo: ['Caída de personas', 'Caída de objetos', 'Pisadas, choques o golpes', 'Atrapamiento', 'Sobreesfuerzo o falso movimiento', 'Contacto con temperatura extrema',
+    'Contacto con electricidad', 'Contacto con sustancias nocivas o radiaciones', 'Proyección de partículas', 'Otro'],
+  agente: ['Máquinas o equipos', 'Herramientas o implementos', 'Medios de transporte', 'Aparatos (calderas, recipientes a presión…)', 'Materiales o sustancias', 'Ambiente de trabajo (superficies, escaleras, andamios)', 'Animales', 'Otros']
+};
+const CAUSAS = {
+  actos: ['Operar equipos sin autorización', 'No señalizar o no advertir', 'No asegurar ni bloquear energías', 'Operar a velocidad inadecuada', 'Anular o retirar dispositivos de seguridad',
+    'Usar equipo o herramienta defectuosa', 'No usar o usar mal el EPP', 'Cargar o levantar de forma incorrecta', 'Ubicarse o adoptar una posición inadecuada', 'Mantenimiento de equipos en movimiento o energizados',
+    'Bromas o distracciones', 'Trabajar bajo efectos de alcohol o drogas', 'Usar equipos de forma inapropiada', 'No seguir el procedimiento, el ATS o el permiso de trabajo'],
+  condiciones: ['Guardas o barreras inadecuadas', 'EPP inadecuado o insuficiente', 'Herramientas, equipos o materiales defectuosos', 'Espacio limitado o congestionado', 'Señalización o alarmas insuficientes',
+    'Peligro de incendio o explosión', 'Orden y aseo deficientes', 'Exposición a ruido', 'Temperaturas extremas', 'Iluminación deficiente', 'Ventilación insuficiente',
+    'Atmósfera peligrosa (gases, polvos, humos, vapores)', 'Superficies inseguras (resbalosas, desniveles, aberturas)', 'Trabajo en altura sin protección contra caídas', 'Energías peligrosas sin control'],
+  personales: ['Capacidad física inadecuada', 'Capacidad mental o psicológica inadecuada', 'Tensión física (fatiga, carga de trabajo)', 'Tensión mental (estrés, presión de tiempo)',
+    'Falta de conocimiento o de entrenamiento', 'Falta de habilidad o de experiencia', 'Motivación inadecuada'],
+  trabajo: ['Liderazgo o supervisión inadecuada', 'Ingeniería o diseño inadecuado', 'Compras inadecuadas (equipos, EPP, materiales)', 'Mantenimiento inadecuado', 'Herramientas o equipos inadecuados',
+    'Estándares o procedimientos inadecuados o inexistentes', 'Desgaste por uso normal', 'Abuso o mal uso', 'Comunicación deficiente']
+};
+let filas = [], acciones = [], tab = 'abiertos', clase = '', actual = null, fotosNuevo = null, padsEquipo = 0;
+/* v109: PQRS (las mismas de Calidad → PQRS: tipo de registro «pqrs») y filtros de las cifras */
+let pqrs = [], filtro = '', fotosPqrs = null, conLista = false;
+const PQ = 'PQRS';
+const DIAS_PQRS = Number(((typeof EMPRESA !== 'undefined' && EMPRESA.calidad) || {}).diasPQRS) || 15;   // el mismo plazo de calidad.html
+const AYUDA_TIPO = { 'Petición': 'Petición: pides información, un documento o un servicio.', 'Queja': 'Queja: estás inconforme con el trato o la actitud de una persona.',
+  'Reclamo': 'Reclamo: algo no se cumplió como se acordó (servicio, entrega, calidad, pago).', 'Sugerencia': 'Sugerencia: propones una idea para mejorar.', 'Felicitación': 'Felicitación: quieres reconocer algo que se hizo bien.' };
+const ICONO_PQRS = { 'Petición': '📝', 'Queja': '😠', 'Reclamo': '⚠️', 'Sugerencia': '💡', 'Felicitación': '👏' };
+$('areasPqrs').innerHTML = ['Operaciones en obra', 'Mantenimiento', 'Seguridad y salud en el trabajo', 'Calidad', 'Compras', 'Talento humano', 'Administración y pagos', 'Atención al cliente']
+  .concat(EMPRESA.centrosCosto || []).map((c)=> '<option value="' + esc(c) + '">').join('');
+
+function show(id){ document.querySelectorAll('.screen').forEach((s)=>s.classList.toggle('active', s.id === id)); window.scrollTo(0, 0); }
+function opciones(sel, lista){ $(sel).innerHTML = '<option value="">—</option>' + lista.map((x)=>'<option>' + esc(x) + '</option>').join(''); }
+['parte', 'tipo', 'mecanismo', 'agente'].forEach((k)=> opciones({ parte:'lParte', tipo:'lTipo', mecanismo:'lMecanismo', agente:'lAgente' }[k], LISTAS[k]));
+$('centros').innerHTML = (EMPRESA.centrosCosto || []).map((c)=> '<option value="' + esc(c) + '">').join('');
+
+/* Plazos legales de un accidente o incidente. */
+function plazos(r){
+  const res = r.resumen || r, out = [];
+  if (!res.fecha) return out;
+  if (res.clase === AT) {
+    const lim = Festivos.sumarHabiles(res.fecha, 2);
+    out.push(res.furat && res.furat.radicado ? { c:'ok', t:'Reporte a la ARL (FURAT) radicado', d: (res.furat.numero ? 'N.º ' + res.furat.numero : '') + (res.furat.fecha ? ' · ' + UI.corta(res.furat.fecha) : '') }
+      : { c: lim < UI.hoy() ? 'mal' : 'pronto', t:'Reporte a la ARL (FURAT): ' + (lim < UI.hoy() ? 'VENCIDO el ' : 'a más tardar el ') + UI.corta(lim), d:'2 días hábiles desde el accidente. Regístralo abajo cuando se radique.' });
+  }
+  if (res.clase === AT || res.clase === 'Incidente') {
+    const lim = Festivos.sumarDias(res.fecha, 15), inv = res.investigacion || {};
+    out.push(inv.estado === 'CERRADA' ? { c:'ok', t:'Investigación terminada', d: inv.fecha ? UI.corta(inv.fecha) : '' }
+      : { c: lim < UI.hoy() ? 'mal' : 'pronto', t:'Investigación: ' + (lim < UI.hoy() ? 'VENCIDA el ' : 'a más tardar el ') + UI.corta(lim), d:'Res. 1401 de 2007: dentro de los 15 días siguientes.' + ((res.grave || res.mortal) ? ' Grave o mortal: se remite a la ARL' + (res.mortal ? ' y a la Dirección Territorial del Ministerio de Trabajo' : '') + '.' : '') });
+  }
+  return out;
+}
+const iconoClase = (c)=> ({ 'Acto inseguro':'🙅', 'Condición insegura':'⚠️', 'Incidente':'😮', [AT]:'🚑' }[c] || '•');
+
+async function cargar(){
+  if (UI.avisoServidor($('avisoSrv'))) { $('lista').innerHTML = ''; $('btnReportar').disabled = true; return; }
+  // Con usuarios, cualquiera puede REPORTAR sin entrar; la lista sí es solo para usuarios.
+  const r = await SGSST.listar('reporte,pqrs', { sinPedir: true });
+  UI.avisoCopia($('avisoCopia'), r);
+  if (r.sinSesion) $('avisoCopia').innerHTML = '<div class="aviso info">Puedes <b>reportar sin usuario</b> (también una PQRS) con el botón de abajo. Para ver la lista y hacer seguimiento, <button type="button" class="btn-mini" id="btnEntrarRep">entra con tu usuario</button>.</div>';
+  if ($('btnEntrarRep')) $('btnEntrarRep').addEventListener('click', ()=> Sesion.pedir());
+  conLista = !r.sinSesion;
+  filas = r.rows.filter((x)=> x.tipo !== 'pqrs'); pqrs = r.rows.filter((x)=> x.tipo === 'pqrs');
+  pintar();
+}
+/* ── Lo que falta (cifras clicables → lista filtrada) ── */
+const invPend = (x)=> { const s = x.resumen; return (s.clase === AT || s.clase === 'Incidente') && x.estado !== 'CERRADO' && (s.investigacion || {}).estado !== 'CERRADA'; };
+const invVencida = (x)=> invPend(x) && Festivos.sumarDias(x.resumen.fecha, 15) < UI.hoy();
+const furatPend = (x)=> x.resumen.clase === AT && !(x.resumen.furat || {}).radicado;
+const sinAccion = (x)=> x.estado !== 'CERRADO' && !Number(x.resumen.acciones);
+const pqAbierta = (x)=> x.estado === 'ABIERTA';
+const pqVencida = (x)=> pqAbierta(x) && x.resumen.fechaLimite && x.resumen.fechaLimite < UI.hoy();
+const FILTROS = { sinaccion: ['Abiertos sin acciones', sinAccion], sininvestigar: ['Investigaciones pendientes', invPend], invvencida: ['Investigaciones vencidas', invVencida],
+  furat: ['FURAT por radicar', furatPend], pqrsabiertas: ['PQRS abiertas', pqAbierta, true], pqrsvencidas: ['PQRS vencidas', pqVencida, true] };
+window.filtrarKpi = (f)=> { filtro = FILTROS[f] ? f : ''; pintar(); };
+function pintarKpis(){
+  if (!conLista) { $('kpis').innerHTML = ''; return; }
+  const sa = filas.filter(sinAccion), ab = filas.filter((x)=> x.estado !== 'CERRADO'), ip = filas.filter(invPend), iv = filas.filter(invVencida), fp = filas.filter(furatPend),
+    fv = fp.filter((x)=> Festivos.sumarHabiles(x.resumen.fecha, 2) < UI.hoy()), pa = pqrs.filter(pqAbierta), pv = pqrs.filter(pqVencida);
+  const k = (c, v, n, f, ir)=> '<div class="kpi ' + c + '" data-ir="' + ir + '"><div class="v">' + v + '</div><div class="n">' + n + '</div><div class="f">' + f + '</div></div>';
+  $('kpis').innerHTML = k(sa.length ? 'pronto' : 'ok', sa.length, 'reportes abiertos sin acciones', 'de ' + ab.length + ' abierto(s)', 'tab:todos|filtro:sinaccion') +
+    k(iv.length ? 'mal' : ip.length ? 'pronto' : 'ok', ip.length, 'investigaciones pendientes', iv.length + ' vencida(s) · plazo 15 días', 'tab:todos|filtro:' + (iv.length ? 'invvencida' : 'sininvestigar')) +
+    k(fv.length ? 'mal' : fp.length ? 'pronto' : 'ok', fp.length, 'FURAT por radicar a la ARL', fv.length + ' vencido(s) · plazo 2 días hábiles', 'tab:todos|filtro:furat') +
+    k(pv.length ? 'mal' : pa.length ? 'pronto' : 'ok', pa.length, 'PQRS abiertas', pv.length + ' vencida(s) · plazo ' + DIAS_PQRS + ' días hábiles', 'tab:pqrs|filtro:' + (pv.length ? 'pqrsvencidas' : 'pqrsabiertas'));
+}
+function ponerTab(t){ tab = t; document.querySelectorAll('#tabs button').forEach((x)=> x.classList.toggle('on', x.dataset.tab === t)); }
+/* PQRS: se listan aquí y se gestionan (respuesta, plazo, acción) en Calidad → PQRS. */
+function pintarPqrs(q){
+  let l = pqrs.slice();
+  if (filtro && FILTROS[filtro][2]) l = l.filter(FILTROS[filtro][1]);
+  if (q) l = l.filter((x)=> UI.norm([x.resumen.cliente, x.resumen.descripcion, x.resumen.area, x.resumen.presenta, x.resumen.tipoPQRS, x.id].join(' ')).includes(q));
+  l.sort((a, b)=> (a.estado !== 'ABIERTA') - (b.estado !== 'ABIERTA') || (pqVencida(b) - pqVencida(a)) || String(a.resumen.fechaLimite || '').localeCompare(String(b.resumen.fechaLimite || '')));
+  $('lista').innerHTML = '<div class="acciones-top"><button type="button" class="btn amber" id="btnNuevaPqrs">+ Registrar una PQRS</button><a class="btn ghost" href="calidad.html#PQRS">Responder en Calidad → PQRS</a></div>' +
+    (l.length ? l.map((x)=> { const s = x.resumen, venc = pqVencida(x), c = x.estado !== 'ABIERTA' ? 'ok' : venc ? 'mal' : 'pronto';
+      return '<a class="item ' + c + '" href="calidad.html#' + encodeURIComponent(x.id) + '"><div class="fila"><div><div class="t">' + (ICONO_PQRS[s.tipoPQRS] || '💬') + ' ' + esc(s.tipoPQRS || 'PQRS') + ' · ' + esc(s.cliente || '') + '</div>' +
+        '<div class="m">' + esc(s.descripcion || '') + '</div><div class="m">' + esc(x.id) + ' · ' + esc(UI.corta(s.fecha)) + (s.presenta ? ' · ' + esc(s.presenta) : '') + (s.area ? ' · ' + esc(s.area) : '') +
+        (x.estado === 'ABIERTA' && s.fechaLimite ? ' · ' + (venc ? '<b>venció el ' : 'responder antes del ') + esc(UI.corta(s.fechaLimite)) + (venc ? '</b>' : '') : '') + (x.pendiente ? ' · <span class="pend">⏳ pendiente de enviar</span>' : '') + '</div></div>' +
+        '<span class="chip ' + c + '">' + (venc ? 'Vencida' : x.estado === 'ABIERTA' ? 'Abierta' : x.estado === 'RESPONDIDA' ? 'Respondida' : 'Cerrada') + '</span></div></a>'; }).join('')
+      : '<div class="empty">' + (pqrs.length ? 'Ninguna PQRS en esta lista.' : 'Todavía no hay PQRS. Cualquiera puede presentarla desde «Reportar ahora» → PQRS, sin usuario.') + '</div>');
+  $('btnNuevaPqrs').addEventListener('click', ()=> { nuevo(); ponerClase(PQ); });
+}
+function pintar(){
+  const q = UI.norm($('buscar').value).trim();
+  const ab = filas.filter((x)=> x.estado !== 'CERRADO');
+  $('nAb').textContent = ab.length; $('nAt').textContent = filas.filter((x)=> x.resumen.clase === AT).length; $('nTo').textContent = filas.length; $('nPq').textContent = pqrs.filter(pqAbierta).length;
+  pintarKpis();
+  if (filtro && !!FILTROS[filtro][2] !== (tab === 'pqrs')) filtro = '';   // un filtro de reportes no aplica a las PQRS (ni al revés)
+  $('filtroActivo').innerHTML = filtro ? '<div class="filtro-activo"><span>Mostrando: ' + esc(FILTROS[filtro][0]) + '</span><button type="button" id="quitarFiltro">Quitar filtro ✕</button></div>' : '';
+  if ($('quitarFiltro')) $('quitarFiltro').addEventListener('click', ()=> { filtro = ''; pintar(); });
+  // Lo legal pendiente, arriba y en rojo.
+  const pend = [];
+  filas.forEach((x)=> plazos(x).forEach((p)=>{ if (p.c !== 'ok') pend.push({ x, p }); }));
+  $('pendLegales').innerHTML = pend.map(({ x, p })=> '<button type="button" class="plazo ' + p.c + '" data-id="' + esc(x.id) + '" style="width:100%;text-align:left;cursor:pointer;font-family:inherit;"><b>' + esc(p.t) + '</b>' + esc(x.resumen.clase + ' · ' + UI.corta(x.resumen.fecha) + ' · ' + (x.resumen.lesionado || x.resumen.lugar || '')) + '</button>').join('');
+  if (tab === 'pqrs') { pintarPqrs(q); return; }
+  let l = tab === 'abiertos' ? ab : tab === 'accidentes' ? filas.filter((x)=> x.resumen.clase === AT) : filas.slice();
+  if (filtro) l = l.filter(FILTROS[filtro][1]);
+  if (q) l = l.filter((x)=> UI.norm([x.resumen.lugar, x.resumen.descripcion, x.resumen.lesionado, x.resumen.reportadoPor, x.resumen.centro].join(' ')).includes(q));
+  l.sort((a, b)=> String(b.resumen.fecha + b.resumen.hora).localeCompare(String(a.resumen.fecha + a.resumen.hora)));
+  $('lista').innerHTML = l.length ? l.map((x)=>{
+    const s = x.resumen, pl = plazos(x), c = x.estado === 'CERRADO' ? 'gris' : pl.some((p)=> p.c === 'mal') ? 'mal' : (s.clase === AT || s.potencial === 'Alto') ? 'pronto' : 'ok';
+    return '<button type="button" class="item ' + c + '" data-id="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + iconoClase(s.clase) + ' ' + esc(s.clase) + (s.lugar ? ' · ' + esc(s.lugar) : '') + '</div>' +
+      '<div class="m">' + esc(s.descripcion) + '</div><div class="m">' + esc(UI.corta(s.fecha)) + (s.hora ? ' ' + esc(s.hora) : '') + (s.reportadoPor ? ' · ' + esc(s.reportadoPor) : '') +
+      (s.fotos ? ' · 📷 ' + s.fotos : '') + (s.acciones ? ' · ' + s.acciones + ' acción(es)' : '') + (x.pendiente ? ' · <span class="pend">⏳ pendiente de enviar</span>' : '') + '</div></div>' +
+      '<span class="chip ' + (x.estado === 'CERRADO' ? '' : c) + '">' + esc(x.estado === 'CERRADO' ? 'Cerrado' : (s.potencial ? 'Potencial ' + s.potencial.toLowerCase() : 'Abierto')) + '</span></div></button>';
+  }).join('') : '<div class="empty">' + (filas.length ? 'Nada en esta lista.' : 'Todavía no hay reportes. Cada acto o condición insegura reportado a tiempo es un accidente que no pasa.') + '</div>';
+}
+
+/* ── Nuevo reporte ── */
+function ponerClase(c){
+  clase = c;
+  document.querySelectorAll('#clases button').forEach((b)=> b.classList.toggle('on', b.dataset.c === c));
+  Valida.limpiar($('scrNuevo')); $('msgNuevo').innerHTML = '';
+  const esPq = c === PQ;
+  $('cardPqrs').hidden = !esPq; $('cardEvento').hidden = $('cardQuien').hidden = esPq;
+  $('btnEnviar').textContent = esPq ? 'Enviar PQRS' : 'Enviar reporte'; $('nTitulo').textContent = esPq ? 'Nueva PQRS' : 'Nuevo reporte';
+  $('cardLesion').hidden = c !== AT;
+  $('filaAnonimo').style.display = (c === 'Acto inseguro' || c === 'Condición insegura') ? '' : 'none';
+  if (c !== 'Acto inseguro' && c !== 'Condición insegura') $('nAnonimo').checked = false;
+}
+function nuevo(){
+  const ahora = new Date(); ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
+  $('nFecha').value = ahora.toISOString().slice(0, 10); $('nHora').value = ahora.toISOString().slice(11, 16);
+  ['nLugar', 'nCentro', 'nDesc', 'nInmediata', 'lNombre', 'lCedula', 'lCargo'].forEach((id)=> $(id).value = '');
+  ['lParte', 'lTipo', 'lMecanismo', 'lAgente'].forEach((id)=> $(id).value = '');
+  $('lGrave').checked = $('lMortal').checked = $('nAnonimo').checked = false;
+  $('lAtencion').selectedIndex = 0;
+  $('nPot').querySelectorAll('button').forEach((x)=> x.classList.toggle('on', x.dataset.v === 'Medio'));
+  try { $('nQuien').value = localStorage.getItem('ssta-reporta') || ''; } catch (e) {}
+  fotosNuevo = UI.fotos($('nFotos'), { max: 4 });
+  // PQRS
+  ['pEmpresa', 'pNombre', 'pContacto', 'pArea', 'pDesc'].forEach((id)=> $(id).value = '');
+  $('pAnonima').checked = false; $('pDatos').hidden = false;
+  $('pTipo').querySelectorAll('button').forEach((x)=> x.classList.remove('on')); $('pPresenta').querySelectorAll('button').forEach((x)=> x.classList.remove('on'));
+  $('pTipoAyuda').textContent = 'Elige una opción.'; $('pFilaEmpresa').hidden = true;
+  fotosPqrs = UI.fotos($('pFotos'), { max: 2 });
+  $('pPlazo').textContent = 'Plazo para responder: ' + DIAS_PQRS + ' días hábiles (a más tardar el ' + UI.corta(Festivos.sumarHabiles(UI.hoy(), DIAS_PQRS)) + ').';
+  ponerClase(''); $('msgNuevo').textContent = '';
+  show('scrNuevo');
+}
+$('clases').addEventListener('click', (e)=>{ const b = e.target.closest('[data-c]'); if (b) ponerClase(b.dataset.c); });
+$('nPot').addEventListener('click', (e)=>{ const b = e.target.closest('[data-v]'); if (!b) return; $('nPot').querySelectorAll('button').forEach((x)=> x.classList.toggle('on', x === b)); });
+/* PQRS: una sola opción por grupo; la empresa solo para cliente o contratista; anónima oculta los datos. */
+function unaSola(cont, alElegir){ cont.addEventListener('click', (e)=>{ const b = e.target.closest('[data-v]'); if (!b) return; cont.querySelectorAll('button').forEach((x)=> x.classList.toggle('on', x === b)); if (alElegir) alElegir(b.dataset.v); }); }
+const elegido = (cont)=> ((cont.querySelector('button.on') || {}).dataset || {}).v || '';
+unaSola($('pTipo'), (v)=> { $('pTipoAyuda').textContent = AYUDA_TIPO[v] || ''; });
+unaSola($('pPresenta'), (v)=> { $('pFilaEmpresa').hidden = !(v === 'Cliente' || v === 'Contratista'); });
+$('pAnonima').addEventListener('change', ()=> { $('pDatos').hidden = $('pAnonima').checked; });
+UI.autocompletar($('nQuien'), (p)=> { $('nQuien').value = p.nombre; });
+UI.autocompletar($('lNombre'), (p)=> { $('lNombre').value = p.nombre; $('lCedula').value = p.cedula || ''; $('lCargo').value = p.cargo || ''; });
+
+$('btnEnviar').addEventListener('click', async ()=>{
+  const msg = $('msgNuevo');
+  if (!clase) { Valida.revisar($('scrNuevo'), [{ el: $('clases'), etiqueta: 'Qué vas a reportar', error: 'elige una opción (arriba)' }], msg); window.scrollTo(0, 0); return; }
+  if (clase === PQ) { enviarPqrs(); return; }
+  const anonimo = $('nAnonimo').checked;
+  // v109: dice QUÉ falta y marca cada campo.
+  const problemas = Valida.revisar($('scrNuevo'), [
+    { el: $('nFecha'), etiqueta: 'Fecha', error: ()=> Valida.pasada($('nFecha').value) },
+    { el: $('nDesc'), etiqueta: '¿Qué pasó o qué se vio?', error: ()=> { const e = Valida.texto($('nDesc').value, 10); return e === 'es muy corto' ? 'cuenta un poco más (qué, dónde y cómo)' : e; } },
+    { el: $('lNombre'), etiqueta: 'Persona lesionada', error: ()=> clase === AT ? Valida.texto($('lNombre').value, 3) : '' },
+    { el: $('lCedula'), etiqueta: 'Cédula del lesionado', error: ()=> clase === AT && $('lCedula').value.trim() ? Valida.cedula($('lCedula').value) : '' },
+    { el: $('nQuien'), etiqueta: 'Quién reporta', error: ()=> anonimo ? '' : (Valida.texto($('nQuien').value, 3) === 'falta' ? 'escribe tu nombre (o marca anónimo si es un acto o condición)' : Valida.texto($('nQuien').value, 3)) }
+  ], msg);
+  if (problemas.length) return;
+  const doc = { clase, fecha: $('nFecha').value, hora: $('nHora').value, lugar: $('nLugar').value.trim(), centro: $('nCentro').value.trim(),
+    descripcion: $('nDesc').value.trim(), fotos: fotosNuevo.get(), potencial: ($('nPot').querySelector('.on') || {}).dataset.v || 'Medio',
+    accionInmediata: $('nInmediata').value.trim(), anonimo, reportadoPor: anonimo ? '' : $('nQuien').value.trim(), estado: 'ABIERTO', acciones: [] };
+  if (clase === AT) {
+    doc.lesionado = { nombre: $('lNombre').value.trim(), cedula: $('lCedula').value.trim(), cargo: $('lCargo').value.trim(), parteCuerpo: $('lParte').value,
+      tipoLesion: $('lTipo').value, mecanismo: $('lMecanismo').value, agente: $('lAgente').value, atencion: $('lAtencion').value };
+    doc.grave = $('lGrave').checked; doc.mortal = $('lMortal').checked; doc.diasIncapacidad = 0; doc.diasCargados = 0; doc.furat = { radicado: false };
+  }
+  if (clase === AT || clase === 'Incidente') doc.investigacion = { estado: 'PENDIENTE' };
+  if (!anonimo) try { localStorage.setItem('ssta-reporta', doc.reportadoPor); } catch (e) {}
+  const id = SGSST.nuevoId('REP');
+  $('btnEnviar').disabled = true; msg.textContent = 'Enviando…';
+  const res = { clase, fecha: doc.fecha, hora: doc.hora, lugar: doc.lugar, centro: doc.centro, descripcion: doc.descripcion.slice(0, 160), potencial: doc.potencial,
+    reportadoPor: anonimo ? 'Anónimo' : doc.reportadoPor, lesionado: doc.lesionado ? doc.lesionado.nombre : '', fotos: doc.fotos.length, furat: { radicado: false }, investigacion: doc.investigacion || {}, mortal: !!doc.mortal, grave: !!doc.grave };
+  const r = await SGSST.enviar({ action:'guardar', tipo:'reporte', id, doc }, { estado: 'ABIERTO', fecha: doc.fecha, resumen: res });
+  $('btnEnviar').disabled = false;
+  if (!r.ok) { msg.textContent = 'No se envió: ' + (r.error || 'error'); return; }
+  filas.unshift({ id, tipo:'reporte', estado:'ABIERTO', fecha: doc.fecha, resumen: r.resumen || res, pendiente: !!r.enCola });
+  UI.toast(r.enCola ? '⏳ Reporte guardado en el equipo: se envía al volver la señal.' : '✓ Reporte enviado. ¡Gracias por reportar!');
+  actual = Object.assign({ id, version: r.version || 1 }, doc);
+  pintarDetalle();
+  show('scrDetalle');
+});
+
+/* ── PQRS: se guarda como el registro «pqrs» de Calidad (sin usuario: el servidor la limpia y solo la crea) ── */
+async function enviarPqrs(){
+  const msg = $('msgNuevo'), anon = $('pAnonima').checked, contacto = $('pContacto').value.trim();
+  const problemas = Valida.revisar($('scrNuevo'), [
+    { el: $('pTipo'), etiqueta: '¿Qué es?', error: ()=> elegido($('pTipo')) ? '' : 'elige petición, queja, reclamo, sugerencia o felicitación' },
+    { el: $('pPresenta'), etiqueta: '¿Quién la presenta?', error: ()=> elegido($('pPresenta')) ? '' : 'elige una opción' },
+    { el: $('pNombre'), etiqueta: 'Tu nombre', error: ()=> !anon && $('pNombre').value.trim() && /\d/.test($('pNombre').value) ? 'no puede llevar números' : '' },
+    { el: $('pContacto'), etiqueta: 'Correo o teléfono', error: ()=> { if (anon || !contacto) return ''; if (/@/.test(contacto)) return Valida.correoMal(contacto) ? 'el correo no es válido' : ''; return contacto.replace(/\D/g, '').length < 7 ? 'escribe un correo o un teléfono completo' : ''; } },
+    { el: $('pDesc'), etiqueta: 'Qué pasa o qué propones', error: ()=> { const e = Valida.texto($('pDesc').value, 15); return e === 'es muy corto' ? 'cuéntanos un poco más (mínimo una frase)' : e; } }
+  ], msg);
+  if (problemas.length) return;
+  const tipo = elegido($('pTipo')), presenta = elegido($('pPresenta')), hoy = UI.hoy(), lim = Festivos.sumarHabiles(hoy, DIAS_PQRS);
+  const nombre = anon ? '' : $('pNombre').value.trim(), empresa = anon || $('pFilaEmpresa').hidden ? '' : $('pEmpresa').value.trim();
+  const doc = { publica: true, fecha: hoy, tipoPQRS: tipo, presenta, anonima: anon, nombre, empresa, contacto: anon ? '' : contacto, area: $('pArea').value.trim(),
+    descripcion: $('pDesc').value.trim(), fotos: fotosPqrs.get(), canal: 'Portal (Reportar un evento)', procede: 'Por analizar', estado: 'ABIERTA', fechaLimite: lim, limiteAuto: lim };
+  const cliente = empresa || nombre || 'Anónimo (' + presenta.toLowerCase() + ')', id = SGSST.nuevoId('PQR');
+  const res = { fecha: hoy, cliente, tipoPQRS: tipo, presenta, area: doc.area, descripcion: doc.descripcion.slice(0, 400), canal: doc.canal, fechaLimite: lim, procede: 'Por analizar', estado: 'ABIERTA', nFotos: doc.fotos.length };
+  $('btnEnviar').disabled = true; msg.textContent = 'Enviando…';
+  const r = await SGSST.enviar({ action: 'guardar', tipo: 'pqrs', id, doc }, { estado: 'ABIERTA', fecha: hoy, titulo: cliente, resumen: res });
+  $('btnEnviar').disabled = false;
+  if (!r.ok) { msg.textContent = 'No se envió: ' + (r.error || 'error'); return; }
+  msg.textContent = '';
+  pqrs.unshift({ id, tipo: 'pqrs', estado: 'ABIERTA', fecha: hoy, resumen: r.resumen || res, pendiente: !!r.enCola });
+  $('gCodigo').textContent = id;
+  $('gTitulo').textContent = 'Tu PQRS (' + tipo.toLowerCase() + ') quedó registrada';
+  $('gPlazo').innerHTML = (r.enCola ? '⏳ <b>Quedó guardada en este equipo</b> y se envía sola cuando vuelva la señal.<br>' : '') +
+    (/Felicitación|Sugerencia/.test(tipo) ? 'El área encargada la revisará' : 'El área encargada debe responder a más tardar el <b>' + esc(UI.corta(lim)) + '</b> (' + DIAS_PQRS + ' días hábiles)') +
+    (anon ? '. Como es anónima, pregunta por ella con el código.' : contacto ? '. Te responderemos a: ' + esc(contacto) + '.' : '. No dejaste contacto: pregunta por ella con el código.');
+  show('scrGracias');
+}
+$('gCopiar').addEventListener('click', async ()=> { const t = $('gCodigo').textContent; try { await navigator.clipboard.writeText(t); UI.toast('✓ Código copiado'); } catch (e) { UI.toast('Mantén presionado el código para copiarlo.'); } });
+$('gOtra').addEventListener('click', ()=> nuevo());
+
+/* ── Detalle ── */
+async function abrir(id){
+  const fila = filas.find((x)=> x.id === id);
+  $('dTitulo').textContent = fila ? fila.resumen.clase : 'Reporte';
+  $('dDatos').innerHTML = '<div class="status-msg">Abriendo…</div>';
+  $('dFurat').hidden = $('dInv').hidden = true; $('dPlazos').innerHTML = '';
+  show('scrDetalle');
+  const d = await SGSST.doc(id);
+  if (!d) { $('dDatos').innerHTML = '<div class="aviso">No se pudo abrir el reporte' + (fila && fila.pendiente ? ' (todavía está pendiente de enviar desde este equipo)' : '') + '. Revisa la conexión.</div>'; return; }
+  actual = d; pintarDetalle();
+}
+function dato(et, v){ return v ? '<div class="dato"><span>' + esc(et) + '</span><b>' + esc(v) + '</b></div>' : ''; }
+function pintarDetalle(){
+  const d = actual;
+  $('dCodigo').textContent = d.id + (d.estado === 'CERRADO' ? ' · CERRADO' : '');
+  $('dTitulo').textContent = iconoClase(d.clase) + ' ' + d.clase;
+  $('dSub').textContent = UI.corta(d.fecha) + (d.hora ? ' ' + d.hora : '') + (d.lugar ? ' · ' + d.lugar : '');
+  $('dPlazos').innerHTML = plazos(d).map((p)=> '<div class="plazo ' + p.c + '"><b>' + esc(p.t) + '</b>' + esc(p.d) + '</div>').join('');
+  const l = d.lesionado || {};
+  $('dDatos').innerHTML = '<h2>Reporte</h2><div class="texto-largo">' + esc(d.descripcion) + '</div>' +
+    (d.fotos && d.fotos.length ? '<div class="fotos" style="margin-top:10px;">' + d.fotos.map(UI.src).filter(Boolean).map((f)=> '<div class="f"><img src="' + f + '" alt="Foto"></div>').join('') + '</div>' : '') +
+    '<div style="margin-top:8px;">' + dato('Centro de costo', d.centro) + dato('Potencial', d.potencial) + dato('Acción inmediata', d.accionInmediata) + dato('Reportado por', d.anonimo ? 'Anónimo' : d.reportadoPor) +
+    (d.clase === AT ? dato('Lesionado', [l.nombre, l.cedula && 'C.C. ' + l.cedula, l.cargo].filter(Boolean).join(' · ')) + dato('Parte del cuerpo', l.parteCuerpo) + dato('Tipo de lesión', l.tipoLesion) +
+      dato('Mecanismo', l.mecanismo) + dato('Agente', l.agente) + dato('Atención', l.atencion) + dato('Gravedad', d.mortal ? 'MORTAL' : d.grave ? 'Grave' : 'Leve') : '') + '</div>' +
+    (d.cierre && d.cierre.fecha ? '<div class="aviso ok" style="margin-top:10px;">Cerrado el ' + esc(UI.corta(d.cierre.fecha)) + (d.cierre.nota ? ': ' + esc(d.cierre.nota) : '') + '</div>' : '');
+  // FURAT e incapacidad (solo accidentes)
+  if (d.clase === AT) {
+    const f = d.furat || {};
+    $('dFurat').hidden = false;
+    $('dFurat').innerHTML = '<h2>Reporte a la ARL e incapacidad</h2>' +
+      '<div class="grid2"><div class="field"><label>FURAT radicado el</label><input type="date" id="fFecha" value="' + esc(f.fecha || '') + '"></div>' +
+      '<div class="field"><label>N.º de radicado</label><input type="text" id="fNumero" value="' + esc(f.numero || '') + '"></div></div>' +
+      '<div class="grid2"><div class="field"><label>Días de incapacidad</label><input type="number" min="0" id="fDias" value="' + esc(d.diasIncapacidad || 0) + '"></div>' +
+      '<div class="field"><label>Días cargados</label><input type="number" min="0" id="fCargados" value="' + esc(d.diasCargados || 0) + '"><div class="ayuda">Por muerte o secuelas permanentes (tabla de días cargados). 0 si no aplica.</div></div></div>' +
+      '<button type="button" class="btn" id="btnFurat">Guardar</button>';
+    $('btnFurat').addEventListener('click', async ()=>{
+      const fecha = $('fFecha').value;
+      const campos = { furat: { radicado: !!fecha, fecha, numero: $('fNumero').value.trim() }, diasIncapacidad: +$('fDias').value || 0, diasCargados: +$('fCargados').value || 0 };
+      await parche(campos, '✓ Guardado');
+    });
+  } else $('dFurat').hidden = true;
+  // Investigación
+  if (d.clase === AT || d.clase === 'Incidente' || d.investigacion) {
+    const inv = d.investigacion || {};
+    $('dInv').hidden = false;
+    const causas = inv.causas ? Object.keys(inv.causas).reduce((n, k)=> n + (inv.causas[k] || []).length, 0) : 0;
+    $('dInv').innerHTML = '<h2>Investigación</h2><div class="m" style="font-size:13px;color:var(--muted);">' +
+      (inv.estado === 'CERRADA' ? '✅ Terminada el ' + esc(UI.corta(inv.fecha)) + ' · ' + causas + ' causa(s) identificada(s) · ' + (inv.equipo || []).length + ' investigador(es)' :
+       inv.estado === 'EN CURSO' ? '🔎 En curso · ' + causas + ' causa(s) marcada(s)' : 'Sin iniciar') + '</div>' +
+      '<button type="button" class="btn ' + (inv.estado === 'CERRADA' ? 'ghost' : 'amber') + '" id="btnInv">' + (inv.estado === 'CERRADA' ? 'Ver o corregir la investigación' : inv.estado === 'EN CURSO' ? 'Continuar investigación' : 'Iniciar investigación') + '</button>';
+    $('btnInv').addEventListener('click', abrirInvestigacion);
+  } else $('dInv').hidden = true;
+  $('btnCerrarRep').style.display = d.estado === 'CERRADO' ? 'none' : '';
+  $('msgDet').textContent = '';
+  // Soportes: FURAT radicado, incapacidades, informe de investigación, fotos de la escena…
+  UI.adjuntos($('dAdj'), { id: d.id, lista: d.adjuntos || [], titulo: 'Soportes (FURAT, incapacidad, investigación…)', alCambiar: (l)=> { d.adjuntos = l; } });
+  $('dHist').innerHTML = ''; $('dHist').appendChild(UI.botonHistorial(d.id, d.clase));
+  cargarAcciones();
+}
+async function cargarAcciones(){
+  const r = await SGSST.listar('accion', { sinPedir: true });
+  acciones = r.rows.filter((a)=> a.resumen.origenRef === actual.id);
+  $('dAcciones').innerHTML = acciones.length ? acciones.map((a)=>{
+    const c = a.estado === 'CERRADA' ? 'ok' : UI.semaforo(a.resumen.fechaCompromiso, 5);
+    return '<a class="item ' + c + '" href="plan-accion.html#' + encodeURIComponent(a.id) + '"><div class="fila"><div><div class="t">' + esc(a.resumen.accion || a.resumen.hallazgo) + '</div>' +
+      '<div class="m">' + esc(a.resumen.responsable) + ' · ' + esc(UI.corta(a.resumen.fechaCompromiso)) + (a.pendiente ? ' · <span class="pend">⏳ pendiente</span>' : '') + '</div></div>' +
+      '<span class="chip ' + c + '">' + (a.estado === 'CERRADA' ? 'Cerrada' : c === 'mal' ? 'Vencida' : 'Abierta') + '</span></div></a>';
+  }).join('') : '<div class="m" style="font-size:13px;color:var(--muted);margin-bottom:6px;">Sin acciones todavía. Toda causa encontrada debe tener su acción.</div>';
+}
+async function parche(campos, ok){
+  $('msgDet').textContent = 'Guardando…';
+  const r = await SGSST.enviar({ action:'parche', tipo:'reporte', id: actual.id, campos });
+  if (!r.ok) { $('msgDet').textContent = 'No se guardó: ' + (r.error || ''); return false; }
+  Object.assign(actual, campos);
+  const i = filas.findIndex((x)=> x.id === actual.id);
+  if (i !== -1 && r.resumen) { filas[i].resumen = r.resumen; filas[i].estado = r.estado || filas[i].estado; }
+  else if (i !== -1) { Object.assign(filas[i].resumen, campos); if (campos.estado) filas[i].estado = campos.estado; }
+  pintarDetalle();
+  $('msgDet').textContent = r.enCola ? '⏳ Guardado en el equipo; se envía al volver la señal.' : ok;
+  return true;
+}
+$('btnAccion').addEventListener('click', ()=>{
+  const origen = actual.clase === AT ? 'Accidente de trabajo' : actual.clase === 'Incidente' ? 'Incidente' : 'Reporte de acto/condición';
+  UI.nuevaAccion({ origen, origenRef: actual.id, hallazgo: actual.descripcion, centro: actual.centro, prioridad: actual.potencial === 'Alto' || actual.clase === AT ? 'Alta' : 'Media' }, async (r)=>{
+    await SGSST.enviar({ action:'parche', tipo:'reporte', id: actual.id, campos: {}, agregar: { acciones: [r.id] } });
+    actual.acciones = (actual.acciones || []).concat([r.id]);
+    cargarAcciones();
+  });
+});
+$('btnCerrarRep').addEventListener('click', async ()=>{
+  const inv = actual.investigacion || {};
+  if ((actual.clase === AT || actual.clase === 'Incidente') && inv.estado !== 'CERRADA' && !confirm('La investigación no está terminada. ¿Cerrar el reporte de todas formas?')) return;
+  const abiertas = acciones.filter((a)=> a.estado !== 'CERRADA').length;
+  if (abiertas && !confirm('Hay ' + abiertas + ' acción(es) sin cerrar. El reporte se cierra, pero las acciones siguen en el plan de acción. ¿Continuar?')) return;
+  const nota = prompt('Nota de cierre (opcional):', '') ;
+  if (nota === null) return;
+  await parche({ estado:'CERRADO', cierre: { fecha: UI.hoy(), nota } }, '✓ Reporte cerrado');
+});
+
+/* ── Investigación ── */
+function abrirInvestigacion(){
+  const inv = actual.investigacion || {};
+  $('iCodigo').textContent = actual.id + ' · ' + actual.clase;
+  $('iHechos').value = inv.hechos || actual.descripcion || '';
+  $('iAnalisis').value = inv.analisis || ''; $('iConclusiones').value = inv.conclusiones || '';
+  const marcar = (cont, lista, sel)=> { const propias = (sel || []).filter((t)=> lista.indexOf(t) === -1);
+    $(cont).innerHTML = lista.concat(propias).map((t)=> '<label' + (lista.indexOf(t) === -1 ? ' class="propia"' : '') + '><input type="checkbox" value="' + esc(t) + '"' + ((sel || []).indexOf(t) !== -1 ? ' checked' : '') + '><span>' + esc(t) + '</span></label>').join('') +
+      '<div class="otra-causa"><input type="text" placeholder="Otra: escribe la causa" maxlength="160" aria-label="Otra causa"><button type="button" class="btn-mini">Agregar</button></div>'; };
+  // v109: 5 porqués guiados (el problema se precarga con la descripción del evento).
+  const resp = (inv.porques || []).filter(Boolean).slice(0, 5);
+  pqEst = { problema: inv.problema || recortar(actual.descripcion || '', 300), resp, raizEn: Number.isInteger(inv.raizEn) && inv.raizEn < resp.length ? inv.raizEn : -1, abierto: null };
+  pqEst.abierto = siguientePaso();
+  $('iRaiz').value = inv.raiz || '';
+  const c = inv.causas || {};
+  marcar('cActos', CAUSAS.actos, c.actos); marcar('cCondiciones', CAUSAS.condiciones, c.condiciones); marcar('cPersonales', CAUSAS.personales, c.personales); marcar('cTrabajo', CAUSAS.trabajo, c.trabajo);
+  contarCausas(); pintarMedidas();
+  $('iEquipo').innerHTML = ''; padsEquipo = 0;
+  const eq = inv.equipo && inv.equipo.length ? inv.equipo : [{ rol:'Jefe inmediato o supervisor' }, { rol:'Representante del COPASST o vigía' }, { rol:'Responsable de SST' }];
+  eq.forEach(agregarIntegrante);
+  $('msgInv').textContent = '';
+  pintarPorques();
+  show('scrInv');
+}
+/* «Otra» causa: se agrega al grupo ya marcada. */
+document.addEventListener('click', (e)=> {
+  const b = e.target.closest('.otra-causa button'); if (!b) return;
+  const inp = b.parentElement.querySelector('input'), t = inp.value.replace(/\s+/g, ' ').trim(); if (!t) { inp.focus(); return; }
+  const g = b.closest('.checks');
+  if ([...g.querySelectorAll('input[type=checkbox]')].some((c)=> c.value.toLowerCase() === t.toLowerCase())) { UI.toast('Esa causa ya está en la lista.'); return; }
+  const l = document.createElement('label'); l.className = 'propia'; l.innerHTML = '<input type="checkbox" checked value="' + esc(t) + '"><span>' + esc(t) + '</span>';
+  b.parentElement.insertAdjacentElement('beforebegin', l); inp.value = ''; contarCausas(); pintarMedidas(); pasosInv();
+});
+document.addEventListener('keydown', (e)=> { if (e.key === 'Enter' && e.target.closest('.otra-causa input')) { e.preventDefault(); e.target.parentElement.querySelector('button').click(); } });
+/* ── v109: 5 porqués guiados ──
+   «¿Qué pasó?» (el problema) → «¿Por qué 1?» → cada respuesta se vuelve la siguiente pregunta
+   («¿Por qué <respuesta anterior>?») hasta 5, o se para antes marcando «esta es la causa raíz».
+   En cada paso: ejemplo, qué es una buena respuesta, sugerencias según el nivel y alertas. */
+let pqEst = { problema: '', resp: [], raizEn: -1, abierto: null };
+const recortar = (t, n)=> { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+const sinPorque = (t)=> String(t || '').trim().replace(/^porque\s+/i, '').replace(/[.\s]+$/, '');
+const minus = (t)=> t && !/^[A-ZÁÉÍÓÚÑ]{2}/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
+/** La pregunta del porqué i (0 = el primero) a partir del problema y las respuestas anteriores. */
+/** La primera frase del problema (la pregunta no arrastra los detalles: «No había nadie debajo»). */
+const primeraFrase = (t)=> { const x = String(t || '').replace(/\s+/g, ' ').trim(); const m = /^(.{12,}?[^\d\s])[.;!?](\s|$)/.exec(x); return m ? m[1] : x; };
+function preguntaPorque(problema, resp, i){ const b = minus(sinPorque(i === 0 ? primeraFrase(problema) : primeraFrase(resp[i - 1]))); return b ? '¿Por qué ' + recortar(b, 160) + '?' : '¿Por qué pasó?'; }
+const NIVEL_PQ = [
+  { de: [0, 1], titulo: 'Actos y condiciones (causas inmediatas)', guia: 'Describe el acto o la condición que había justo antes del evento: lo que se ve o se puede comprobar en el sitio.',
+    sug: ['no usaba el EPP o lo usaba mal', 'no se bloqueó ni se aseguró la energía', 'la guarda estaba retirada o dañada', 'la herramienta o el equipo estaba defectuoso', 'no siguió el procedimiento, el ATS o el permiso', 'el piso estaba resbaloso, con desnivel o abertura', 'faltaba orden y aseo en el área', 'no había señalización ni barreras', 'adoptó una posición insegura (línea de fuego)'] },
+  { de: [2, 3], titulo: 'Factores personales y del trabajo (causas básicas · Res. 1401 de 2007)', guia: 'Busca por qué existía ese acto o esa condición: conocimiento, experiencia, fatiga o presión de tiempo (personales); supervisión, procedimiento, equipo, mantenimiento o comunicación (del trabajo).',
+    sug: ['no conocía el riesgo ni el procedimiento (no se le entrenó)', 'tenía poca experiencia en esa tarea', 'estaba fatigado por la carga de trabajo o el turno', 'había presión para terminar rápido', 'nadie supervisó la tarea', 'no había procedimiento o no era claro', 'la herramienta no era la adecuada para la tarea', 'el equipo no tenía mantenimiento', 'la instrucción no se comunicó bien (cambio de turno, orden verbal)'] },
+  { de: [4], titulo: 'Fallas del sistema de gestión', guia: 'Llega a lo que falló en el sistema de gestión y que la acción va a corregir: procedimiento, capacitación, supervisión, mantenimiento, compras o diseño.',
+    sug: ['el procedimiento no existe o no está actualizado', 'la capacitación no incluyó esta tarea', 'la supervisión no verifica que se cumpla', 'el mantenimiento preventivo no incluye este equipo', 'se compró sin requisitos de seguridad', 'el diseño del puesto o del equipo no tiene controles de ingeniería', 'el peligro no estaba en la matriz de peligros'] }
+];
+const nivelPq = (i)=> NIVEL_PQ.find((n)=> n.de.indexOf(i) !== -1) || NIVEL_PQ[2];
+/* v109: sugerencias según lo que pasó (palabras del evento y de las respuestas) y las causas ya marcadas. */
+const CASOS_PQ = [
+  [/cay[oó] (una|un|el|la|los|las) (?!persona|trabajador)|caida de objet|se le cay[oó]|se solt[oó]|desde (la|el) (plataforma|andamio|altura|techo|cubierta)/, ['la herramienta no estaba amarrada', 'la plataforma no tenía rodapié', 'el área de abajo no estaba demarcada ni restringida', 'había materiales sueltos en el borde']],
+  [/se cay[oó]|resbal|tropez|caida de (altura|nivel|la escalera|del andamio)|perdi[oó] el equilibrio/, ['no tenía línea de vida ni punto de anclaje', 'la escalera o el andamio no estaba asegurado', 'el piso estaba húmedo o con obstáculos', 'faltaba baranda en el borde']],
+  [/cort[oó]|corte|disco|pulidora|esmeril|cuchill|filo|sierra/, ['la guarda estaba retirada', 'el disco no era el adecuado para el equipo', 'no usaba guantes de corte', 'la pieza no estaba sujeta']],
+  [/golpe|golpe[oó]|atrap|aplast|machuc|prens/, ['la carga no estaba guiada con cuerda', 'se puso entre la carga y una estructura (línea de fuego)', 'el equipo no estaba bloqueado', 'no había señalero en la maniobra']],
+  [/quem|chispa|soldad|caliente|fuego|incendio|oxicorte/, ['no había manta ignífuga ni vigía de fuego', 'había material combustible cerca', 'no se hizo el permiso de trabajo en caliente', 'el EPP de soldador estaba incompleto']],
+  [/electr|descarga|tablero|cable|energiz|corto/, ['no se aplicó bloqueo y etiquetado', 'no se verificó la ausencia de tensión', 'el cable o la extensión estaba dañado', 'el tablero estaba abierto o sin señalizar']],
+  [/quimic|salpic|vapor|sustancia|acido|solvente|thinner|gas/, ['no se leyó la hoja de seguridad', 'el recipiente no tenía etiqueta', 'no usaba protección de ojos ni guantes adecuados', 'no había ducha ni lavaojos cerca']],
+  [/vehicul|montacarg|camion|atropell|reversa|grua/, ['no había separación entre peatones y vehículos', 'la alarma de reversa no funcionaba', 'el conductor no tenía visibilidad', 'no había señalero en la maniobra']],
+  [/levant|carga manual|espalda|esfuerzo|lumbar/, ['levantó solo una carga de más de 25 kg', 'no había ayudas mecánicas', 'la postura era forzada por el espacio']],
+  [/ojo|particula|esquirla|proyect/, ['no usaba gafas o careta', 'no había pantalla que contuviera las partículas']]
+];
+function sugPq(i){
+  const nv = nivelPq(i), visto = new Set(), caso = [];
+  // No se sugiere lo que ya se respondió (misma idea con otras palabras).
+  const previas = [pqEst.problema].concat(pqEst.resp.slice(0, i)).map(palabrasPq);
+  const repetida = (x)=> { const b = palabrasPq(x); return b.size && previas.some((a)=> [...b].filter((w)=> a.has(w)).length / b.size >= 0.5); };
+  const add = (l, x)=> { const k = UI.norm(x); if (!visto.has(k) && !repetida(x)) { visto.add(k); l.push(x); } };
+  // Causas marcadas en la investigación: inmediatas para los primeros porqués, básicas para los siguientes.
+  const grupos = i <= 1 ? ['#cActos', '#cCondiciones'] : i <= 3 ? ['#cPersonales', '#cTrabajo'] : [];
+  grupos.forEach((g)=> document.querySelectorAll(g + ' input:checked').forEach((c)=> add(caso, minus(c.value))));
+  if (i <= 1) { const txt = UI.norm([pqEst.problema].concat(pqEst.resp.slice(0, i)).join(' '));
+    CASOS_PQ.forEach(([re, l])=> { if (re.test(txt)) l.forEach((x)=> add(caso, x)); }); }
+  const base = []; nv.sug.forEach((x)=> add(base, x));
+  return { caso: caso.slice(0, 8), base };
+}
+const chipPq = (x, oculto)=> '<button type="button" data-pqs="' + esc(x) + '"' + (oculto ? ' hidden' : '') + '>' + esc(x.charAt(0).toUpperCase() + x.slice(1)) + '</button>';
+const EJEMPLO_PQ = ['Porque el disco de la pulidora se rompió y un fragmento le golpeó la mano.', 'Porque la pulidora no tenía la guarda puesta.', 'Porque la guarda se retiró para poder usar un disco más grande.',
+  'Porque no había discos del tamaño correcto en el almacén y había que terminar el turno.', 'Porque la compra de discos no tiene stock mínimo ni revisión de que sirvan para el equipo.'];
+const CULPA_PQ = /falta de atenci|desatenci|descuid|imprudenc|negligen|no prest[oó] atenci|error humano|\bculpa|distra[ií]d|exceso de confianza|irresponsab|no quiso|desobedec|por gusto|falta de compromiso/i;
+const palabrasPq = (t)=> new Set(UI.norm(sinPorque(t)).split(/[^a-z0-9ñ]+/).filter((w)=> w.length > 3));
+/** Alertas de la respuesta i: [{c:'mal'|'' , t}] (vacía si está bien). */
+function alertasPorque(i, texto){
+  const t = sinPorque(texto), out = []; if (!t) return out;
+  if (t.length < 15 || t.split(/\s+/).length < 3) out.push({ c: '', t: 'Muy corta: di qué pasó exactamente (qué, con qué, cómo). Ej.: «' + EJEMPLO_PQ[Math.min(i, 4)] + '»' });
+  const ant = i === 0 ? pqEst.problema : pqEst.resp[i - 1], a = palabrasPq(ant), b = palabrasPq(t);
+  if (ant && (UI.norm(sinPorque(ant)) === UI.norm(t) || (b.size && [...b].filter((w)=> a.has(w)).length / Math.max(1, new Set([...a, ...b]).size) >= 0.6)))
+    out.push({ c: '', t: 'Se parece mucho a ' + (i === 0 ? 'lo que pasó' : 'la respuesta anterior') + ': pregunta por qué pasó ESO, un paso más atrás.' });
+  if (CULPA_PQ.test(t)) out.push({ c: 'mal', t: 'Eso describe a la persona, no la causa. «Falta de atención», «descuido» o «error humano» no son causa raíz: pregunta qué del trabajo permitió que pasara (procedimiento, supervisión, equipo, capacitación…).' });
+  return out;
+}
+const alertasHTML = (l)=> l.map((a)=> '<div class="pq-alerta ' + a.c + '">' + esc(a.t) + '</div>').join('');
+/** Lo que está escrito en el paso abierto pasa al estado (sin moverse de paso). */
+function capturarPorque(){
+  const ta = $('iPorques').querySelector('textarea[data-pq]'); if (!ta) return;
+  const i = +ta.dataset.pq, v = ta.value.trim();
+  if (i === -1) { pqEst.problema = v; return; }
+  if (i < pqEst.resp.length) { if (v) pqEst.resp[i] = v; }
+  else if (v) pqEst.resp.push(v);
+}
+function siguientePaso(){ return !pqEst.problema ? -1 : (pqEst.raizEn === -1 && pqEst.resp.length < 5 ? pqEst.resp.length : null); }
+function pintarPorques(){
+  const e = pqEst, n = e.resp.length;
+  $('iPqBarra').innerHTML = [0, 1, 2, 3, 4].map((i)=> '<span class="' + (i === e.raizEn ? 'r' : i < n ? 'ok' : '') + '"></span>').join('');
+  let h = '';
+  // Paso 0: el problema
+  if (e.abierto === -1) h += '<div class="pq-paso"><div class="pq-q"><small>Paso 1 · el problema</small>¿Qué pasó?</div>' +
+    '<textarea data-pq="-1" maxlength="300" placeholder="El evento como un hecho: qué, dónde y cuándo">' + esc(e.problema) + '</textarea>' +
+    '<details><summary>Ayuda para este paso</summary><p><b>Ejemplo:</b> «El ayudante se cortó la mano izquierda con el disco de la pulidora en el taller, a las 10:20».</p><p>Sin culpables ni suposiciones: solo lo que pasó.</p></details>' +
+    '<div class="pq-bots"><button type="button" class="prim" data-pqa="sig">' + (n ? 'Guardar' : 'Empezar: ¿por qué pasó? →') + '</button></div></div>';
+  else h += '<div class="pq-paso hecho"><div class="pq-q"><small>Lo que pasó</small></div><div class="pq-r">' + esc(e.problema || '—') + '</div>' +
+    '<div class="pq-bots"><button type="button" data-pqa="editar" data-i="-1">Editar</button></div></div>';
+  const pasos = n + (e.abierto === n && n < 5 ? 1 : 0);
+  for (let i = 0; i < pasos; i++) {
+    const q = preguntaPorque(e.problema, e.resp, i), nv = nivelPq(i), raiz = i === e.raizEn;
+    if (e.abierto === i) {
+      const val = e.resp[i] || '', nuevo = i >= n;
+      h += '<div class="pq-paso"><div class="pq-q"><small>Por qué ' + (i + 1) + ' de 5 · ' + esc(nv.titulo) + '</small>' + esc(q) + '</div>' +
+        '<textarea data-pq="' + i + '" maxlength="300" placeholder="Porque…">' + esc(val) + '</textarea><div data-pqal>' + alertasHTML(alertasPorque(i, val)) + '</div>' +
+        (()=> { const sg = sugPq(i), nb = sg.caso.length ? 2 : 4;
+          return (sg.caso.length ? '<div class="pq-sug"><div class="t">Según este caso (tócala y ajústala):</div><div class="chips">' + sg.caso.map((x)=> chipPq(x)).join('') + '</div></div>' : '') +
+          '<div class="pq-sug"><div class="t">' + (sg.caso.length ? 'Otras causas frecuentes en este nivel:' : 'Sugerencias (tócala y ajústala a este caso):') + '</div><div class="chips">' + sg.base.map((x, k)=> chipPq(x, k >= nb)).join('') +
+          (sg.base.length > nb ? '<button type="button" data-pqmas>Ver ' + (sg.base.length - nb) + ' más…</button>' : '') + '</div></div>'; })() +
+        '<details><summary>Ayuda para este paso</summary><p>' + esc(nv.guia) + '</p><p><b>Ejemplo:</b> «' + esc(EJEMPLO_PQ[i]) + '»</p>' +
+        '<p><b>Una buena respuesta</b> es un hecho que se puede comprobar (qué, con qué, cómo), sin culpas ni nombres. «Falta de atención» o «descuido» no sirven como causa raíz: siempre hay algo del trabajo detrás.</p>' +
+        (i >= 2 ? '<p>Pregúntate: <b>si corrijo esto, ¿se evita que vuelva a pasar?</b> Si la respuesta es sí, márcala como causa raíz.</p>' : '') + '</details>' +
+        '<div class="pq-bots">' + (i < 4 ? '<button type="button" class="prim" data-pqa="sig">' + (nuevo ? 'Siguiente: ¿por qué? →' : 'Guardar cambio') + '</button>' : '') +
+        '<button type="button" class="raizb" data-pqa="raiz" data-i="' + i + '">Esta es la causa raíz ✓</button>' +
+        (!nuevo ? '<button type="button" class="quitar" data-pqa="quitar" data-i="' + i + '">Quitar</button>' : '') + '</div></div>';
+    } else {
+      h += '<div class="pq-paso hecho' + (raiz ? ' raiz' : '') + '"><div class="pq-q"><small>Por qué ' + (i + 1) + (raiz ? ' · 🎯 causa raíz' : '') + '</small>' + esc(q) + '</div><div class="pq-r">' + esc(e.resp[i]) + '</div>' +
+        alertasHTML(alertasPorque(i, e.resp[i]).filter((a)=> a.c === 'mal')) +
+        '<div class="pq-bots"><button type="button" data-pqa="editar" data-i="' + i + '">Editar</button><button type="button" class="quitar" data-pqa="quitar" data-i="' + i + '">Quitar</button></div></div>';
+    }
+  }
+  $('iPorques').innerHTML = h;
+  // Causa raíz encontrada: se sugiere crear la acción y se puede seguir preguntando.
+  const r = $('iRaiz').value.trim();
+  $('iRaizCaja').innerHTML = e.raizEn !== -1 ? '<div class="raiz-caja"><b>🎯 Causa raíz en el porqué ' + (e.raizEn + 1) + '.</b> Ahora crea la acción que la corrige (queda abajo, en «Medidas por causa»).' +
+    (r ? '<button type="button" class="btn verde" data-pqa="accion">+ Acción para la causa raíz</button>' : '') +
+    (e.raizEn === n - 1 && n < 5 ? '<button type="button" class="btn ghost" data-pqa="seguir">Seguir preguntando por qué</button>' : '') + '</div>'
+    : (n >= 5 ? '<div class="pq-alerta">Ya van 5 porqués: marca cuál es la causa raíz (botón «Editar» → «Esta es la causa raíz») o escríbela abajo.</div>' : '');
+  pasosInv();
+}
+$('iPorques').addEventListener('input', (ev)=> { const ta = ev.target.closest('textarea[data-pq]'); if (!ta || ta.dataset.pq === '-1') return;
+  const al = ta.parentElement.querySelector('[data-pqal]'); if (al) al.innerHTML = alertasHTML(alertasPorque(+ta.dataset.pq, ta.value)); });
+$('iPorques').addEventListener('keydown', (ev)=> { if (ev.key === 'Enter' && !ev.shiftKey && ev.target.matches('textarea[data-pq]')) { ev.preventDefault(); const b = ev.target.parentElement.querySelector('[data-pqa="sig"], [data-pqa="raiz"]'); if (b) b.click(); } });
+document.addEventListener('click', (ev)=> {
+  const mas = ev.target.closest('#iPorques [data-pqmas]');
+  if (mas) { mas.parentElement.querySelectorAll('[data-pqs][hidden]').forEach((x)=> x.hidden = false); mas.remove(); return; }
+  const s = ev.target.closest('#iPorques [data-pqs]');
+  if (s) { const ta = $('iPorques').querySelector('textarea[data-pq]'); if (!ta) return; const v = ta.value.trim();
+    ta.value = v && !/^porque\s*$/i.test(v) ? v.replace(/[.\s]+$/, '') + ' y ' + s.dataset.pqs : 'Porque ' + s.dataset.pqs; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); return; }
+  const b = ev.target.closest('[data-pqa]'); if (!b || !b.closest('#scrInv')) return;
+  const a = b.dataset.pqa, i = b.dataset.i === undefined ? null : +b.dataset.i, e = pqEst;
+  if (a === 'sig') {
+    const ta = $('iPorques').querySelector('textarea[data-pq]'), k = +ta.dataset.pq;
+    if (!ta.value.trim()) { Valida.limpiar($('iPorques')); Valida.marcar(ta, k === -1 ? 'escribe qué pasó' : 'escribe la respuesta (empieza con «Porque…»)'); ta.focus(); return; }
+    capturarPorque(); e.abierto = siguientePaso();
+  } else if (a === 'raiz') {
+    const ta = $('iPorques').querySelector('textarea[data-pq]');
+    if (!ta.value.trim()) { Valida.limpiar($('iPorques')); Valida.marcar(ta, 'escribe la respuesta antes de marcarla como causa raíz'); ta.focus(); return; }
+    const t = sinPorque(ta.value);
+    if (CULPA_PQ.test(t) && !confirm('«' + recortar(t, 80) + '» habla de la persona, no de lo que falló en el trabajo. Una causa raíz así no evita que se repita. ¿Marcarla de todas formas?')) return;
+    if (i === 0 && !confirm('Casi siempre la causa raíz aparece entre el porqué 3 y el 5. ¿Seguro que el primer porqué ya es la causa raíz?')) return;
+    capturarPorque(); e.raizEn = i; e.abierto = null;
+    const raiz = sinPorque(e.resp[i]); $('iRaiz').value = raiz ? raiz.charAt(0).toUpperCase() + raiz.slice(1) : '';
+    pintarMedidas();
+  } else if (a === 'editar') { capturarPorque(); e.abierto = i; }
+  else if (a === 'quitar') {
+    capturarPorque();
+    if (!confirm('¿Quitar el porqué ' + (i + 1) + '?' + (i < e.resp.length - 1 ? ' Los siguientes quedan, y sus preguntas se vuelven a formular.' : ''))) return;
+    e.resp.splice(i, 1);
+    if (e.raizEn === i) { e.raizEn = -1; $('iRaiz').value = ''; pintarMedidas(); } else if (e.raizEn > i) e.raizEn--;
+    e.abierto = siguientePaso();
+  } else if (a === 'seguir') { e.raizEn = -1; e.abierto = siguientePaso(); }
+  else if (a === 'accion') { const t = $('iRaiz').value.trim(), btn = $('iMedidas').querySelector('[data-raiz="1"]'); if (btn) btn.click(); else if (t) UI.toast('La causa raíz ya tiene su acción.'); return; }
+  else return;
+  pintarPorques();
+  const ta = $('iPorques').querySelector('textarea[data-pq]'); if (ta && a !== 'quitar') { try { ta.focus({ preventScroll: true }); ta.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {} }
+});
+$('iRaiz').addEventListener('input', ()=> pintarMedidas());
+/* Medidas: cada causa marcada con su botón para crear la acción. */
+function pintarMedidas(){
+  const sel = [...document.querySelectorAll('#cActos input:checked, #cCondiciones input:checked, #cPersonales input:checked, #cTrabajo input:checked')].map((c)=> c.value);
+  // v109: la causa raíz de los 5 porqués también necesita su medida.
+  const raiz = $('iRaiz').value.trim(), iRaiz = raiz && sel.indexOf(raiz) === -1 ? sel.push(raiz) - 1 : sel.indexOf(raiz);
+  const ya = new Set((acciones || []).map((a)=> String((a.resumen || {}).hallazgo || '')));
+  $('iMedidas').innerHTML = sel.length ? sel.map((t, i)=> '<div class="medida"><span>' + (raiz && i === iRaiz ? '<b>🎯 Causa raíz:</b> ' : '') + esc(t) + '</span>' + (ya.has('Causa: ' + t) ? '<span class="chip ok">Con acción</span>' : '<button type="button" class="btn-mini" data-med="' + i + '"' + (raiz && i === iRaiz ? ' data-raiz="1"' : '') + '>+ Acción</button>') + '</div>').join('')
+    : '<div class="m" style="font-size:13px;color:var(--muted);">Marca las causas arriba y aquí aparecen para asignarles su medida.</div>';
+  $('iMedidas').querySelectorAll('[data-med]').forEach((b)=> b.addEventListener('click', ()=> {
+    const t = sel[+b.dataset.med], origen = actual.clase === AT ? 'Accidente de trabajo' : actual.clase === 'Incidente' ? 'Incidente' : 'Reporte de acto/condición';
+    UI.nuevaAccion({ origen, origenRef: actual.id, hallazgo: 'Causa: ' + t, centro: actual.centro, prioridad: 'Alta', tipoAccion: 'Correctiva' }, async (r)=> {
+      await SGSST.enviar({ action:'parche', tipo:'reporte', id: actual.id, campos: {}, agregar: { acciones: [r.id] } });
+      actual.acciones = (actual.acciones || []).concat([r.id]);
+      (acciones = acciones || []).push({ id: r.id, estado: 'ABIERTA', resumen: { hallazgo: 'Causa: ' + t } }); pintarMedidas(); pasosInv(); cargarAcciones();
+    });
+  }));
+}
+/* Avance de la investigación (Res. 1401 de 2007). */
+function pasosInv(){
+  const eq = [...$('iEquipo').querySelectorAll('.equipo-inv')].filter((d)=> d.querySelector('.nom').value.trim());
+  const nCausas = document.querySelectorAll('#cActos input:checked, #cCondiciones input:checked, #cPersonales input:checked, #cTrabajo input:checked').length;
+  const P = [['Equipo', eq.length >= 2], ['Hechos', !!$('iHechos').value.trim()], ['Causas', nCausas > 0], ['Por qué', !!$('iRaiz').value.trim()], ['Medidas', (nCausas > 0 || !!$('iRaiz').value.trim()) && !$('iMedidas').querySelector('[data-med]')], ['Firmas', eq.length >= 2 && eq.every((d)=> UI.firma('padInv' + d.dataset.n))]];
+  const h = P.filter((x)=> x[1]).length;
+  $('iPasos').innerHTML = '<div class="pi-top"><b>Avance: ' + h + ' de ' + P.length + '</b><span>' + (h === P.length ? 'Lista para terminar' : 'Falta: ' + P.filter((x)=> !x[1]).map((x)=> x[0].toLowerCase()).join(', ')) + '</span></div><div class="pi-pasos">' + P.map((x, i)=> '<span class="' + (x[1] ? 'ok' : '') + '">' + (x[1] ? '✓' : i + 1) + ' ' + x[0] + '</span>').join('') + '</div>';
+}
+document.addEventListener('change', (e)=> { if (e.target.closest('#scrInv')) { if (e.target.closest('.checks')) pintarMedidas(); pasosInv(); } });
+document.addEventListener('input', (e)=> { if (e.target.closest('#scrInv') && /iHechos|iRaiz/.test(e.target.id || '') || (e.target.classList && e.target.classList.contains('nom'))) pasosInv(); });
+document.addEventListener('pointerup', (e)=> { if (e.target.closest && e.target.closest('#iEquipo canvas')) setTimeout(pasosInv, 50); });
+function contarCausas(){ document.querySelectorAll('summary span[data-n]').forEach((s)=>{ const id = { actos:'cActos', condiciones:'cCondiciones', personales:'cPersonales', trabajo:'cTrabajo' }[s.dataset.n]; const n = $(id).querySelectorAll('input:checked').length; s.textContent = n ? '· ' + n + ' marcada(s)' : ''; }); }
+document.addEventListener('change', (e)=>{ if (e.target.closest('.checks')) contarCausas(); });
+function agregarIntegrante(p){
+  const n = ++padsEquipo, d = document.createElement('div');
+  d.className = 'equipo-inv'; d.dataset.n = n;
+  d.innerHTML = '<div class="rol"><input type="text" class="rolTxt" value="' + esc(p.rol || '') + '" placeholder="Rol en la investigación" style="border:0;background:transparent;font-weight:700;font-size:11px;text-transform:uppercase;color:var(--muted);width:100%;padding:0;"></div>' +
+    '<div class="field"><input type="text" class="nom" placeholder="Nombre (escribe para buscar)" value="' + esc(p.nombre || '') + '"></div>' +
+    '<div class="field"><input type="text" class="ced" placeholder="Cédula" inputmode="numeric" value="' + esc(p.cedula || '') + '"></div>' + UI.padHTML('padInv' + n);
+  $('iEquipo').appendChild(d);
+  UI.activarPad('padInv' + n, p.firma);
+  UI.autocompletar(d.querySelector('.nom'), (x)=>{ d.querySelector('.nom').value = x.nombre; d.querySelector('.ced').value = x.cedula || ''; });
+}
+$('btnMasEquipo').addEventListener('click', ()=> agregarIntegrante({ rol:'Integrante' }));
+function leerInv(estado){
+  const sel = (id)=> [...$(id).querySelectorAll('input:checked')].map((c)=> c.value);
+  const prev = actual.investigacion || {};
+  return { estado, fecha: estado === 'CERRADA' ? UI.hoy() : (prev.fecha || ''), inicio: prev.inicio || UI.hoy(), hechos: $('iHechos').value.trim(), analisis: $('iAnalisis').value.trim(), conclusiones: $('iConclusiones').value.trim(),
+    problema: (capturarPorque(), pqEst.problema), porques: pqEst.resp.filter(Boolean), raizEn: pqEst.raizEn, raiz: $('iRaiz').value.trim(),
+    causas: { actos: sel('cActos'), condiciones: sel('cCondiciones'), personales: sel('cPersonales'), trabajo: sel('cTrabajo') },
+    equipo: [...$('iEquipo').querySelectorAll('.equipo-inv')].map((d)=> ({ rol: d.querySelector('.rolTxt').value.trim(), nombre: d.querySelector('.nom').value.trim(), cedula: d.querySelector('.ced').value.trim(), firma: UI.firma('padInv' + d.dataset.n) || null })).filter((x)=> x.nombre) };
+}
+async function guardarInv(estado){
+  const inv = leerInv(estado);
+  if (estado === 'CERRADA') {
+    const falta = [];
+    if (inv.equipo.length < 2) falta.push('al menos 2 integrantes del equipo investigador');
+    if (inv.equipo.some((x)=> !x.firma)) falta.push('la firma de cada integrante');
+    const nc = Object.keys(inv.causas).reduce((n, k)=> n + inv.causas[k].length, 0);
+    if (!nc) falta.push('las causas (inmediatas y básicas)');
+    if (!inv.hechos) falta.push('la descripción de los hechos');
+    if (!inv.raiz) falta.push('la causa raíz (responde los porqués y marca «Esta es la causa raíz», o escríbela)');
+    Valida.limpiar($('scrInv'));
+    if (!inv.hechos) Valida.marcar($('iHechos'), 'falta'); if (!inv.raiz) Valida.marcar($('iRaiz'), 'falta');
+    if (falta.length) { $('msgInv').textContent = 'Para terminar falta: ' + falta.join(', ') + '.'; return; }
+    if (CULPA_PQ.test(inv.raiz) && !confirm('La causa raíz «' + recortar(inv.raiz, 80) + '» habla de la persona (falta de atención, descuido…), no de lo que falló en el trabajo. ¿Terminar así de todas formas?')) return;
+  }
+  $('msgInv').textContent = 'Guardando…';
+  const ok = await parche({ investigacion: inv }, '✓ Investigación guardada');
+  if (!ok) { $('msgInv').textContent = $('msgDet').textContent; return; }
+  $('msgInv').textContent = '';
+  show('scrDetalle');
+  if (estado === 'CERRADA' && !acciones.length) UI.toast('Ahora registra las medidas como acciones del plan de acción.');
+}
+$('btnGuardarInv').addEventListener('click', ()=> guardarInv('EN CURSO'));
+$('btnCerrarInv').addEventListener('click', ()=> guardarInv('CERRADA'));
+$('volverInv').addEventListener('click', (e)=>{ e.preventDefault(); show('scrDetalle'); });
+
+/* ── PDF del reporte (con la investigación y sus acciones) ── */
+$('btnPdfRep').addEventListener('click', ()=>{
+  const d = actual, l = d.lesionado || {}, inv = d.investigacion || {}, f = d.furat || {};
+  let h = UI.cabecera('SG-REPORTE', d.clase === AT || d.clase === 'Incidente' ? 'REPORTE E INVESTIGACIÓN DE ' + d.clase.toUpperCase() : 'REPORTE DE ' + d.clase.toUpperCase(), 'Registro ' + d.id + (d.estado === 'CERRADO' ? ' · CERRADO' : ''));
+  h += UI.seccion('1. Datos del evento', UI.tablaDatos([['Clase', d.clase], ['Fecha y hora', UI.corta(d.fecha) + ' ' + (d.hora || '')], ['Lugar', d.lugar || '—'], ['Centro de costo', d.centro || '—'],
+    ['Potencial', d.potencial || '—'], ['Reportado por', d.anonimo ? 'Anónimo' : (d.reportadoPor || '—')]]) + UI.textoLargo(d.descripcion) +
+    (d.accionInmediata ? UI.tablaDatos([['Acción inmediata', d.accionInmediata]]) : '') + UI.fotosHoja(d.fotos));
+  if (d.clase === AT) h += UI.seccion('2. Persona lesionada y reporte a la ARL', UI.tablaDatos([['Nombre', l.nombre || '—'], ['Cédula', l.cedula || '—'], ['Cargo', l.cargo || '—'], ['Atención', l.atencion || '—'],
+    ['Parte del cuerpo', l.parteCuerpo || '—'], ['Tipo de lesión', l.tipoLesion || '—'], ['Mecanismo', l.mecanismo || '—'], ['Agente', l.agente || '—'],
+    ['Gravedad', d.mortal ? 'MORTAL' : d.grave ? 'GRAVE' : 'Leve'], ['Días de incapacidad / cargados', (d.diasIncapacidad || 0) + ' / ' + (d.diasCargados || 0)],
+    ['FURAT', f.radicado ? 'Radicado el ' + UI.corta(f.fecha) + (f.numero ? ' · N.º ' + f.numero : '') : 'Pendiente (plazo ' + UI.corta(Festivos.sumarHabiles(d.fecha, 2)) + ')'], ['', '']]));
+  if (inv.estado && inv.estado !== 'PENDIENTE') {
+    const c = inv.causas || {}, lista = (t, x)=> '<tr><td class="l" style="width:22%">' + esc(t) + '</td><td>' + ((x || []).length ? (x || []).map(esc).join(' · ') : '—') + '</td></tr>';
+    h += UI.seccion('3. Investigación (Res. 1401 de 2007) · ' + (inv.estado === 'CERRADA' ? 'terminada el ' + UI.corta(inv.fecha) : 'en curso'),
+      UI.textoLargo(inv.hechos) + '<table>' + lista('Actos subestándar', c.actos) + lista('Condiciones subestándar', c.condiciones) + lista('Factores personales', c.personales) + lista('Factores del trabajo', c.trabajo) + '</table>' +
+      ((inv.porques || []).length ? '<table><tr><td class="l" colspan="2">5 PORQUÉS · CADENA DE CAUSAS</td></tr>' + (inv.problema ? '<tr><td class="l" style="width:22%">Qué pasó</td><td>' + esc(inv.problema) + '</td></tr>' : '') +
+        inv.porques.map((t, i)=> '<tr><td class="l" style="width:22%">Por qué ' + (i + 1) + (i === inv.raizEn ? '<br>CAUSA RAÍZ' : '') + '</td><td' + (i === inv.raizEn ? ' style="background:#e3f4ea;"' : '') + '><i>' + esc(preguntaPorque(inv.problema || d.descripcion, inv.porques, i)) + '</i><br>' + (i === inv.raizEn ? '<b>' + esc(t) + '</b>' : esc(t)) + '</td></tr>').join('') + '</table>' : '') +
+      (inv.raiz ? UI.tablaDatos([['Causa raíz', inv.raiz]]) : '') + (inv.analisis ? UI.tablaDatos([['Análisis', inv.analisis]]) : '') + (inv.conclusiones ? UI.tablaDatos([['Conclusiones', inv.conclusiones]]) : '') +
+      '<table><tr><th>Rol</th><th>Nombre</th><th>Cédula</th><th>Firma</th></tr>' + (inv.equipo || []).map((x)=> '<tr><td>' + esc(x.rol) + '</td><td>' + esc(x.nombre) + '</td><td>' + esc(x.cedula) + '</td><td>' + UI.firmaHoja(x.firma) + '</td></tr>').join('') + '</table>');
+  }
+  h += UI.seccion('Acciones (plan de acción)', acciones.length ? '<table><tr><th>Acción</th><th>Responsable</th><th>Compromiso</th><th>Estado</th></tr>' +
+    acciones.map((a)=> '<tr><td>' + esc(a.resumen.accion) + '</td><td>' + esc(a.resumen.responsable) + '</td><td>' + esc(UI.corta(a.resumen.fechaCompromiso)) + '</td><td>' + esc(a.estado) + '</td></tr>').join('') + '</table>' : UI.textoLargo('Sin acciones registradas.'));
+  UI.imprimir([h], false);
+});
+
+/* ── Navegación ── */
+$('btnReportar').addEventListener('click', nuevo);
+$('tabs').addEventListener('click', (e)=>{ const b = e.target.closest('[data-tab]'); if (!b) return; filtro = ''; ponerTab(b.dataset.tab); pintar(); });
+$('buscar').addEventListener('input', pintar);
+document.addEventListener('click', (e)=>{
+  const it = e.target.closest('#lista [data-id], #pendLegales [data-id]'); if (it) { abrir(it.dataset.id); return; }
+  if (e.target.closest('[data-volver]')) { e.preventDefault(); show('scrLista'); pintar(); }
+});
+window.addEventListener('outbox-enviado', ()=> cargar());
+// v109: ?nuevo=1&pqrs=1 (tarjeta «PQRS» del inicio) abre el formulario ya en PQRS; se puede cambiar de opción arriba.
+cargar().then(()=>{ if (/[?&]nuevo=1/.test(location.search)) { nuevo(); if (/[?&]pqrs=1/.test(location.search)) ponerClase(PQ); } else if (location.hash.length > 1) abrir(decodeURIComponent(location.hash.slice(1))); });
+</script>
+</body>
+</html>
