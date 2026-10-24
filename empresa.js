@@ -1,18 +1,80 @@
 /* ============================================================
-   empresa.js — Sitio multiempresa (tu marca)
-   Ábrelo con configurar-empresa.html → «Tu sitio multiempresa (tu marca)»
-   para poner el nombre de tu producto, tus datos y tu logo.
-   Las empresas cliente van en empresas/<código>.json.
+   empresa.js — Nisafe
+   Generado con configurar-empresa.html el 24/10/2026, 5:01:31 a. m..
+   Para cambiar algo, vuelve a abrir configurar-empresa.html en este sitio:
+   el formulario carga estos mismos datos.
    ============================================================ */
 
 const EMPRESA = {
-  "nombre": "Tu empresa asesora S.A.S.",
-  "nombreCorto": "TU MARCA",
-  "nit": "",
+  "habilitacion": {
+    "requisitos": {
+      "seguridad_social": {
+        "nombre": "Pago de seguridad social (PILA)",
+        "meses": 1
+      },
+      "induccion": {
+        "nombre": "Inducción / reinducción en SST",
+        "meses": 12
+      },
+      "medico": {
+        "nombre": "Concepto médico ocupacional",
+        "meses": 12,
+        "apto": true
+      },
+      "alturas": {
+        "nombre": "Curso de trabajo en alturas",
+        "meses": 18
+      },
+      "confinados": {
+        "nombre": "Curso de espacios confinados",
+        "meses": 12
+      },
+      "izajes": {
+        "nombre": "Certificación de izaje (rigger / operador)",
+        "meses": 12
+      },
+      "electrico": {
+        "nombre": "Competencia en riesgo eléctrico",
+        "meses": 12
+      },
+      "caliente": {
+        "nombre": "Capacitación en trabajo en caliente",
+        "meses": 12
+      }
+    },
+    "exigir": {
+      "todos": [
+        "seguridad_social",
+        "induccion",
+        "medico"
+      ],
+      "alturas": [
+        "alturas"
+      ],
+      "confinados": [
+        "confinados"
+      ],
+      "izajes": [
+        "izajes"
+      ],
+      "electrico": [
+        "electrico"
+      ],
+      "caliente": [
+        "caliente"
+      ]
+    },
+    "avisarDias": 15
+  },
+  "acceso": null,
+  "multiempresa": true,
+  "producto": "Portal SSTA",
+  "nombre": "Nisafe",
+  "nombreCorto": "NISAFE",
+  "nit": "1018455016",
   "subtitulo": "Sistema de Gestión SST",
   "logo": "",
   "colorMarca": "#1f3b57",
-  "sinConfigurar": true,
   "formatos": {
     "SSTA-F-005": {
       "codigo": "SSTA-F-005",
@@ -85,532 +147,532 @@ const EMPRESA = {
       "actualizacion": ""
     },
     "SG-REPORTE": {
-      "codigo": "",
+      "codigo": "SG-REPORTE",
       "titulo": "Reporte e investigación de actos, condiciones, incidentes y accidentes",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PLAN": {
-      "codigo": "",
+      "codigo": "SG-PLAN",
       "titulo": "Plan de acción del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-HABILITACION": {
-      "codigo": "",
+      "codigo": "SG-HABILITACION",
       "titulo": "Estado de habilitación del personal",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-INSPECCION": {
-      "codigo": "",
+      "codigo": "SG-INSPECCION",
       "titulo": "Inspección planeada / preoperacional",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-INVENTARIO": {
-      "codigo": "",
+      "codigo": "SG-INVENTARIO",
       "titulo": "Inventario de equipos e inspecciones",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-INDICADORES": {
-      "codigo": "",
+      "codigo": "SG-INDICADORES",
       "titulo": "Informe de indicadores del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-COMITE-CONFORMACION": {
-      "codigo": "",
+      "codigo": "SG-COMITE-CONFORMACION",
       "titulo": "Conformación de comités (COPASST / Convivencia)",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-EMERGENCIAS-ACTA": {
-      "codigo": "",
+      "codigo": "SG-EMERGENCIAS-ACTA",
       "titulo": "Acta de reunión del comité de emergencias",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-COPASST-ACTA": {
-      "codigo": "",
+      "codigo": "SG-COPASST-ACTA",
       "titulo": "Acta de reunión del COPASST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CONVIVENCIA-ACTA": {
-      "codigo": "",
+      "codigo": "SG-CONVIVENCIA-ACTA",
       "titulo": "Acta de reunión del Comité de Convivencia Laboral",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CONVIVENCIA-QUEJA": {
-      "codigo": "",
+      "codigo": "SG-CONVIVENCIA-QUEJA",
       "titulo": "Expediente de queja (Comité de Convivencia)",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CONVIVENCIA-INFORME": {
-      "codigo": "",
+      "codigo": "SG-CONVIVENCIA-INFORME",
       "titulo": "Informe de gestión del Comité de Convivencia",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-AUDITORIA": {
-      "codigo": "",
+      "codigo": "SG-AUDITORIA",
       "titulo": "Informe de auditoría del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-AUDITORIA-PROGRAMA": {
-      "codigo": "",
+      "codigo": "SG-AUDITORIA-PROGRAMA",
       "titulo": "Programa anual de auditorías",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PLAN-ANUAL": {
-      "codigo": "",
+      "codigo": "SG-PLAN-ANUAL",
       "titulo": "Plan anual de trabajo del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PLAN-CAPACITACION": {
-      "codigo": "",
+      "codigo": "SG-PLAN-CAPACITACION",
       "titulo": "Plan de capacitación",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-MATRIZ-PELIGROS": {
-      "codigo": "",
+      "codigo": "SG-MATRIZ-PELIGROS",
       "titulo": "Matriz de identificación de peligros y valoración de riesgos",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-SUSTANCIAS": {
-      "codigo": "",
+      "codigo": "SG-SUSTANCIAS",
       "titulo": "Inventario de sustancias químicas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PLAN-EMERGENCIAS": {
-      "codigo": "",
+      "codigo": "SG-PLAN-EMERGENCIAS",
       "titulo": "Plan de prevención, preparación y respuesta ante emergencias",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-SIMULACRO": {
-      "codigo": "",
+      "codigo": "SG-SIMULACRO",
       "titulo": "Informe de simulacro",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROFESIOGRAMA": {
-      "codigo": "",
+      "codigo": "SG-PROFESIOGRAMA",
       "titulo": "Profesiograma",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-EXAMENES": {
-      "codigo": "",
+      "codigo": "SG-EXAMENES",
       "titulo": "Programación de evaluaciones médicas ocupacionales",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-AUSENTISMO": {
-      "codigo": "",
+      "codigo": "SG-AUSENTISMO",
       "titulo": "Informe de ausentismo",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-POLITICA": {
-      "codigo": "",
+      "codigo": "SG-POLITICA",
       "titulo": "Política de seguridad y salud en el trabajo",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-MATRIZ-LEGAL": {
-      "codigo": "",
+      "codigo": "SG-MATRIZ-LEGAL",
       "titulo": "Matriz de requisitos legales",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-LISTADO-MAESTRO": {
-      "codigo": "",
+      "codigo": "SG-LISTADO-MAESTRO",
       "titulo": "Listado maestro de documentos",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROVEEDORES": {
-      "codigo": "",
+      "codigo": "SG-PROVEEDORES",
       "titulo": "Evaluación de proveedores y contratistas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-EVAL-PROVEEDOR": {
-      "codigo": "",
+      "codigo": "SG-EVAL-PROVEEDOR",
       "titulo": "Evaluación y reevaluación de proveedores, contratistas y subcontratistas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-REVISION-DIRECCION": {
-      "codigo": "",
+      "codigo": "SG-REVISION-DIRECCION",
       "titulo": "Revisión por la alta dirección",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-RENDICION": {
-      "codigo": "",
+      "codigo": "SG-RENDICION",
       "titulo": "Rendición de cuentas en SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CONTRATISTA": {
-      "codigo": "",
+      "codigo": "SG-CONTRATISTA",
       "titulo": "Ficha y documentos del contratista",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-INGRESO-CONTRATISTA": {
-      "codigo": "",
+      "codigo": "SG-INGRESO-CONTRATISTA",
       "titulo": "Control de ingreso de contratistas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-MATRIZ-EPP": {
-      "codigo": "",
+      "codigo": "SG-MATRIZ-EPP",
       "titulo": "Matriz de elementos de protección personal por cargo",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-ENTREGA-EPP": {
-      "codigo": "",
+      "codigo": "SG-ENTREGA-EPP",
       "titulo": "Registro de entrega de elementos de protección personal",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-INDUCCION": {
-      "codigo": "",
+      "codigo": "SG-INDUCCION",
       "titulo": "Inducción y reinducción en SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROGRAMA-ALTO-RIESGO": {
-      "codigo": "",
+      "codigo": "SG-PROGRAMA-ALTO-RIESGO",
       "titulo": "Programas de tareas de alto riesgo",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PESV": {
-      "codigo": "",
+      "codigo": "SG-PESV",
       "titulo": "Plan estratégico de seguridad vial",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-TABLERO-GERENCIA": {
-      "codigo": "",
+      "codigo": "SG-TABLERO-GERENCIA",
       "titulo": "Informe del SG-SST para la gerencia",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-REPORTE-ANUAL-0312": {
-      "codigo": "",
+      "codigo": "SG-REPORTE-ANUAL-0312",
       "titulo": "Reporte anual de estándares mínimos",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-ASPECTOS-AMBIENTALES": {
-      "codigo": "",
+      "codigo": "SG-ASPECTOS-AMBIENTALES",
       "titulo": "Matriz de aspectos e impactos ambientales",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-RESIDUOS": {
-      "codigo": "",
+      "codigo": "SG-RESIDUOS",
       "titulo": "Registro de generación de residuos",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-INFORME-ASESORIA": {
-      "codigo": "",
+      "codigo": "SG-INFORME-ASESORIA",
       "titulo": "Informe de asesoría en SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-COMPATIBILIDAD": {
-      "codigo": "",
+      "codigo": "SG-COMPATIBILIDAD",
       "titulo": "Matriz de compatibilidad de sustancias químicas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-GESTION-QUIMICA": {
-      "codigo": "",
+      "codigo": "SG-GESTION-QUIMICA",
       "titulo": "Gestión del riesgo químico (SGA)",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-LUGARES-QUIMICOS": {
-      "codigo": "",
+      "codigo": "SG-LUGARES-QUIMICOS",
       "titulo": "Lugares de almacenamiento de sustancias químicas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CONSUMOS": {
-      "codigo": "",
+      "codigo": "SG-CONSUMOS",
       "titulo": "Informe de consumos de agua, energía y combustibles",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CRONOGRAMA-INSP": {
-      "codigo": "",
+      "codigo": "SG-CRONOGRAMA-INSP",
       "titulo": "Cronograma de inspecciones",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-OBJETIVOS": {
-      "codigo": "",
+      "codigo": "SG-OBJETIVOS",
       "titulo": "Objetivos del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-DESIGNACION": {
-      "codigo": "",
+      "codigo": "SG-DESIGNACION",
       "titulo": "Designación del responsable del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-ROLES": {
-      "codigo": "",
+      "codigo": "SG-ROLES",
       "titulo": "Roles y responsabilidades en el SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-RECURSOS": {
-      "codigo": "",
+      "codigo": "SG-RECURSOS",
       "titulo": "Asignación de recursos para el SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-REGLAMENTO": {
-      "codigo": "",
+      "codigo": "SG-REGLAMENTO",
       "titulo": "Reglamento de higiene y seguridad industrial",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-PELIGROS": {
-      "codigo": "",
+      "codigo": "SG-PROC-PELIGROS",
       "titulo": "Procedimiento de identificación de peligros, evaluación y valoración de riesgos",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-INVESTIGACION": {
-      "codigo": "",
+      "codigo": "SG-PROC-INVESTIGACION",
       "titulo": "Procedimiento de reporte e investigación de incidentes, accidentes de trabajo y enfermedades laborales",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-ACCIONES": {
-      "codigo": "",
+      "codigo": "SG-PROC-ACCIONES",
       "titulo": "Procedimiento de acciones correctivas, preventivas y de mejora",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-CAMBIO": {
-      "codigo": "",
+      "codigo": "SG-PROC-CAMBIO",
       "titulo": "Procedimiento de gestión del cambio",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-AUDITORIA": {
-      "codigo": "",
+      "codigo": "SG-PROC-AUDITORIA",
       "titulo": "Procedimiento de auditoría interna del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-REVISION": {
-      "codigo": "",
+      "codigo": "SG-PROC-REVISION",
       "titulo": "Procedimiento de revisión por la alta dirección",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-DOCUMENTOS": {
-      "codigo": "",
+      "codigo": "SG-PROC-DOCUMENTOS",
       "titulo": "Procedimiento de control de documentos y conservación de registros",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-COMUNICACION": {
-      "codigo": "",
+      "codigo": "SG-PROC-COMUNICACION",
       "titulo": "Procedimiento de comunicación, participación y consulta",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-COMPRAS": {
-      "codigo": "",
+      "codigo": "SG-PROC-COMPRAS",
       "titulo": "Procedimiento de adquisiciones y contratación con criterios de SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROC-EMERGENCIAS": {
-      "codigo": "",
+      "codigo": "SG-PROC-EMERGENCIAS",
       "titulo": "Procedimiento de prevención, preparación y respuesta ante emergencias",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROG-CAPACITACION": {
-      "codigo": "",
+      "codigo": "SG-PROG-CAPACITACION",
       "titulo": "Programa de capacitación, inducción y reinducción en SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROG-INSPECCIONES": {
-      "codigo": "",
+      "codigo": "SG-PROG-INSPECCIONES",
       "titulo": "Programa de inspecciones planeadas",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PROG-MEDICO": {
-      "codigo": "",
+      "codigo": "SG-PROG-MEDICO",
       "titulo": "Programa de evaluaciones médicas ocupacionales",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-MANUAL": {
-      "codigo": "",
+      "codigo": "SG-MANUAL",
       "titulo": "Manual del Sistema de Gestión de la Seguridad y Salud en el Trabajo",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CONTEXTO": {
-      "codigo": "",
+      "codigo": "SG-CONTEXTO",
       "titulo": "Contexto de la organización (DOFA y partes interesadas)",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-RIESGOS-CALIDAD": {
-      "codigo": "",
+      "codigo": "SG-RIESGOS-CALIDAD",
       "titulo": "Matriz de riesgos y oportunidades",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-OBJETIVOS-CALIDAD": {
-      "codigo": "",
+      "codigo": "SG-OBJETIVOS-CALIDAD",
       "titulo": "Objetivos e indicadores de calidad",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PNC": {
-      "codigo": "",
+      "codigo": "SG-PNC",
       "titulo": "Registro de producto o servicio no conforme",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PQRS": {
-      "codigo": "",
+      "codigo": "SG-PQRS",
       "titulo": "Informe de PQRS de clientes",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-SATISFACCION": {
-      "codigo": "",
+      "codigo": "SG-SATISFACCION",
       "titulo": "Encuesta e informe de satisfacción del cliente",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-PREOPERACIONAL": {
-      "codigo": "",
+      "codigo": "SG-PREOPERACIONAL",
       "titulo": "Inspección preoperacional",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-CIERRE-MES": {
-      "codigo": "",
+      "codigo": "SG-CIERRE-MES",
       "titulo": "Informe mensual del SG-SST",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-EVIDENCIAS": {
-      "codigo": "",
+      "codigo": "SG-EVIDENCIAS",
       "titulo": "Índice de evidencias del SG-SST por estándar",
       "version": "",
       "fecha": "",
       "actualizacion": ""
     },
     "SG-ETIQUETAS-QR": {
-      "codigo": "",
+      "codigo": "SG-ETIQUETAS-QR",
       "titulo": "Etiquetas QR de equipos e instalaciones",
       "version": "",
       "fecha": "",
@@ -624,118 +686,59 @@ const EMPRESA = {
     "izajes": true,
     "electrico": true,
     "ats": true,
-    "asistencia": true,
-    "personal": true,
+    "preop": true,
     "epp": true,
     "brigadistas": true,
+    "personal": true,
+    "asistencia": true,
     "tablero": true,
-    "reportes": true,
     "habilitacion": true,
-    "plan": true,
-    "inspecciones": true,
-    "indicadores": true,
-    "copasst": true,
-    "convivencia": true,
-    "comiteemergencias": true,
-    "auditorias": true,
+    "induccion": true,
+    "dotacion": true,
+    "contratistas": true,
+    "salud": true,
     "plananual": true,
     "peligros": true,
-    "emergencias": true,
-    "salud": true,
     "documental": true,
-    "revision": true,
-    "contratistas": true,
-    "usuarios": true,
-    "dotacion": true,
-    "induccion": true,
-    "programas": true,
-    "pesv": true,
-    "gerencia": true,
-    "ambiental": true,
-    "quimicos": true,
     "kit": true,
-    "calidad": true,
-    "asesor": true,
-    "cierre": true,
+    "programas": true,
+    "quimicos": true,
+    "pesv": true,
+    "reportes": true,
+    "inspecciones": true,
+    "emergencias": true,
+    "comiteemergencias": true,
+    "ambiental": true,
+    "proveedores": true,
+    "copasst": true,
+    "convivencia": true,
+    "indicadores": true,
+    "auditorias": true,
     "evidencias": true,
-    "preop": true,
-    "proveedores": true
+    "cierre": true,
+    "gerencia": true,
+    "plan": true,
+    "revision": true,
+    "calidad": true,
+    "usuarios": true,
+    "asesor": true
   },
   "correos": {
     "aprobacionEpp": "",
     "dominio": ""
+  },
+  "privacidad": {
+    "correo": "",
+    "politica": ""
   },
   "contactoEpp": {
     "nombre": "",
     "cargo": "",
     "whatsapp": ""
   },
-  "habilitacion": {
-    "requisitos": {
-      "seguridad_social": {
-        "nombre": "Pago de seguridad social (PILA)",
-        "meses": 1
-      },
-      "induccion": {
-        "nombre": "Inducción / reinducción en SST",
-        "meses": 12
-      },
-      "medico": {
-        "nombre": "Concepto médico ocupacional",
-        "meses": 12,
-        "apto": true
-      },
-      "alturas": {
-        "nombre": "Curso de trabajo en alturas",
-        "meses": 18
-      },
-      "confinados": {
-        "nombre": "Curso de espacios confinados",
-        "meses": 12
-      },
-      "izajes": {
-        "nombre": "Certificación de izaje (rigger / operador)",
-        "meses": 12
-      },
-      "electrico": {
-        "nombre": "Competencia en riesgo eléctrico",
-        "meses": 12
-      },
-      "caliente": {
-        "nombre": "Capacitación en trabajo en caliente",
-        "meses": 12
-      }
-    },
-    "exigir": {
-      "todos": [
-        "seguridad_social",
-        "induccion",
-        "medico"
-      ],
-      "alturas": [
-        "alturas"
-      ],
-      "confinados": [
-        "confinados"
-      ],
-      "izajes": [
-        "izajes"
-      ],
-      "electrico": [
-        "electrico"
-      ],
-      "caliente": [
-        "caliente"
-      ]
-    },
-    "avisarDias": 15
-  },
-  "acceso": null,
   "centrosCosto": [],
-  "servidor": "",
-  "apiToken": "",
+  "servidor": "https://script.google.com/macros/s/AKfycbzb1Y6IuOmkLN0_O9pOCa7ouNk_lArw0NnHqkjeKqBQI1GaWheClAOp2GhEUjJ1qKE/exec",
+  "apiToken": "cHYFBcA7Ckqdmb7Cw9EtG5owhsZ8VumYFJqf9hx9",
   "demo": false,
-  "multiempresa": true,
-  "empresaPorDefecto": "",
-  "producto": "Portal SSTA"
+  "empresaPorDefecto": ""
 };
