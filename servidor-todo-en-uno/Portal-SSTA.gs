@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v119';
+const VERSION_PORTAL = 'v120';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5116,7 +5116,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: ▶ Ejecutar → instalarAvisosDiarios (una vez).
    ============================================================ */
 
-const VERSION_SGSST = 'v119';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v120';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,

@@ -19,6 +19,27 @@ function esc(v){
  * un fallo de red (típico en zonas de planta con señal débil), con
  * espera creciente entre intentos.
  */
+/* ── v120: los módulos por ?modulo= y no por /módulo ──
+   Con algunas cuentas, Google pide iniciar sesión en «…/exec/sgsst» aunque «…/exec» esté abierta
+   para cualquier usuario (caso real). El servidor único ya entiende «?modulo=sgsst», así que aquí se
+   reescribe toda llamada a «…/exec/<módulo>» (de cualquier servidor, también los de los clientes desde
+   la consola). Si viaja como consulta por POST, el módulo va también dentro de la consulta. */
+(function () {
+  if (typeof window === 'undefined' || !window.fetch) return;
+  const original = window.fetch.bind(window);
+  const RE = /^(https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[\w-]+\/exec)\/([a-z]+)\/?(\?.*)?$/;
+  window.fetch = function (entrada, opciones) {
+    const url = typeof entrada === 'string' ? entrada : '';
+    const m = RE.exec(url);
+    if (!m) return original(entrada, opciones);
+    const nueva = m[1] + '?modulo=' + m[2] + (m[3] ? '&' + m[3].slice(1) : '');
+    if (opciones && typeof opciones.body === 'string' && opciones.body.indexOf('__consulta') !== -1) {
+      try { const b = JSON.parse(opciones.body); if (b && b.__consulta && !b.__consulta.modulo) { b.__consulta.modulo = m[2]; opciones = Object.assign({}, opciones, { body: JSON.stringify(b) }); } } catch (e) {}
+    }
+    return original(nueva, opciones);
+  };
+})();
+
 /* ── v110: la clave del portal y la sesión no viajan en la dirección ──
    Las consultas al servidor (GET con token= o sesion=) se mandan por POST con
    { __consulta: {…} }: la dirección queda limpia y la clave no queda en los
@@ -557,7 +578,7 @@ function formatSavedAt(iso) {
  * Requiere sw.js v2 (que no hace skipWaiting automático).
  */
 /* Versión del portal (sitio). El panel del asesor la compara con la del servidor de cada cliente. */
-const VERSION_PORTAL_WEB = 'v119';
+const VERSION_PORTAL_WEB = 'v120';
 
 const UpdateManager = {
   init() {
