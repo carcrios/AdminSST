@@ -187,7 +187,16 @@
       return Object.assign({ codigo: id, version: '', fecha: '', actualizacion: '' }, (E.formatos && E.formatos[id]) || {});
     }
     function codigo(id) { return formato(id).codigo || id; }
-    function moduloActivo(k) { return !E.modulos || E.modulos[k] !== false; }
+    const PERMISOS_MOD = ['caliente', 'alturas', 'confinados', 'izajes', 'electrico'];
+    /** v124: lo que el administrador apagó dentro de un módulo para esta empresa
+        (E.ocultos = { preop: [ids], inspecciones: [ids] }). */
+    function visible(lista, id) { const o = E.ocultos && E.ocultos[lista]; return !(Array.isArray(o) && o.indexOf(id) !== -1); }
+    function moduloActivo(k) {
+      if (!E.modulos) return true;
+      // v123: el tablero es el de los permisos; sin ningún permiso contratado, tampoco sale.
+      if (k === 'tablero' && !PERMISOS_MOD.some((m) => E.modulos[m] !== false)) return false;
+      return E.modulos[k] !== false;
+    }
     /* ── Quién ve qué (v111) ──
        PUBLICO: solo los preoperacionales y los reportes (evento, PQRS y «¿qué peligros ves?»):
        cualquiera, sin usuario ni contraseña.
@@ -300,6 +309,18 @@
       const url = 'url("' + String(E.logo).replace(/"/g, '%22') + '")';
       css += '.marca{background-image:' + url + ' !important;}body .hdr-logo{background-image:' + url + ' !important;}';
       if (E.colorMarca) css += ':root{--brand-index:' + E.colorMarca + ';}';
+      // v123: el color de la marca pinta el saludo del inicio y los acentos (antes solo una franja que ya no se ve).
+      const hx = /^#([0-9a-f]{6})$/i.exec(String(E.colorMarca || '').trim());
+      if (hx && hx[1].toLowerCase() !== '1f3b57') {
+        const n = parseInt(hx[1], 16), rgb = [n >> 16, (n >> 8) & 255, n & 255];
+        const mez = (a, f) => '#' + rgb.map((c) => Math.round(c + (a - c) * f).toString(16).padStart(2, '0')).join('');
+        css += 'html body{--h1:' + mez(255, .12) + ' !important;--h2:' + mez(0, .28) + ' !important;--h3:' + mez(255, .45) + ' !important;}' +
+          'html body .pub-hero{box-shadow:0 18px 40px ' + 'rgba(' + rgb.join(',') + ',.28) !important;}' +
+          'html body .hdr-acc .btn-gestion[aria-pressed="true"],html body .sg-btn{background:linear-gradient(135deg,' + mez(255, .1) + ',' + mez(0, .25) + ') !important;}' +
+          // y también el encabezado de cada página, los títulos de sección y el botón principal de entrar.
+          'html body .hdr,html body .header{background:radial-gradient(80% 100% at 0 100%,' + mez(0, .35) + ',transparent 65%),linear-gradient(135deg,' + mez(255, .15) + ',' + mez(0, .2) + ') !important;box-shadow:0 16px 36px rgba(' + rgb.join(',') + ',.25) !important;}' +
+          'html body .section-title:not(.locked),html body .acceso-rol .ar-si{background:linear-gradient(135deg,' + mez(255, .1) + ',' + mez(0, .25) + ') !important;}';
+      }
       st.textContent = css;
       (document.head || document.documentElement).appendChild(st);
     }
@@ -326,7 +347,7 @@
     else if (document.body) iniciar();
 
     return {
-      formato, codigo, moduloActivo, aplicar, moduloDeHref, esPublico, accesoRol, rolActual, tablaAcceso,
+      formato, codigo, moduloActivo, visible, aplicar, moduloDeHref, esPublico, accesoRol, rolActual, tablaAcceso,
       logo: () => E.logo,
       producto: PRODUCTO,
       pie: () => PRODUCTO + ' · ' + (E.nombreCorto || E.nombre)

@@ -154,6 +154,7 @@ const UI = (function () {
       Al tocar el campo ya muestra la lista (las primeras personas); al escribir, filtra por nombre o cédula. */
   function autocompletar(input, alElegir) {
     const field = input.closest('.field') || input.parentElement;
+    if (!input || input.dataset.acListo) return; input.dataset.acListo = '1';
     let caja = null, turno = 0;
     const cerrar = () => { if (caja) { caja.remove(); caja = null; } };
     input.setAttribute('autocomplete', 'off');
@@ -176,6 +177,24 @@ const UI = (function () {
     input.addEventListener('focus', mostrar);
     input.addEventListener('blur', () => setTimeout(cerrar, 150));
     input.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
+  }
+
+  /* Cualquier otro campo que pida un nombre de persona (responsable, inspector, quien recibe…)
+     también ofrece el personal habilitado, sin que cada página lo tenga que pedir. */
+  const PIDE_NOMBRE = /nombre|responsable|inspector|quien|qui[eé]n|encargad|supervisor|trabajador|elabor|revis|aprob|recib|entreg/i;
+  const NO_PERSONA = /empresa|equipo|producto|sustancia|actividad|proveedor|archivo|obra|centro|lugar|correo|placa|marca|modelo|curso|tema|programa|formato|plan|cargo|c[eé]dula/i;
+  function pideNombre(i) {
+    if (i.dataset.acListo || i.dataset.noAc != null || i.type !== 'text' || i.closest('.ac, [data-no-ac]')) return false;
+    const lab = (i.labels && i.labels[0] && i.labels[0].textContent) || (i.closest('.field') && (i.closest('.field').querySelector('label') || {}).textContent) || '';
+    const t = [i.id, i.name, i.placeholder, i.getAttribute('aria-label'), lab].join(' ');
+    return PIDE_NOMBRE.test(t) && !NO_PERSONA.test(t);
+  }
+  function enlazarNombres(raiz) {
+    (raiz || document).querySelectorAll('input[type="text"]:not([data-ac-listo])').forEach((i) => { if (pideNombre(i)) autocompletar(i, (p) => { i.value = p.nombre; }); });
+  }
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    const arrancar = () => { enlazarNombres(); let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => enlazarNombres(), 120); }).observe(document.body, { childList: true, subtree: true }); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(arrancar, 0)); else setTimeout(arrancar, 0);
   }
 
   /* ── Hoja para PDF con el encabezado de la empresa ── */

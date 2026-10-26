@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v122';
+const VERSION_PORTAL = 'v124';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -80,6 +80,7 @@ function despachar_(e, metodo) {
                          apagados: modulosApagados_(), nota: 'Cada módulo responde en esta misma URL terminada en /<módulo>.' });
   }
   if (!mods[ruta]) return salidaJson_({ ok: false, error: 'Módulo desconocido: ' + ruta + '. Disponibles: ' + Object.keys(mods).join(', ') });
+  e = tokenPublicoComoClave_(e);
   const apagado = moduloApagadoEn_(ruta, e, metodo);
   if (apagado) return salidaJson_(apagado);
   const sinSesion = exigirSesionObra_(ruta, e, metodo);
@@ -145,6 +146,33 @@ function moduloApagadoEn_(ruta, e, metodo) {
   const tipos = [b.tipo].concat(Array.isArray(b.items) ? b.items.map(function (x) { return x && x.tipo; }) : []).filter(Boolean);
   for (let i = 0; i < tipos.length; i++) { const m = MODULO_DE_TIPO_[String(tipos[i])]; if (m && ap.indexOf(m) !== -1) return no(m); }
   return null;
+}
+
+/* ── Con usuarios, no se pide la clave del portal en cada celular (v123) ──────
+   La clave del portal protegía los datos cuando todos entraban igual. Con usuarios con
+   nombre, cada lectura y cada cambio ya exige su sesión (y lo público —preoperacional y
+   reportes— es público a propósito). Entonces el token del sitio vale como la clave: los
+   celulares no la piden. Sin usuarios activos, la clave sigue siendo obligatoria. */
+function usuariosActivos_() {
+  let cache = null; try { cache = CacheService.getScriptCache(); const v = cache.get('portal.usuariosActivos'); if (v) return v === '1'; } catch (err) {}
+  const mods = modulosPortal_();
+  let r = false;
+  if (mods.sgsst && propiedades_().getProperty('sgsst.LIBRO')) { try { r = !!(mods.sgsst().funciones.revisarSesionObra('') || {}).modo; } catch (err) { r = false; } }
+  try { if (cache) cache.put('portal.usuariosActivos', r ? '1' : '0', 600); } catch (err) {}
+  return r;
+}
+function tokenPublicoComoClave_(e) {
+  const p = propiedades_(), clave = p.getProperty('CLAVE_PORTAL'), api = p.getProperty('API_TOKEN');
+  if (!clave || !api || !e) return e;
+  const par = e.parameter || {};
+  let body = null; try { body = JSON.parse((e.postData && e.postData.contents) || ''); } catch (err) { body = null; }
+  const enGet = par.token === api, enPost = !!(body && typeof body === 'object' && body.token === api);
+  if (!enGet && !enPost) return e;
+  if (!usuariosActivos_()) return e;
+  const nuevo = {}; Object.keys(e).forEach(function (k) { nuevo[k] = e[k]; });
+  if (enGet) { nuevo.parameter = {}; Object.keys(par).forEach(function (k) { nuevo.parameter[k] = par[k]; }); nuevo.parameter.token = clave; }
+  if (enPost) { body.token = clave; nuevo.postData = { contents: JSON.stringify(body), type: (e.postData && e.postData.type) || 'text/plain', length: 0, name: 'postData' }; }
+  return nuevo;
 }
 
 /* ── Lo de la obra pide usuario (v112) ──────────────────────────────────────
@@ -5116,7 +5144,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: ▶ Ejecutar → instalarAvisosDiarios (una vez).
    ============================================================ */
 
-const VERSION_SGSST = 'v122';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v124';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5203,7 +5231,7 @@ const TIPOS_GEN = {
   eppcargo: { hoja: 'Matriz de EPP', titulo: 'cargo', fecha: 'fechaRevision', estado: '', responsable: 'area', vence: '',
     campos: ['cargo', 'area', 'elementosTexto', 'elementos', 'fechaRevision'], largos: ['elementosTexto'] },
   entrega: { hoja: 'Entregas de EPP', titulo: 'nombre', fecha: 'fecha', estado: 'motivo', responsable: 'entrego', vence: 'reponer',
-    campos: ['nombre', 'cedula', 'cargo', 'fecha', 'motivo', 'elementosTexto', 'vencimientos', 'reponer', 'entrego', 'capacitado'], largos: ['elementosTexto', 'vencimientos'] },
+    campos: ['nombre', 'cedula', 'cargo', 'fecha', 'motivo', 'elementosTexto', 'vencimientos', 'reponer', 'entrego', 'capacitado', 'reposicionTexto'], largos: ['elementosTexto', 'vencimientos', 'reposicionTexto'] },
   induccion: { hoja: 'Inducciones y reinducciones', titulo: 'nombre', fecha: 'fecha', estado: 'resultado', responsable: 'dicto', vence: 'vence',
     campos: ['nombre', 'cedula', 'cargo', 'empresa', 'tipoInduccion', 'fecha', 'temas', 'preguntas', 'puntaje', 'resultado', 'dicto', 'vence', 'autoservicio', 'autorizaDatos', 'autorizaSalud'] },
   programa: { hoja: 'Programas de alto riesgo', titulo: 'nombre', fecha: 'fechaRevision', estado: 'estado', responsable: 'coordinador', vence: 'proximaRevision',

@@ -579,7 +579,7 @@ function formatSavedAt(iso) {
  * Requiere sw.js v2 (que no hace skipWaiting automático).
  */
 /* Versión del portal (sitio). El panel del asesor la compara con la del servidor de cada cliente. */
-const VERSION_PORTAL_WEB = 'v122';
+const VERSION_PORTAL_WEB = 'v124';
 
 const UpdateManager = {
   init() {
@@ -2198,8 +2198,9 @@ const Habilitacion = {
     if (desdeCopia && !this._mapa) this._mapa = desdeCopia.mapa;
     this._cargando = (async () => {
       if (!SGSST.url()) return this._mapa || {};
-      const r = await SGSST.listar('trabajador');
-      if (!r.desdeCopia) {
+      // En segundo plano: sin usuario (p. ej. el preoperacional público) no pide entrar ni borra la copia.
+      const r = await SGSST.listar('trabajador', { sinPedir: true });
+      if (!r.desdeCopia && !r.sinSesion && !r.sinServidor) {
         const mapa = {};
         r.rows.forEach((x) => { const k = this.clave(x.resumen && x.resumen.cedula); if (k) mapa[k] = Object.assign({ id: x.id }, x.resumen); });
         this._mapa = mapa;
@@ -2455,7 +2456,9 @@ const BarraInferior = (function () {
     nav = document.createElement('nav');
     nav.id = 'barraInferior'; nav.className = 'barra-inferior'; nav.setAttribute('aria-label', 'Navegación principal');
     const a = activo();
-    nav.innerHTML = ITEMS.map((x) => '<a href="' + x.href + '" data-id="' + x.id + '"' + (x.id === a ? ' class="on" aria-current="page"' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + x.d + '"/></svg><span>' + x.txt + '</span></a>').join('');
+    // v123: sin permisos de trabajo contratados, la barra no los muestra.
+    const hayPermisos = typeof Empresa === 'undefined' || !Empresa.moduloActivo || ['caliente', 'alturas', 'confinados', 'izajes', 'electrico'].some((m) => Empresa.moduloActivo(m));
+    nav.innerHTML = ITEMS.filter((x) => x.id !== 'permisos' || hayPermisos).map((x) => '<a href="' + x.href + '" data-id="' + x.id + '"' + (x.id === a ? ' class="on" aria-current="page"' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + x.d + '"/></svg><span>' + x.txt + '</span></a>').join('');
     document.body.appendChild(nav);
     // En el inicio, «Gestión» lleva al sistema de gestión sin recargar.
     nav.querySelector('[data-id="gestion"]').addEventListener('click', (e) => {
@@ -2471,4 +2474,59 @@ const BarraInferior = (function () {
   function marcar(id) { if (!nav) return; nav.querySelectorAll('a').forEach((x) => { const on = x.dataset.id === id; x.classList.toggle('on', on); if (on) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current'); }); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar); else setTimeout(montar, 0);
   return { montar, marcar };
+})();
+
+/* ================= «ATRÁS» VUELVE A DONDE ESTABAS (v123) =================
+   Muchas pantallas tienen varias vistas dentro de la misma página (lista → formulario
+   → detalle) y ventanas. El botón «atrás» del celular sacaba de la página y llevaba al
+   inicio. Ahora cada vista y cada ventana deja su paso en el historial: «atrás» cierra
+   la ventana o vuelve a la vista anterior, y solo al final sale de la página. */
+const NavAtras = (function () {
+  if (typeof window === 'undefined' || typeof history === 'undefined' || typeof document === 'undefined') return null;
+  let ignorar = 0, modalesEmpujados = 0;
+  const activa = () => document.querySelector('.screen.active');
+  const primera = () => document.querySelector('.screen');
+  const firmaAbierta = () => { try { return typeof FirmaCompleta !== 'undefined' && FirmaCompleta.estaAbierta(); } catch (e) { return false; } };
+  function atrasSilencioso() { ignorar++; history.back(); }
+  function alCambiarPantalla() {
+    const a = activa(), ini = primera(); if (!a || !ini) return;
+    const st = history.state || {};
+    if (a === ini) { if (st.__p) atrasSilencioso(); return; }   // volvió con su propio botón: se quita el paso que sobraba
+    if (st.__p !== a.id) history.pushState({ __p: a.id }, '');
+  }
+  function iniciar() {
+    const pantallas = document.querySelectorAll('.screen');
+    if (pantallas.length > 1) {
+      const obs = new MutationObserver(() => setTimeout(alCambiarPantalla, 0));
+      pantallas.forEach((s) => obs.observe(s, { attributes: true, attributeFilter: ['class'] }));
+    }
+    // Ventanas (UI.modal): «atrás» las cierra.
+    new MutationObserver((ms) => ms.forEach((m) => {
+      m.addedNodes.forEach((n) => { if (n.nodeType === 1 && n.classList.contains('modal-fondo')) {
+        modalesEmpujados++;
+        // Una ventana que reemplaza a otra recién cerrada reutiliza su paso (no se apilan).
+        if (history.state && history.state.__m && document.querySelectorAll('body > .modal-fondo').length === 1) history.replaceState(Object.assign({}, history.state, { __m: modalesEmpujados }), '');
+        else history.pushState(Object.assign({}, history.state || {}, { __m: modalesEmpujados }), '');
+      } });
+      m.removedNodes.forEach((n) => { if (n.nodeType === 1 && n.classList.contains('modal-fondo') && n.__porAtras !== true) setTimeout(() => {
+        if (!document.querySelector('body > .modal-fondo') && history.state && history.state.__m) atrasSilencioso();
+      }, 60); });
+    })).observe(document.body, { childList: true });
+  }
+  window.addEventListener('popstate', (e) => {
+    if (ignorar) { ignorar--; return; }
+    if (firmaAbierta()) return;
+    const fondos = document.querySelectorAll('body > .modal-fondo');
+    if (fondos.length) { const f = fondos[fondos.length - 1]; f.__porAtras = true; const c = f.querySelector('[data-cerrar]'); if (c) c.click(); else f.remove(); return; }
+    const a = activa(), ini = primera(); if (!a || !ini || a === ini) return;
+    const st = e.state || {};
+    if (st.__p === a.id) return;
+    const destino = st.__p && document.getElementById(st.__p);
+    if (destino && destino.classList.contains('screen')) { a.classList.remove('active'); destino.classList.add('active'); window.scrollTo(0, 0); return; }
+    // A la primera vista: con su botón «volver» (recarga la lista) o, si no tiene, directo.
+    const v = a.querySelector('[data-volver]');
+    if (v) v.click(); else { a.classList.remove('active'); ini.classList.add('active'); window.scrollTo(0, 0); }
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
+  return { activa };
 })();
