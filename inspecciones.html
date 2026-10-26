@@ -50,6 +50,7 @@
 .qr-lista{max-height:46vh;overflow:auto;display:grid;gap:6px;margin-bottom:12px;padding-right:2px;}
 .qr-grupo{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;margin:6px 0 0;}
 .qr-acc{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}.qr-acc .btn{flex:1 1 140px;margin:0;min-height:40px;}
+h3.sec-insp{margin:16px 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5f7390);}
 </style>
 </head>
 <body>
@@ -83,7 +84,7 @@
   <input type="search" class="buscar" id="buscar" placeholder="Buscar por código, nombre o ubicación">
   <div id="fIns"></div>
   <div id="lista"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v122</div>
+  <div class="version-portal">Portal SSTA · versión v124</div>
 </div>
 
 <!-- ═══════ EQUIPO ═══════ -->
@@ -191,7 +192,8 @@ function armarListas(){
   LISTA.forEach((p)=> { PL[p.id] = p; });
   pintarCategorias();
 }
-const activas = ()=> LISTA.filter((p)=> p.activa !== false);
+// v124: además de las que apaga SST aquí, las que el administrador apagó para la empresa.
+const activas = ()=> LISTA.filter((p)=> p.activa !== false && (typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('inspecciones', p.id)));
 function pintarCategorias(incluir){
   const l = activas().slice(); if (incluir && PL[incluir] && !l.includes(PL[incluir])) l.push(PL[incluir]);
   $('eqCat').innerHTML = l.map((p)=> '<option value="' + esc(p.id) + '">' + p.icono + ' ' + esc(p.nombre) + '</option>').join('');
@@ -455,6 +457,8 @@ $('btnInspeccionar').addEventListener('click', ()=>{
     m.el.addEventListener('click', (ev)=>{ const q = ev.target.closest('[data-eqi]'); if (q) { m.cerrar(); const x = equipos.find((y)=> y.id === q.dataset.eqi); iniciarInspeccion(cat, Object.assign({ id: x.id }, x.resumen)); } else if (ev.target.closest('[data-sin]')) { m.cerrar(); iniciarInspeccion(cat, null); } });
   });
 });
+/** v123: «Sección | pregunta» (listas de los formatos de la empresa). */
+function partesItem(t){ const m = /^([^|]{2,80}) \| (.+)$/.exec(String(t || '')); return m ? { sec: m[1].trim(), t: m[2].trim() } : { sec: '', t: String(t || '') }; }
 function iniciarInspeccion(cat, eq, extra){
   const p = pl(cat); extra = extra || {};
   if (!p.items.length) { UI.toast('Esa lista de chequeo no tiene preguntas.', 'mal'); return; }
@@ -463,14 +467,16 @@ function iniciarInspeccion(cat, eq, extra){
   fotosNC = {};
   $('inTipo').value = extra.tipo || (p.preoperacional ? 'Preoperacional' : 'Rutinaria');
   pintarParticipantes();
-  $('inCat').textContent = p.icono + ' ' + p.nombre + (p.preoperacional ? ' · preoperacional' : '');
+  $('inCat').textContent = p.icono + ' ' + p.nombre + (p.codigo ? ' · ' + p.codigo : '') + (p.preoperacional ? ' · preoperacional' : '');
   $('inTitulo').textContent = eq ? ((eq.codigo ? eq.codigo + ' · ' : '') + (eq.nombre || p.nombre)) : p.nombre;
   $('inSub').textContent = eq ? (eq.ubicacion || '') : 'Sin equipo del inventario';
   $('inFecha').value = UI.hoy(); $('inLugar').value = extra.lugar || (eq ? (eq.ubicacion || '') : ''); $('inObs').value = '';
   try { $('inInsp').value = localStorage.getItem('ssta-reporta') || ''; } catch (e) {}
-  $('inItems').innerHTML = p.items.map((t, i)=> '<div class="preg" data-i="' + i + '"><div class="q">' + (i + 1) + '. ' + esc(t) + '</div><div class="op">' +
+  // v123: «Sección | pregunta» → la sección sale como título y la pregunta sin el prefijo.
+  let secAnt = '';
+  $('inItems').innerHTML = p.items.map((t, i)=> { const pp = partesItem(t), cab = pp.sec && pp.sec !== secAnt ? '<h3 class="sec-insp">' + esc(pp.sec) + '</h3>' : ''; secAnt = pp.sec || secAnt; return cab + '<div class="preg" data-i="' + i + '"><div class="q">' + (i + 1) + '. ' + esc(pp.t) + '</div><div class="op">' +
     ['C', 'NC', 'NA'].map((v)=> '<button type="button" data-v="' + v + '">' + v + '</button>').join('') + '</div>' +
-    '<div class="nc-extra"><div class="field" style="margin:0 0 8px;"><input type="text" class="obs" placeholder="¿Qué se encontró?"></div><div class="fotoNC"></div></div></div>').join('');
+    '<div class="nc-extra"><div class="field" style="margin:0 0 8px;"><input type="text" class="obs" placeholder="¿Qué se encontró?"></div><div class="fotoNC"></div></div></div>'; }).join('');
   $('inItems').querySelectorAll('.preg').forEach((d)=>{ fotosNC[d.dataset.i] = UI.fotos(d.querySelector('.fotoNC'), { max: 2 }); });
   fotosInsp = UI.fotos($('inFotos'), { max: 3 });
   $('inFirma').innerHTML = UI.padHTML('padInspector'); UI.activarPad('padInspector');
@@ -608,7 +614,7 @@ async function pdfInspeccion(id){
   let h = UI.cabecera('SG-INSPECCION', 'INSPECCIÓN: ' + String(d.categoria || '').toUpperCase(), 'Registro ' + d.id + ' · ' + (nc ? 'NO CONFORME (' + nc + ')' : 'CONFORME') + (d.preoperacional ? (nc ? ' · NO APTO' : ' · APTO') : ''));
   h += UI.seccion('Datos', UI.tablaDatos([['Equipo / área', d.equipoNombre || '—'], ['Fecha', UI.corta(d.fecha)], ['Lugar', d.lugar || '—'], ['Tipo de inspección', d.tipoInspeccion || (d.preoperacional ? 'Preoperacional' : 'Rutinaria')], [(d.participantes || []).length ? 'Dirige' : 'Inspector', (d.inspector || {}).nombre || '—']]));
   h += UI.seccion('Lista de chequeo', '<table><tr><th style="width:4%">N°</th><th>Aspecto</th><th style="width:7%">Resultado</th><th style="width:30%">Observación</th></tr>' +
-    (d.items || []).map((x, i)=> '<tr><td class="a">' + (i + 1) + '</td><td>' + esc(x.t) + '</td><td class="a"' + (x.r === 'NC' ? ' style="background:#f6d4cf;"' : '') + '>' + esc(x.r) + '</td><td>' + esc(x.obs || '') + (x.fotos && x.fotos.length ? '<br>' + UI.imgs(x.fotos, 'height:60px;margin:2px;') : '') + '</td></tr>').join('') + '</table>');
+    (d.items || []).map((x, i, arr)=> { const pp = partesItem(x.t), ant = i ? partesItem(arr[i - 1].t).sec : ''; return (pp.sec && pp.sec !== ant ? '<tr><td colspan="4" style="background:#eef1f5;font-weight:700;">' + esc(pp.sec) + '</td></tr>' : '') + '<tr><td class="a">' + (i + 1) + '</td><td>' + esc(pp.t) + '</td><td class="a"' + (x.r === 'NC' ? ' style="background:#f6d4cf;"' : '') + '>' + esc(x.r) + '</td><td>' + esc(x.obs || '') + (x.fotos && x.fotos.length ? '<br>' + UI.imgs(x.fotos, 'height:60px;margin:2px;') : '') + '</td></tr>'; }).join('') + '</table>');
   if (d.observaciones || (d.fotos || []).length) h += UI.seccion('Observaciones', UI.textoLargo(d.observaciones || '') + UI.fotosHoja(d.fotos));
   if ((d.participantes || []).length) h += UI.seccion('Participantes', '<table><tr><th style="width:5%">N°</th><th>Nombre</th><th style="width:28%">Cargo / rol</th><th style="width:28%">Firma</th></tr>' + d.participantes.map((x, i)=> '<tr><td class="a">' + (i + 1) + '</td><td>' + esc(x.nombre) + '</td><td>' + esc(x.cargo || '') + '</td><td>' + UI.firmaHoja(x.firma) + '</td></tr>').join('') + '</table>');
   h += '<table style="margin-top:6px;"><tr><td class="l" style="width:20%">Firma del inspector</td><td>' + UI.firmaHoja((d.inspector || {}).firma) + '<br>' + esc((d.inspector || {}).nombre || '') + ((d.inspector || {}).cedula ? ' · C.C. ' + esc(d.inspector.cedula) : '') + '</td></tr></table>';

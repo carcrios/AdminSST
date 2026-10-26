@@ -210,6 +210,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
     <p class="ayuda">Agrupados como en el inicio. Lo que se desmarque no aparece en su portal y su servidor no lo acepta. La marca <b>0312 · n</b> dice cuántos de los estándares que le aplican apoya cada módulo.</p>
     <div class="paquetes" id="paquetes"><button type="button" data-paq="obra">Solo obra</button><button type="button" data-paq="sgsst">SG-SST completo</button><button type="button" data-paq="todo">Todo</button></div>
     <div class="mods" id="mods"></div>
+    <div id="menusDentro"></div>
   </div>
 
   <div class="card" id="cCorreos">
@@ -257,6 +258,10 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
 <script src="qr.js"></script>
 <script src="iconos-emoji.js"></script>
 <script src="auditorias-plantillas.js"></script>
+<script src="preop-formularios.js"></script>
+<script src="preop-base.js"></script>
+<script src="inspecciones-plantillas.js"></script>
+<script src="menus-empresa.js"></script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -403,6 +408,8 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
     document.querySelectorAll('.mod-cat').forEach((c) => { const on = !cats || cats.indexOf(c.dataset.cat) !== -1; c.querySelectorAll('[data-mod]').forEach((i) => { i.checked = ESENCIALES.indexOf(i.dataset.mod) !== -1 || (on && !(b.dataset.paq === 'sgsst' && ['calidad', 'ambiental', 'pesv'].indexOf(i.dataset.mod) !== -1)); }); });
     contarCats(); pintar();
   });
+  // v124: dentro de los módulos, qué preoperacionales y qué listas de inspección se ofrecen.
+  $('menusDentro').innerHTML = MenusEmpresa.html(E, { sinModulos: true }); MenusEmpresa.activar($('menusDentro'));
   marcarTipo();
 
   // ── Logo: se reduce y queda dentro de empresa.js (un solo archivo que subir)
@@ -455,6 +462,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
       correos: { aprobacionEpp: $('cCorreoEpp').value.trim(), dominio: $('cDominio').value.trim().replace(/^@/, '') },
       privacidad: { correo: $('cPrivCorreo').value.trim(), politica: /^https:\/\//.test($('cPrivPolitica').value.trim()) ? $('cPrivPolitica').value.trim() : '' },
       contactoEpp: { nombre: $('cWaNombre').value.trim(), cargo: '', whatsapp: $('cWaNumero').value.trim() },
+      ocultos: MenusEmpresa.leer($('menusDentro')).ocultos,
       centrosCosto: centros, servidor: srv.servidor, apiToken: srv.apiToken, demo: false,
       perfil0312: tipo === 'proveedor' ? undefined : p0312
     }, tipo === 'proveedor' ? { multiempresa: true, empresaPorDefecto: $('cDefecto').value.trim().toLowerCase(), producto: $('cProducto').value.trim() || 'Portal SSTA', sinEmpresa: undefined, codigo: undefined } : { multiempresa: undefined, producto: tipo === 'propio' && !ME ? (E.producto || undefined) : undefined, sinEmpresa: undefined, codigo: undefined });

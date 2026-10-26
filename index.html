@@ -10,6 +10,7 @@
 <script src="empresa-motor.js"></script>
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script src="preop-formularios.js"></script>
 <script src="iconos-emoji.js"></script>
 <meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
@@ -351,6 +352,16 @@
   .pub-tile.azul{background:linear-gradient(150deg,#5b93ff,#2f6bff);box-shadow:0 14px 28px rgba(47,107,255,.35);}
   .pub-tile.sol{background:linear-gradient(150deg,#ffd34d,#ffb300);color:#3a2a00;box-shadow:0 14px 28px rgba(255,170,0,.38);}
   .pub-tile[hidden],.pub-op[hidden]{display:none;}
+  .pub-tile{border:0;font:inherit;text-align:left;cursor:pointer;position:relative;}
+  .pub-tile .pub-chev{position:absolute;top:16px;right:16px;width:22px;height:22px;opacity:.85;transition:transform .25s;}
+  .pub-tile[aria-expanded="true"] .pub-chev{transform:rotate(180deg);}
+  .pub-tile[aria-expanded="true"]{outline:3px solid rgba(255,255,255,.9);outline-offset:-6px;}
+  .pub-panel{margin-top:12px;animation:panelAbre .28s cubic-bezier(.2,.8,.2,1) both;}
+  .pub-panel[hidden]{display:none;}
+  @keyframes panelAbre{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+  .pub-grupo{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--tenue);padding:14px 0 2px;}
+  .pub-op.pub-todos b{font-size:14px;color:#2f6bff;}
+
   .pub-lab{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--tenue);margin:24px 4px 10px;scroll-margin-top:16px;}
   .pub-lista,.vidrio{background:var(--papel);border:1px solid var(--vidrio-borde);border-radius:28px;box-shadow:var(--sombra);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);}
   .pub-lista{padding:2px 16px;}
@@ -465,19 +476,21 @@
   <section class="pub" id="pub" aria-labelledby="pubTit">
     <div class="pub-hero">
       <span class="pub-emp"><span class="marca pub-logo" role="img" aria-label="Logo de la empresa"></span><span data-empresa="nombre">Tu empresa</span></span>
-      <h2 id="pubTit"><span id="pubHola">Hola 👋</span><br>¿Qué vas a hacer?</h2>
+      <h2 id="pubTit"><span id="pubHola">Hola</span><br>¿Qué vas a hacer?</h2>
       <p id="pubSub">Sin usuario ni contraseña</p>
       <span class="pub-fecha" id="pubFecha"></span>
     </div>
     <div class="pub-tiles">
-      <a class="pub-tile azul" id="pubPreop" href="preoperacional.html"><svg class="ic" aria-hidden="true"><use href="#i-formulario"/></svg><span><b>Preoperacional</b><small>Revisa tu equipo antes de usarlo</small></span></a>
-      <a class="pub-tile sol" id="pubReportar" href="#reportar"><svg class="ic" aria-hidden="true"><use href="#i-alerta"/></svg><span><b>Reportar</b><small>Evento, PQRS o peligro</small></span></a>
+      <button type="button" class="pub-tile azul" id="pubPreop" data-panel="panPreop" aria-expanded="false" aria-controls="panPreop"><svg class="ic" aria-hidden="true"><use href="#i-formulario"/></svg><span><b>Preoperacional</b><small>Revisa tu equipo antes de usarlo</small></span><svg class="ic pub-chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>
+      <button type="button" class="pub-tile sol" id="pubReportar" data-panel="panReportar" aria-expanded="false" aria-controls="panReportar"><svg class="ic" aria-hidden="true"><use href="#i-alerta"/></svg><span><b>Reportar</b><small>Evento o PQRS</small></span><svg class="ic pub-chev" aria-hidden="true"><use href="#i-chevron"/></svg></button>
     </div>
-    <h3 class="pub-lab" id="reportar">Reportar</h3>
-    <div class="pub-lista" id="pubLista">
+    <!-- v123: cada tarjeta despliega lo que tiene adentro -->
+    <div class="pub-panel pub-lista" id="panPreop" hidden><div id="pubPreopLista"></div><a class="pub-op pub-todos" href="preoperacional.html"><span class="pub-op-t"><b>Ver todos y los ya hechos</b></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a></div>
+    <div class="pub-panel pub-lista" id="panReportar" hidden>
+      <div id="pubLista">
       <a class="pub-op" href="reportes.html?nuevo=1"><span class="sg-iso tri" aria-hidden="true"><svg class="ic"><use href="#i-alerta"/></svg></span><span class="pub-op-t"><b>Evento</b><small>Acto o condición insegura, incidente o accidente</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
       <a class="pub-op" href="reportes.html?nuevo=1&amp;pqrs=1"><span class="sg-iso circ" aria-hidden="true"><svg class="ic"><use href="#i-documentos"/></svg></span><span class="pub-op-t"><b>PQRS</b><small>Petición, queja, reclamo o sugerencia</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
-      <a class="pub-op" href="percepcion-peligros.html"><span class="sg-iso cuad" aria-hidden="true"><svg class="ic"><use href="#i-lupa"/></svg></span><span class="pub-op-t"><b>¿Qué peligros ves?</b><small>Encuesta para identificar los peligros de tu trabajo (puede ser anónima)</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
+      </div>
     </div>
   </section>
 
@@ -1072,13 +1085,32 @@ window.Agenda = (function () {
   const p = document.getElementById('pubPreop'), r = document.getElementById('pubReportar');
   if (p && !on('preop')) p.hidden = true;
   if (!on('reportes')) { document.querySelectorAll('#pubLista a[href^="reportes.html"]').forEach((a) => { a.hidden = true; }); }
-  if (r && !document.querySelector('#pubLista a:not([hidden])')) { r.hidden = true; const lab = document.getElementById('reportar'); if (lab) lab.hidden = true; document.getElementById('pubLista').hidden = true; }
+  if (r && !document.querySelector('#pubLista a:not([hidden])')) r.hidden = true;
   const tiles = document.querySelector('.pub-tiles');
   if (tiles && p && r && (p.hidden || r.hidden)) tiles.style.gridTemplateColumns = '1fr';
+  // Solo el nombre de los preoperacionales base (el formulario completo lo carga preoperacional.html; así el inicio abre liviano).
+  const PREOP_BASE_INDICE = [{"id":"montacargas","nombre":"Montacargas","codigo":"SSTA-F-082","grupo":"Equipos móviles"},{"id":"plataforma-tijera","nombre":"Plataforma eléctrica tipo tijera","codigo":"SSTA-F-171","grupo":"Equipos móviles"},{"id":"camioneta","nombre":"Camioneta / vehículo","codigo":"SSTA-F-065","grupo":"Equipos móviles"},{"id":"escalera","nombre":"Escalera de mano","codigo":"SSTA-F-083","grupo":"Trabajo en alturas"},{"id":"equipo-alturas","nombre":"Equipo de alturas (arnés, eslinga, tie off)","codigo":"SSTA-F-018","grupo":"Trabajo en alturas"},{"id":"camilla","nombre":"Camilla","codigo":"SSTA-F-163","grupo":"Emergencias"},{"id":"herramientas-menores","nombre":"Herramientas menores","codigo":"SSTA-F-010","grupo":"Herramientas y equipos"},{"id":"equipo-soldar","nombre":"Equipo de soldar","codigo":"SSTA-F-011","grupo":"Herramientas y equipos"},{"id":"equipo-oxicorte","nombre":"Equipo de oxicorte","codigo":"SSTA-F-012","grupo":"Herramientas y equipos"},{"id":"pulidora","nombre":"Pulidora","codigo":"SSTA-F-015","grupo":"Herramientas y equipos"},{"id":"taladro","nombre":"Taladro","codigo":"SSTA-F-047","grupo":"Herramientas y equipos"},{"id":"motortool","nombre":"Motortool","codigo":"SSTA-F-048","grupo":"Herramientas y equipos"},{"id":"roladora","nombre":"Roladora","codigo":"SSTA-F-167","grupo":"Herramientas y equipos"},{"id":"diferencial-cadena","nombre":"Diferencial con cadena","codigo":"SSTA-F-189","grupo":"Herramientas y equipos"}];
+  // v123: los preoperacionales (los de la empresa y los base) dentro de su tarjeta, por grupo.
+  (function () {
+    const propios = typeof PREOP_FORMULARIOS !== 'undefined' ? PREOP_FORMULARIOS : [], base = typeof PREOP_BASE !== 'undefined' ? PREOP_BASE : PREOP_BASE_INDICE;
+    const forms = propios.concat(base.filter((b) => !propios.some((f) => f.id === b.id || (f.codigo && f.codigo === b.codigo)))).filter((f) => !f.salud && (typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('preop', f.id)));
+    const grupos = []; forms.forEach((f) => { if (grupos.indexOf(f.grupo) === -1) grupos.push(f.grupo); });
+    const el = document.getElementById('pubPreopLista'); if (!el) return;
+    el.innerHTML = grupos.map((g) => '<div class="pub-grupo">' + esc(g) + '</div>' + forms.filter((f) => f.grupo === g).map((f) => '<a class="pub-op" href="preoperacional.html#' + encodeURIComponent(f.id) + '"><span class="sg-iso cuad" aria-hidden="true"><svg class="ic"><use href="#i-formulario"/></svg></span><span class="pub-op-t"><b>' + esc(f.nombre) + '</b>' + (f.codigo ? '<small>' + esc(f.codigo) + '</small>' : '') + '</span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>').join('')).join('');
+  })();
+  // Cada tarjeta abre su panel (y cierra el otro). Se recuerda en la dirección (#preop / #reportar), así «atrás» vuelve aquí abierto.
+  const paneles = [['pubPreop', 'panPreop', 'preop'], ['pubReportar', 'panReportar', 'reportar']];
+  function abrir(nombre, sinHistorial) {
+    paneles.forEach(([b, pa, n]) => { const on2 = n === nombre, bt = document.getElementById(b), pn = document.getElementById(pa); if (bt) bt.setAttribute('aria-expanded', on2 ? 'true' : 'false'); if (pn) pn.hidden = !on2; });
+    const h = nombre ? '#' + nombre : '';
+    if (!sinHistorial && location.hash !== '#sg' && location.hash !== h) history.replaceState(null, '', location.pathname + location.search + h);
+  }
+  paneles.forEach(([b, pa, n]) => { const bt = document.getElementById(b); if (bt) bt.addEventListener('click', () => { abrir(bt.getAttribute('aria-expanded') === 'true' ? '' : n); const pn = document.getElementById(pa); if (pn && !pn.hidden) setTimeout(() => pn.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 60); }); });
+  if (location.hash === '#preop' || location.hash === '#reportar') abrir(location.hash.slice(1), true);
   const yo = typeof Sesion !== 'undefined' && Sesion.yo();
   // v117: saludo según la hora y la fecha de hoy (más vivo que un «Hola» fijo).
   const h = new Date().getHours(), saludo = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
-  document.getElementById('pubHola').textContent = saludo + (yo && yo.nombre ? ', ' + String(yo.nombre).trim().split(/\s+/)[0] : '') + ' 👋';
+  document.getElementById('pubHola').textContent = saludo + (yo && yo.nombre ? ', ' + String(yo.nombre).trim().split(/\s+/)[0] : '');
   try { const f = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }); document.getElementById('pubFecha').textContent = f.charAt(0).toUpperCase() + f.slice(1); } catch (e) {}
   if (yo && yo.nombre) document.getElementById('pubSub').textContent = 'El preoperacional y los reportes no piden usuario. Lo demás está en «Gestión», arriba.';
 })();

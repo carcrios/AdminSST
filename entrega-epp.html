@@ -31,6 +31,10 @@
 .mfila .sug-el{grid-column:1 / -1;display:flex;flex-direction:column;gap:4px;}
 .mfila .sug-el button{text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 10px;min-height:44px;font-family:inherit;cursor:pointer;}
 .mfila .sug-el button b{display:block;font-size:13.5px;} .mfila .sug-el button small{display:block;font-size:11.5px;color:var(--muted);text-transform:none;text-align:left;letter-spacing:0;font-weight:500;margin:0;}
+.sub-t{font-size:15px;margin:18px 0 8px;display:flex;align-items:center;gap:8px;}.sub-t .n{font-size:12px;background:#eef3f9;border-radius:99px;padding:2px 9px;}
+.rep-f{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px;}.rep-f.on{border-color:var(--brand,#2f6bff);background:#f5f8ff;}.rep-f .grid2{margin-top:6px;}.rep-f select{width:100%;min-height:40px;}.rep-f small{color:var(--muted);font-weight:500;}
+.card h2 .n{font-size:12px;background:#eef3f9;border-radius:99px;padding:2px 9px;vertical-align:middle;margin-left:4px;}
+.tabla td:nth-child(2){white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -46,11 +50,12 @@
   <div class="kpis" id="kpis"></div>
   <div class="tabs" id="tabs">
     <button type="button" class="on" data-tab="entregas">Entregas <span class="n" id="nEnt">0</span></button>
-    <button type="button" data-tab="reponer">Por reponer <span class="n" id="nRep">0</span></button>
+    <button type="button" data-tab="personas">Por trabajador <span class="n" id="nPer">0</span></button>
+    <button type="button" data-tab="reponer">Reposición <span class="n" id="nRep">0</span></button>
     <button type="button" data-tab="matriz">Matriz por cargo <span class="n" id="nMat">0</span></button>
   </div>
   <div id="panel"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v122</div>
+  <div class="version-portal">Portal SSTA · versión v124</div>
 </div>
 <div class="screen" id="scrEnt"></div>
 </div>
@@ -112,7 +117,11 @@ function sugerenciasEpp(cargo, peligrosTxt, ya){
   if (!/oficina|administra|contab|recepci|secretar|gerente|auxiliar administrativ|asistente administrativ/.test(UI.norm(cargo))) BASE_CAMPO.forEach((n)=> add(n, 'dotación básica de campo'));
   return { lista: out, peligros: pels };
 }
-const MOTIVOS = ['Ingreso', 'Reposición por desgaste', 'Reposición por daño', 'Pérdida', 'Dotación periódica', 'Cambio de cargo', 'Temporal / visitante'];
+const MOTIVOS = ['Ingreso', 'Reposición por desgaste', 'Reposición por daño', 'Pérdida', 'Robo', 'Cambio de talla', 'Reposición (varios motivos)', 'Dotación periódica', 'Cambio de cargo', 'Temporal / visitante'];
+/* v124: reposición elemento por elemento: por qué se cambia y qué pasó con el anterior. */
+const MOTIVOS_REP = [['desgaste', 'Desgaste / vida útil cumplida', 'Reposición por desgaste'], ['dano', 'Daño', 'Reposición por daño'], ['perdida', 'Pérdida', 'Pérdida'], ['robo', 'Robo', 'Robo'], ['talla', 'Cambio de talla', 'Cambio de talla']];
+const DEVOLUCION = ['Devolvió el anterior: baja', 'Devolvió el anterior: se reusa', 'No lo devolvió'];
+const esReposicion = (r)=> /^(Reposici|Pérdida|Robo|Cambio de talla)/.test(String(r.motivo || '')) || !!r.reposicionTexto;
 let rows = [], tab = 'entregas';
 const de = (t)=> rows.filter((x)=> x.tipo === t);
 const limpiar = (t)=> String(t || '').replace(/[;|]/g, ' ').trim();
@@ -133,6 +142,16 @@ function porReponer(){
   }));
   return Object.keys(m).map((k)=> m[k]).sort((a, b)=> a.vence.localeCompare(b.vence));
 }
+/** Lo que tiene hoy una persona: la última entrega de cada elemento (con o sin vida útil). */
+function tenencia(cedula){
+  const k = Habilitacion.clave(cedula), m = {};
+  de('entrega').filter((x)=> Habilitacion.clave(x.resumen.cedula) === k).forEach((x)=> {
+    const venc = {}; String(x.resumen.vencimientos || '').split(/\s*;\s*/).forEach((v)=> { const p = v.split('|'); if (p[0]) venc[UI.norm(p[0])] = p[1] || ''; });
+    String(x.resumen.elementosTexto || '').split(/\s*,\s*/).forEach((t)=> { const el = t.replace(/^\d+\s*×\s*/, '').trim(); if (!el) return;
+      const n = UI.norm(el); if (!m[n] || String(x.fecha) > String(m[n].fecha)) m[n] = { elemento: el, fecha: x.fecha, vence: venc[n] || '', id: x.id }; });
+  });
+  return Object.keys(m).map((n)=> m[n]).sort((a, b)=> a.elemento.localeCompare(b.elemento));
+}
 function pintar(){
   const h = UI.hoy(), en30 = Festivos.sumarDias(h, 30), rep = porReponer(), venc = rep.filter((x)=> x.vence < h), pronto = rep.filter((x)=> x.vence >= h && x.vence <= en30);
   const activos = de('trabajador').filter((x)=> x.resumen.activo !== false), conEnt = new Set(de('entrega').map((x)=> Habilitacion.clave(x.resumen.cedula)));
@@ -147,14 +166,15 @@ function pintar(){
   $('kpis').innerHTML = '<div class="kpi ' + (venc.length ? 'mal' : 'ok') + '"' + (venc.length + pronto.length ? ' data-ir="tab:reponer"' : '') + '><div class="v">' + venc.length + '</div><div class="n">elementos con reposición vencida</div>' + (pronto.length ? '<div class="f">' + pronto.length + ' vencen en 30 días</div>' : '') + '</div>' +
     '<div class="kpi ' + (sinEnt.length ? 'mal' : 'ok') + '"' + (sinEnt.length ? ' data-ir="fn:verSinEntrega"' : '') + '><div class="v">' + sinEnt.length + '</div><div class="n">personas activas sin entrega registrada</div></div>' +
     '<div class="kpi ' + (sinMat.length ? 'pronto' : 'ok') + '" data-ir="tab:matriz"><div class="v">' + (cargos.size - sinMat.length) + ' / ' + cargos.size + '</div><div class="n">cargos con matriz de EPP</div></div>';
-  ({ entregas: pintarEntregas, reponer: pintarReponer, matriz: pintarMatriz })[tab]($('panel'));
+  $('nPer').textContent = personasEpp().length;
+  ({ entregas: pintarEntregas, personas: pintarPersonas, reponer: pintarReponer, matriz: pintarMatriz })[tab]($('panel'));
 }
 function item(x, titulo, sub, chip, clase, data){ return '<button type="button" class="item ' + (clase || '') + '" data-' + (data || 'id') + '="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + titulo + '</div>' + (sub || []).filter(Boolean).map((s)=> '<div class="m">' + s + '</div>').join('') + (x.pendiente ? '<div class="m"><span class="pend">⏳ pendiente de enviar</span></div>' : '') + '</div>' + (chip ? '<span class="chip ' + (clase || '') + '">' + chip + '</span>' : '') + '</div></button>'; }
 
 /* ── Entregas ── */
 function pintarEntregas(panel){
   const l = de('entrega').sort((a, b)=> String(b.fecha).localeCompare(String(a.fecha)));
-  panel.innerHTML = '<div class="acciones-top"><button type="button" class="btn amber" id="nuevaEnt">+ Registrar entrega</button><button type="button" class="btn ghost" id="pdfPersona">Historial de EPP de una persona (PDF)</button></div>' +
+  panel.innerHTML = '<div class="acciones-top"><button type="button" class="btn amber" id="nuevaEnt">+ Registrar entrega</button><button type="button" class="btn ghost" id="pdfPersona">Historial por trabajador</button></div>' +
     '<input type="search" class="buscar" id="bEnt" placeholder="Buscar por nombre o cédula"><div id="lEnt"></div>';
   const lista = ()=> { const q = UI.norm($('bEnt').value).trim();
     $('lEnt').innerHTML = l.filter((x)=> !q || UI.norm(x.resumen.nombre + ' ' + x.resumen.cedula).includes(q)).map((x)=> item(x, esc(x.resumen.nombre) + ' · ' + esc(UI.corta(x.fecha)),
@@ -162,15 +182,64 @@ function pintarEntregas(panel){
     $('lEnt').querySelectorAll('[data-id]').forEach((b)=> b.addEventListener('click', ()=> verEntrega(b.dataset.id))); };
   $('bEnt').addEventListener('input', lista); lista();
   $('nuevaEnt').addEventListener('click', ()=> nuevaEntrega({}));
-  $('pdfPersona').addEventListener('click', pdfPersona);
+  $('pdfPersona').addEventListener('click', ()=> irTab('personas'));
+  personaAbierta = null;
 }
 function pintarReponer(panel){
   const h = UI.hoy(), l = porReponer().filter((x)=> x.vence <= Festivos.sumarDias(h, 60));
-  panel.innerHTML = '<p class="ayuda">Lo último que se le entregó de cada elemento a cada persona, según la vida útil de la matriz. Toca para registrar la reposición.</p>' +
+  const hechas = de('entrega').filter((x)=> esReposicion(x.resumen)).sort((a, b)=> String(b.fecha).localeCompare(String(a.fecha)));
+  panel.innerHTML = '<div class="acciones-top"><button type="button" class="btn amber" id="nuevaRep">↻ Registrar reposición</button></div>' +
+    '<p class="ayuda">Para cambiar un elemento antes de tiempo (daño, pérdida, robo, talla) o porque cumplió su vida útil. Queda el motivo de cada elemento y qué pasó con el anterior.</p>' +
+    '<h3 class="sub-t">Por vencer en los próximos 60 días</h3>' +
     (l.length ? l.map((x, i)=> { const c = x.vence < h ? 'mal' : 'pronto';
-      return '<button type="button" class="item ' + c + '" data-r="' + i + '"><div class="fila"><div><div class="t">' + esc(x.elemento) + ' · ' + esc(x.nombre) + '</div><div class="m">Entregado el ' + esc(UI.corta(x.fecha)) + ' · ' + (x.vence < h ? 'venció' : 'vence') + ' el ' + esc(UI.corta(x.vence)) + ' (' + esc(UI.cuandoTexto(x.vence)) + ')</div></div><span class="chip ' + c + '">' + (c === 'mal' ? 'Vencido' : 'Por vencer') + '</span></div></button>'; }).join('')
-      : '<div class="empty">Nada por reponer en los próximos 60 días.</div>');
-  panel.querySelectorAll('[data-r]').forEach((b)=> b.addEventListener('click', ()=> { const x = l[+b.dataset.r]; nuevaEntrega({ nombre: x.nombre, cedula: x.cedula, cargo: x.cargo, motivo: 'Reposición por desgaste', solo: [x.elemento] }); }));
+      return '<button type="button" class="item ' + c + '" data-r="' + i + '"><div class="fila"><div><div class="t">' + esc(x.elemento) + ' · ' + esc(x.nombre) + '</div><div class="m">Entregado el ' + esc(UI.corta(x.fecha)) + ' · ' + (x.vence < h ? 'venció' : 'vence') + ' el ' + esc(UI.corta(x.vence)) + ' (' + esc(UI.cuandoTexto(x.vence)) + ')</div></div><span class="chip ' + c + '">' + (c === 'mal' ? 'Vencido' : 'Pronto') + '</span></div></button>'; }).join('')
+      : '<div class="empty">Nada por reponer en los próximos 60 días.</div>') +
+    '<h3 class="sub-t">Reposiciones hechas <span class="n">' + hechas.length + '</span></h3>' +
+    (hechas.length ? hechas.slice(0, 60).map((x)=> item(x, esc(x.resumen.nombre) + ' · ' + esc(UI.corta(x.fecha)), [esc(x.resumen.reposicionTexto || x.resumen.elementosTexto || ''), esc(x.resumen.motivo || '')], '', '', 'h')).join('')
+      : '<div class="empty">Todavía no hay reposiciones registradas.</div>');
+  panel.querySelectorAll('[data-r]').forEach((b)=> b.addEventListener('click', ()=> { const x = l[+b.dataset.r]; registrarReposicion({ nombre: x.nombre, cedula: x.cedula, cargo: x.cargo, elemento: x.elemento, motivo: 'desgaste' }); }));
+  panel.querySelectorAll('[data-h]').forEach((b)=> b.addEventListener('click', ()=> verEntrega(b.dataset.h)));
+  $('nuevaRep').addEventListener('click', ()=> registrarReposicion({}));
+}
+/** Paso 1 de la reposición: la persona, qué elementos se cambian, por qué y qué pasó con el anterior. */
+function registrarReposicion(pre){
+  const m = UI.modal('<h3>Registrar reposición de EPP</h3>' +
+    '<div class="field"><label>Trabajador *</label><input type="text" id="rNom" value="' + esc(pre.nombre || '') + '" placeholder="Escribe el nombre o la cédula"></div>' +
+    '<div class="grid2"><div class="field"><label>Cédula *</label><input type="text" id="rCed" inputmode="numeric" value="' + esc(pre.cedula || '') + '"></div><div class="field"><label>Cargo</label><input type="text" id="rCargo" value="' + esc(pre.cargo || '') + '"></div></div>' +
+    '<div id="rEls"></div><div class="field"><label>Otro elemento que se repone</label><input type="text" id="rOtro" list="dlCatR" placeholder="Escribe y toca Agregar"><datalist id="dlCatR">' + CATALOGO.map((c)=> '<option value="' + esc(c[0]) + '">').join('') + '</datalist></div>' +
+    '<button type="button" class="btn ghost mini" id="rAdd">Agregar</button>' +
+    '<button type="button" class="btn amber" id="rSig">Continuar: firma de quien recibe</button><button type="button" class="btn ghost" data-cerrar>Cancelar</button><div class="status-msg" id="rMsg"></div>', true);
+  const q = (sel)=> m.el.querySelector(sel);
+  let filas = [];
+  const opts = (l, v)=> l.map((o)=> { const [k, t] = Array.isArray(o) ? o : [o, o]; return '<option value="' + esc(k) + '"' + (k === v ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('');
+  const pintarFilas = ()=> {
+    q('#rEls').innerHTML = filas.length ? '<p class="ayuda" style="margin:6px 0;">Marca lo que se le cambia. Lo que tiene hoy:</p>' + filas.map((f, i)=> '<div class="rep-f' + (f.va ? ' on' : '') + '"><label class="check"><input type="checkbox" data-v="' + i + '"' + (f.va ? ' checked' : '') + '> <b>' + esc(f.elemento) + '</b>' +
+        (f.fecha ? '<small> · entregado ' + esc(UI.corta(f.fecha)) + (f.vence ? ' · vence ' + esc(UI.corta(f.vence)) : '') + '</small>' : '') + '</label>' +
+        '<div class="grid2"><select data-m="' + i + '" aria-label="Motivo">' + opts(MOTIVOS_REP.map((x)=> [x[0], x[1]]), f.motivo) + '</select><select data-d="' + i + '" aria-label="El anterior">' + opts(DEVOLUCION, f.devolucion) + '</select></div></div>').join('')
+      : '<div class="ayuda" style="margin:8px 0;">' + (Habilitacion.clave(q('#rCed').value) ? 'No tiene entregas registradas: agrega abajo lo que se le repone.' : 'Escoge al trabajador para ver lo que tiene.') + '</div>';
+    q('#rEls').querySelectorAll('[data-v]').forEach((x)=> x.addEventListener('change', ()=> { filas[+x.dataset.v].va = x.checked; x.closest('.rep-f').classList.toggle('on', x.checked); }));
+    q('#rEls').querySelectorAll('[data-m]').forEach((x)=> x.addEventListener('change', ()=> { const f = filas[+x.dataset.m]; f.motivo = x.value; if (/perdida|robo/.test(x.value)) { f.devolucion = DEVOLUCION[2]; pintarFilas(); } }));
+    q('#rEls').querySelectorAll('[data-d]').forEach((x)=> x.addEventListener('change', ()=> { filas[+x.dataset.d].devolucion = x.value; }));
+  };
+  const traer = ()=> {
+    const ya = filas.filter((f)=> !f.fecha);   // los agregados a mano se conservan
+    filas = tenencia(q('#rCed').value).map((t)=> Object.assign(t, { va: !!pre.elemento && UI.norm(pre.elemento) === UI.norm(t.elemento), motivo: pre.motivo || 'dano', devolucion: DEVOLUCION[0] })).concat(ya);
+    pintarFilas();
+  };
+  UI.autocompletar(q('#rNom'), (p)=> { q('#rNom').value = p.nombre; q('#rCed').value = p.cedula || ''; q('#rCargo').value = p.cargo || ''; traer(); });
+  q('#rCed').addEventListener('change', traer);
+  q('#rAdd').addEventListener('click', ()=> { const n = limpiar(q('#rOtro').value); if (!n) return; filas.push({ elemento: n, va: true, motivo: 'dano', devolucion: DEVOLUCION[0] }); q('#rOtro').value = ''; pintarFilas(); });
+  traer();
+  q('#rSig').addEventListener('click', ()=> {
+    const van = filas.filter((f)=> f.va), msg = q('#rMsg');
+    if (!q('#rNom').value.trim() || !Habilitacion.clave(q('#rCed').value)) { msg.textContent = 'Faltan el trabajador y la cédula.'; return; }
+    if (!van.length) { msg.textContent = 'Marca al menos un elemento que se repone.'; return; }
+    const reposicion = van.map((f)=> ({ elemento: limpiar(f.elemento), motivo: (MOTIVOS_REP.find((x)=> x[0] === f.motivo) || MOTIVOS_REP[1])[1], devolucion: f.devolucion, anterior: f.fecha || '', anteriorId: f.id || '' }));
+    const ms = [...new Set(van.map((f)=> f.motivo))];
+    const motivo = ms.length === 1 ? (MOTIVOS_REP.find((x)=> x[0] === ms[0]) || MOTIVOS_REP[1])[2] : 'Reposición (varios motivos)';
+    m.cerrar();
+    nuevaEntrega({ nombre: q('#rNom').value.trim(), cedula: q('#rCed').value.trim(), cargo: q('#rCargo').value.trim(), motivo, solo: reposicion.map((x)=> x.elemento), reposicion });
+  });
 }
 
 /* ── Matriz de EPP por cargo ── */
@@ -273,10 +342,11 @@ function matrizDe(cargo){ const x = de('eppcargo').find((m)=> UI.norm(m.resumen.
 /* ── Registrar una entrega ── */
 async function nuevaEntrega(pre){
   const s = $('scrEnt');
-  s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><div class="eyebrow">Entrega de EPP</div><h1>Registrar entrega</h1><p>Con la firma de quien recibe</p></div>' +
+  s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><div class="eyebrow">Entrega de EPP</div><h1>' + (pre.reposicion ? 'Registrar reposición' : 'Registrar entrega') + '</h1><p>Con la firma de quien recibe</p></div>' +
     '<div class="card"><div class="field"><label>Trabajador *</label><input type="text" id="eNom" value="' + esc(pre.nombre || '') + '" placeholder="Escribe para buscar"></div>' +
     '<div class="grid2"><div class="field"><label>Cédula *</label><input type="text" id="eCed" inputmode="numeric" value="' + esc(pre.cedula || '') + '"></div><div class="field"><label>Cargo</label><input type="text" id="eCargo" value="' + esc(pre.cargo || '') + '"></div></div>' +
     '<div class="grid2"><div class="field"><label>Fecha</label><input type="date" id="eFecha" value="' + UI.hoy() + '"></div><div class="field"><label>Motivo</label><select id="eMot">' + MOTIVOS.map((x)=> '<option' + (x === pre.motivo ? ' selected' : '') + '>' + esc(x) + '</option>').join('') + '</select></div></div></div>' +
+    (pre.reposicion ? '<div class="card"><h2>Se repone</h2><table class="tabla"><tr><th>Elemento</th><th>Motivo</th><th>El anterior</th></tr>' + pre.reposicion.map((x)=> '<tr><td>' + esc(x.elemento) + (x.anterior ? '<br><small>entregado ' + esc(UI.corta(x.anterior)) + '</small>' : '') + '</td><td>' + esc(x.motivo) + '</td><td>' + esc(x.devolucion) + '</td></tr>').join('') + '</table></div>' : '') +
     '<div class="card"><h2>Elementos</h2><div id="eEls"></div><div class="field" style="margin-top:8px;"><label>Otro elemento (fuera de la matriz)</label><input type="text" id="eOtro" list="dlCat2" placeholder="Escribe y toca Agregar"></div><button type="button" class="btn ghost mini" id="eAdd">Agregar</button>' +
     '<datalist id="dlCat2">' + CATALOGO.map((c)=> '<option value="' + esc(c[0]) + '">').join('') + '</datalist></div>' +
     '<div class="card"><label class="check"><input type="checkbox" id="eCap" checked> Se le explicó el uso, cuidado, limitaciones y cuándo pedir reposición</label>' +
@@ -314,12 +384,13 @@ async function nuevaEntrega(pre){
     const vences = elementos.filter((e)=> e.vence).map((e)=> e.vence).sort();
     const doc = { nombre: $('eNom').value.trim(), cedula: $('eCed').value.trim(), cargo: $('eCargo').value.trim(), fecha: f, motivo: $('eMot').value, elementos,
       elementosTexto: elementos.map((e)=> (e.cantidad > 1 ? e.cantidad + ' × ' : '') + e.elemento).join(', '), vencimientos: elementos.filter((e)=> e.vence).map((e)=> e.elemento + '|' + e.vence).join('; '),
-      reponer: vences[0] || '', capacitado: $('eCap').checked, observaciones: $('eObs').value.trim(), firma, entrego: $('eEntrego').value.trim() };
+      reponer: vences[0] || '', capacitado: $('eCap').checked,
+      reposicion: pre.reposicion || undefined, reposicionTexto: pre.reposicion ? pre.reposicion.map((x)=> x.elemento + ' (' + x.motivo.toLowerCase() + (/No lo/.test(x.devolucion) ? ', sin devolver' : '') + ')').join(', ') : undefined, observaciones: $('eObs').value.trim(), firma, entrego: $('eEntrego').value.trim() };
     $('eOk').disabled = true; msg.textContent = 'Guardando…';
     const r = await Registros.guardar('entrega', SGSST.nuevoId('ENT'), doc, 0);
     $('eOk').disabled = false;
     if (typeof r === 'string') { msg.textContent = r; return; }
-    UI.toast(r.enCola ? '⏳ Entrega guardada en el equipo; se envía al volver la señal.' : '✓ Entrega registrada.');
+    UI.toast(r.enCola ? '⏳ Guardada en el equipo; se envía al volver la señal.' : (pre.reposicion ? '✓ Reposición registrada.' : '✓ Entrega registrada.'));
     show('scrLista'); cargar();
   });
 }
@@ -329,6 +400,7 @@ async function verEntrega(id){
   const s = $('scrEnt');
   s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><div class="eyebrow">' + esc(d.id) + '</div><h1>' + esc(d.nombre) + '</h1><p>' + esc(UI.corta(d.fecha)) + ' · ' + esc(d.motivo) + '</p></div>' +
     '<div class="card"><table class="tabla"><tr><th>Elemento</th><th>Cant.</th><th>Talla</th><th>Reponer</th></tr>' + (d.elementos || []).map((e)=> '<tr><td>' + esc(e.elemento) + '<br><small>' + esc(e.norma || '') + '</small></td><td>' + esc(e.cantidad) + '</td><td>' + esc(e.talla || '') + '</td><td>' + esc(UI.corta(e.vence)) + '</td></tr>').join('') + '</table>' +
+    (Array.isArray(d.reposicion) && d.reposicion.length ? '<h3 class="sub-t">Reposición</h3><table class="tabla"><tr><th>Elemento</th><th>Motivo</th><th>El anterior</th></tr>' + d.reposicion.map((x)=> '<tr><td>' + esc(x.elemento) + (x.anterior ? '<br><small>entregado ' + esc(UI.corta(x.anterior)) + '</small>' : '') + '</td><td>' + esc(x.motivo) + '</td><td>' + esc(x.devolucion) + '</td></tr>').join('') + '</table>' : '') +
     '<div class="m">' + (d.capacitado ? '✓ Se le explicó el uso y cuidado.' : '⚠ Sin capacitación en el uso registrada.') + (d.entrego ? ' · Entregó: ' + esc(d.entrego) : '') + '</div>' + (d.observaciones ? '<div class="texto-largo" style="margin-top:8px;">' + esc(d.observaciones) + '</div>' : '') +
     (UI.src(d.firma) ? '<div style="margin-top:8px;"><img src="' + UI.src(d.firma) + '" alt="Firma" style="max-height:70px;"></div>' : '') + '</div>' +
     '<button type="button" class="btn ghost" id="vPdf">🖨️ Registro de entrega (PDF)</button><div class="card"><div id="vAdj"></div><div id="vHist"></div></div>';
@@ -344,11 +416,59 @@ function pdfEntregas(lista, quien){
   UI.imprimir([UI.cabecera('SG-ENTREGA-EPP', 'REGISTRO DE ENTREGA DE ELEMENTOS DE PROTECCIÓN PERSONAL', quien) +
     UI.seccion('TRABAJADOR', UI.tablaDatos([['Nombre', d0.nombre || ''], ['Cédula', d0.cedula || ''], ['Cargo', d0.cargo || ''], ['Entregas', String(lista.length)]])) +
     UI.seccion('ELEMENTOS ENTREGADOS', '<table><tr><td class="l">Fecha / motivo</td><td class="l">Elemento</td><td class="l">Cant.</td><td class="l">Talla</td><td class="l">Reponer</td><td class="l">Capacitado en su uso</td><td class="l">Firma de quien recibe</td><td class="l">Entregó</td></tr>' + filas + '</table>') +
+    (lista.some((d)=> Array.isArray(d.reposicion) && d.reposicion.length) ? UI.seccion('REPOSICIONES', '<table><tr><td class="l">Fecha</td><td class="l">Elemento</td><td class="l">Motivo</td><td class="l">Elemento anterior</td></tr>' +
+      lista.filter((d)=> Array.isArray(d.reposicion)).map((d)=> d.reposicion.map((x)=> '<tr><td>' + esc(UI.corta(d.fecha)) + '</td><td>' + esc(x.elemento) + '</td><td>' + esc(x.motivo) + '</td><td>' + esc(x.devolucion) + '</td></tr>').join('')).join('') + '</table>') : '') +
     '<table><tr><td style="font-size:9px;">El trabajador se compromete a usar, cuidar y conservar los elementos recibidos, y a pedir su reposición cuando se dañen o cumplan su vida útil.</td></tr></table>'], true);
 }
-async function pdfPersona(){
-  const q = prompt('Cédula de la persona:'); if (!q) return;
-  const ids = de('entrega').filter((x)=> Habilitacion.clave(x.resumen.cedula) === Habilitacion.clave(q)).sort((a, b)=> String(a.fecha).localeCompare(String(b.fecha))).map((x)=> x.id);
+/* ── v124: historial de EPP por trabajador ── */
+function irTab(t){ tab = t; document.querySelectorAll('#tabs button').forEach((x)=> x.classList.toggle('on', x.dataset.tab === t)); pintar(); }
+/** Cada persona con entregas: cuántas, la última, y cuántos elementos tiene vencidos o por vencer. */
+function personasEpp(){
+  const m = {}, h = UI.hoy(), en30 = Festivos.sumarDias(h, 30);
+  de('entrega').forEach((x)=> { const k = Habilitacion.clave(x.resumen.cedula) || UI.norm(x.resumen.nombre); if (!k) return;
+    const p = m[k] || (m[k] = { k, nombre: x.resumen.nombre, cedula: x.resumen.cedula, cargo: x.resumen.cargo, n: 0, rep: 0, ultima: '' });
+    p.n++; if (esReposicion(x.resumen)) p.rep++;
+    if (String(x.fecha) >= p.ultima) { p.ultima = String(x.fecha); p.nombre = x.resumen.nombre || p.nombre; p.cargo = x.resumen.cargo || p.cargo; } });
+  return Object.keys(m).map((k)=> { const p = m[k], t = tenencia(p.cedula);
+    p.vencidos = t.filter((e)=> e.vence && e.vence < h).length; p.pronto = t.filter((e)=> e.vence && e.vence >= h && e.vence <= en30).length; p.elementos = t.length; return p; })
+    .sort((a, b)=> a.nombre.localeCompare(b.nombre));
+}
+function pintarPersonas(panel){
+  personaAbierta = null;
+  const l = personasEpp();
+  panel.innerHTML = '<p class="ayuda">Todo lo que se le ha entregado y repuesto a cada trabajador, con lo que tiene hoy y cuándo se le vence.</p>' +
+    '<input type="search" class="buscar" id="bPer" placeholder="Buscar por nombre, cédula o cargo"><div id="lPer"></div>';
+  const lista = ()=> { const q = UI.norm($('bPer').value).trim();
+    $('lPer').innerHTML = l.filter((p)=> !q || UI.norm(p.nombre + ' ' + p.cedula + ' ' + p.cargo).includes(q)).map((p, i)=> { const c = p.vencidos ? 'mal' : p.pronto ? 'pronto' : 'ok';
+      return '<button type="button" class="item ' + (c === 'ok' ? '' : c) + '" data-p="' + esc(p.k) + '"><div class="fila"><div><div class="t">' + esc(p.nombre) + '</div>' +
+        '<div class="m">' + esc([p.cedula && 'C.C. ' + p.cedula, p.cargo].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="m">' + p.n + (p.n === 1 ? ' entrega' : ' entregas') + (p.rep ? ' · ' + p.rep + (p.rep === 1 ? ' reposición' : ' reposiciones') : '') + ' · última ' + esc(UI.corta(p.ultima)) + '</div></div>' +
+        '<span class="chip ' + c + '">' + (p.vencidos ? p.vencidos + ' vencido' + (p.vencidos > 1 ? 's' : '') : p.pronto ? p.pronto + ' por vencer' : 'Al día') + '</span></div></button>'; }).join('') || '<div class="empty">' + (l.length ? 'Nadie coincide.' : 'Sin entregas registradas.') + '</div>';
+    $('lPer').querySelectorAll('[data-p]').forEach((b)=> b.addEventListener('click', ()=> verPersona(b.dataset.p))); };
+  $('bPer').addEventListener('input', lista); lista();
+}
+async function verPersona(k){
+  personaAbierta = k;
+  const p = personasEpp().find((x)=> x.k === k); if (!p) return;
+  const h = UI.hoy(), en30 = Festivos.sumarDias(h, 30);
+  const regs = de('entrega').filter((x)=> (Habilitacion.clave(x.resumen.cedula) || UI.norm(x.resumen.nombre)) === k).sort((a, b)=> String(b.fecha).localeCompare(String(a.fecha)));
+  const tiene = tenencia(p.cedula);
+  const estado = (v)=> !v ? ['', 'Sin vida útil'] : v < h ? ['mal', 'Venció ' + UI.corta(v)] : v <= en30 ? ['pronto', 'Vence ' + UI.corta(v)] : ['ok', 'Hasta ' + UI.corta(v)];
+  const s = $('scrEnt');
+  s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><div class="eyebrow">Historial de EPP</div><h1>' + esc(p.nombre) + '</h1><p>' + esc([p.cedula && 'C.C. ' + p.cedula, p.cargo].filter(Boolean).join(' · ')) + '</p></div>' +
+    '<div class="acciones-top"><button type="button" class="btn amber" id="hpEnt">+ Entrega</button><button type="button" class="btn ghost" id="hpRep">↻ Reposición</button><button type="button" class="btn ghost" id="hpPdf">Historial (PDF)</button></div>' +
+    '<div class="card"><h2>Lo que tiene hoy</h2>' + (tiene.length ? '<table class="tabla"><tr><th>Elemento</th><th>Entregado</th><th>Reposición</th></tr>' +
+      tiene.map((e)=> { const [c, t] = estado(e.vence); return '<tr><td>' + esc(e.elemento) + '</td><td>' + esc(UI.corta(e.fecha)) + '</td><td>' + (c ? '<span class="chip ' + c + '">' + esc(t) + '</span>' : esc(t)) + '</td></tr>'; }).join('') + '</table>' : '<div class="empty">Nada.</div>') + '</div>' +
+    '<div class="card"><h2>Historial <span class="n">' + regs.length + '</span></h2>' +
+      regs.map((x)=> item(x, esc(UI.corta(x.fecha)) + ' · ' + esc(x.resumen.motivo || 'Entrega'), [esc(x.resumen.reposicionTexto ? 'Repuso: ' + x.resumen.reposicionTexto : x.resumen.elementosTexto || ''), x.resumen.entrego ? 'Entregó ' + esc(x.resumen.entrego) : ''], esReposicion(x.resumen) ? 'Reposición' : 'Entrega', esReposicion(x.resumen) ? 'pronto' : '', 'hv')).join('') + '</div>';
+  s.querySelectorAll('[data-hv]').forEach((b)=> b.addEventListener('click', ()=> verEntrega(b.dataset.hv)));
+  $('hpEnt').addEventListener('click', ()=> nuevaEntrega({ nombre: p.nombre, cedula: p.cedula, cargo: p.cargo }));
+  $('hpRep').addEventListener('click', ()=> registrarReposicion({ nombre: p.nombre, cedula: p.cedula, cargo: p.cargo }));
+  $('hpPdf').addEventListener('click', ()=> pdfPersona(p.cedula));
+  show('scrEnt');
+}
+async function pdfPersona(cedula){
+  const ids = de('entrega').filter((x)=> Habilitacion.clave(x.resumen.cedula) === Habilitacion.clave(cedula)).sort((a, b)=> String(a.fecha).localeCompare(String(b.fecha))).map((x)=> x.id);
   if (!ids.length) { UI.toast('No hay entregas para esa cédula.', 'mal'); return; }
   UI.toast('Preparando…');
   const docs = (await Promise.all(ids.map((id)=> SGSST.doc(id)))).filter(Boolean);
@@ -363,7 +483,12 @@ async function pdfMatriz(){
 }
 
 $('tabs').addEventListener('click', (e)=>{ const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; document.querySelectorAll('#tabs button').forEach((x)=> x.classList.toggle('on', x === b)); pintar(); });
-document.addEventListener('click', (e)=>{ const v = e.target.closest('[data-volver]'); if (v) { e.preventDefault(); show('scrLista'); pintar(); } });
+// Desde un registro abierto en el historial de una persona, «Volver» regresa a ese historial.
+let personaAbierta = null;
+document.addEventListener('click', (e)=>{ const v = e.target.closest('[data-volver]'); if (!v) return; e.preventDefault();
+  const h1 = document.querySelector('#scrEnt .eyebrow'), enHist = h1 && h1.textContent === 'Historial de EPP';
+  if (personaAbierta && !enHist) { const k = personaAbierta; verPersona(k); return; }
+  personaAbierta = null; show('scrLista'); pintar(); });
 window.addEventListener('outbox-enviado', ()=> cargar());
 cargar();
 </script>

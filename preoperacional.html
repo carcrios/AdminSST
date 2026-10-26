@@ -67,7 +67,7 @@
   <div id="avisoSrv"></div><div id="avisoCopia"></div>
   <div class="tabs" id="tabs"><button type="button" data-tab="formularios" class="on">Formularios</button><button type="button" data-tab="registros">Registros</button></div>
   <div id="panel"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v122</div>
+  <div class="version-portal">Portal SSTA · versión v124</div>
 </div>
 
 <div class="screen" id="scrForm">
@@ -97,6 +97,7 @@
 <script src="sgsst-ui.js"></script>
 <script src="registros.js"></script>
 <script src="preop-formularios.js"></script>
+<script src="preop-base.js"></script>
 <script>
 OfflineBanner.init();
 OutboxBadge.init();
@@ -109,8 +110,12 @@ if (typeof UpdateManager !== 'undefined') UpdateManager.init();
    guardan en el SG-SST (tipo "preop"; el de condiciones de salud, "preopsalud", que
    solo ven Administrador y SST), con fotos de lo que está mal, PDF y su hoja. */
 const $ = UI.$;
-const FORMS = typeof PREOP_FORMULARIOS !== 'undefined' ? PREOP_FORMULARIOS : [];
+// v123: los de la empresa (formularios de Google importados) y los base del portal (sus formatos SSTA-F-…).
+const FORMS = (function () { const propios = typeof PREOP_FORMULARIOS !== 'undefined' ? PREOP_FORMULARIOS : [], base = typeof PREOP_BASE !== 'undefined' ? PREOP_BASE : [];
+  return propios.concat(base.filter((b)=> !propios.some((f)=> f.id === b.id || (f.codigo && f.codigo === b.codigo)))); })();
 const formDe = (id)=> FORMS.find((f)=> f.id === id);
+// v124: los que el administrador apagó para esta empresa no se ofrecen (los registros viejos sí se ven).
+const OFRECER = FORMS.filter((f)=> typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('preop', f.id));
 const esSst = ()=> !Sesion.modo() || !Sesion.yo() || ['admin', 'sst'].indexOf(Sesion.rol()) !== -1;
 let rows = [], equipos = [], tab = 'formularios', actual = null, resp = {}, hall = {}, pila = [0], pagina = 0, firmaPad = false;
 
@@ -124,9 +129,10 @@ function opcionesDe(q){
 }
 
 async function cargar(){
-  if (!FORMS.length) { $('panel').innerHTML = '<div class="aviso info">Aún no hay preoperacionales cargados. Se generan con <code>herramientas/importar-formularios.js</code> a partir de los formularios de Google de la empresa.</div>'; return; }
+  if (!OFRECER.length) { $('panel').innerHTML = '<div class="aviso info">Aún no hay preoperacionales cargados. Se generan con <code>herramientas/importar-formularios.js</code> a partir de los formularios de Google de la empresa.</div>'; return; }
   if (UI.avisoServidor($('avisoSrv'))) { pintar(); return; }
-  const r = await SGSST.listar(esSst() ? 'preop,preopsalud,equipo' : 'preop,equipo');
+  // Sin usuario se llena el formulario igual; la lista de los ya hechos no le pide entrar (v123).
+  const r = await SGSST.listar(esSst() ? 'preop,preopsalud,equipo' : 'preop,equipo', { sinPedir: true });
   UI.avisoCopia($('avisoCopia'), r);
   rows = (r.rows || []).filter((x)=> x.tipo === 'preop' || x.tipo === 'preopsalud');
   equipos = (r.rows || []).filter((x)=> x.tipo === 'equipo' && x.resumen.activo !== false);
@@ -136,9 +142,9 @@ function pintar(){
   document.querySelectorAll('#tabs button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === tab));
   const p = $('panel');
   if (tab === 'formularios') {
-    const grupos = []; FORMS.forEach((f)=> { if (grupos.indexOf(f.grupo) === -1) grupos.push(f.grupo); });
+    const grupos = []; OFRECER.forEach((f)=> { if (grupos.indexOf(f.grupo) === -1) grupos.push(f.grupo); });
     p.innerHTML = '<input type="search" class="buscar" id="bForm" placeholder="Buscar equipo (pulidora, andamio, taladro…)">' + grupos.map((g)=> '<div data-g><h2 class="grupo-h">' + esc(g) + '</h2><div class="forms">' +
-      FORMS.filter((f)=> f.grupo === g).map((f)=> { const n = rows.filter((x)=> x.resumen.formulario === f.id && String(x.resumen.fecha) === UI.hoy()).length;
+      OFRECER.filter((f)=> f.grupo === g).map((f)=> { const n = rows.filter((x)=> x.resumen.formulario === f.id && String(x.resumen.fecha) === UI.hoy()).length;
         return '<button type="button" data-f="' + esc(f.id) + '" data-q="' + esc(UI.norm(f.nombre + ' ' + f.titulo + ' ' + f.grupo)) + '"><span class="t">' + esc(f.nombre) + '</span><span class="m">' + esc(codigoDe(f) || f.titulo) + (n ? ' · ' + n + ' hoy' : '') + '</span></button>'; }).join('') + '</div></div>').join('');
     $('bForm').addEventListener('input', ()=> { const q = UI.norm($('bForm').value); p.querySelectorAll('[data-f]').forEach((b)=> { b.hidden = q && b.dataset.q.indexOf(q) === -1; }); p.querySelectorAll('[data-g]').forEach((g)=> { g.hidden = !g.querySelector('[data-f]:not([hidden])'); }); });
   } else {
@@ -347,7 +353,7 @@ async function csv(formId){
 
 window.addEventListener('outbox-enviado', ()=> { if ($('scrLista').classList.contains('active')) cargar(); });
 // #<formulario> abre ese formulario (las tarjetas del inicio); #PRE-… abre un registro (desde el plan de acción).
-cargar().then(()=> { const id = decodeURIComponent(location.hash.slice(1) || ''); if (/^PRE-/.test(id)) verRegistro(id); else if (id && formDe(id)) abrirForm(id); });
+cargar().then(()=> { const id = decodeURIComponent(location.hash.slice(1) || ''); if (/^PRE-/.test(id)) verRegistro(id); else if (id && OFRECER.some((f)=> f.id === id)) abrirForm(id); });
 </script>
 </body>
 </html>

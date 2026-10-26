@@ -129,6 +129,10 @@ details.c-card summary{cursor:pointer;font-weight:800;font-size:16px;}
 <script src="valida.js"></script>
 <script src="sgsst-ui.js"></script>
 <script src="auditorias-plantillas.js"></script>
+<script src="preop-formularios.js"></script>
+<script src="preop-base.js"></script>
+<script src="inspecciones-plantillas.js"></script>
+<script src="menus-empresa.js"></script>
 <script>
 OfflineBanner.init();
 if (typeof UpdateManager !== 'undefined') UpdateManager.init();
@@ -312,26 +316,26 @@ async function revisarTodos(){
 $('btnRevisar').addEventListener('click', revisarTodos);
 $('buscar').addEventListener('input', pintar);
 
-/* ── Módulos de un cliente: se prenden o apagan aquí y se publican en tu servidor ── */
+/* ── Menús de un cliente (v124): módulos, preoperacionales e inspecciones que ve.
+      Se prenden o apagan aquí y se publican en tu servidor. ── */
 async function abrirModulos(x){
-  const m = UI.modal('<h3>Módulos de ' + esc(x.titulo) + '</h3><div class="empty">Cargando…</div>');
+  const tit = '<h3>Menús de ' + esc(x.titulo) + '</h3>';
+  const m = UI.modal(tit + '<div class="empty">Cargando…</div>');
   const cfg = await configDe(x);
-  if (!cfg.config) { m.el.innerHTML = '<h3>Módulos de ' + esc(x.titulo) + '</h3><div class="aviso">Todavía no tiene configuración. Usa «Editar todo» para hacerla.</div><button type="button" class="btn ghost" data-cerrar>Cerrar</button>'; return; }
-  const on = cfg.config.modulos || {};
-  const lista = (typeof CATALOGO_MODULOS !== 'undefined' ? CATALOGO_MODULOS : []).filter(([k])=> k !== 'asesor');
-  m.el.innerHTML = '<h3>Módulos de ' + esc(x.titulo) + '</h3>' +
+  if (!cfg.config) { m.el.innerHTML = tit + '<div class="aviso">Todavía no tiene configuración. Usa «Editar todo» para hacerla.</div><button type="button" class="btn ghost" data-cerrar>Cerrar</button>'; return; }
+  m.el.innerHTML = tit +
     (cfg.deServidor ? '' : '<div class="aviso info">Hoy toma su configuración de <code>empresas/' + esc(codigo(x)) + '.json</code>. Al guardar pasa a tu servidor y ya no hay que subir archivos.</div>') +
-    '<p class="ayuda">Lo apagado desaparece de su portal y su servidor deja de aceptar registros de ese módulo.</p>' +
-    '<div class="mods-c" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;max-height:52vh;overflow:auto;margin:8px 0;">' +
-    lista.map(([k, t])=> '<label style="display:flex;gap:8px;align-items:center;font-size:14px;padding:6px 4px;"><input type="checkbox" data-k="' + k + '"' + (on[k] !== false ? ' checked' : '') + ' style="width:20px;height:20px;"> ' + esc(t) + '</label>').join('') + '</div>' +
+    '<p class="ayuda">Marca lo que esta empresa ve. Lo apagado no se borra: sus registros viejos se siguen viendo.</p>' +
+    '<div id="mMenus" style="max-height:58vh;overflow:auto;margin:8px 0;">' + MenusEmpresa.html(cfg.config) + '</div>' +
     '<button type="button" class="btn amber" id="mGuardar">Guardar y publicar</button><button type="button" class="btn ghost" data-cerrar>Cancelar</button><div class="status-msg" id="mMsg"></div>';
+  MenusEmpresa.activar(m.el.querySelector('#mMenus'));
   m.el.querySelector('#mGuardar').addEventListener('click', async ()=> {
     const msg = m.el.querySelector('#mMsg'), bt = m.el.querySelector('#mGuardar'); bt.disabled = true; msg.textContent = 'Guardando…';
-    const nuevos = Object.assign({}, on); m.el.querySelectorAll('[data-k]').forEach((c)=> { nuevos[c.dataset.k] = c.checked; });
-    cfg.config.modulos = nuevos;
+    const l = MenusEmpresa.leer(m.el.querySelector('#mMenus'), cfg.config.modulos);
+    cfg.config.modulos = l.modulos; cfg.config.ocultos = l.ocultos;
     const r = await guardarConfig(x, cfg.d, cfg.config);
     if (!r.ok) { msg.textContent = r.error; bt.disabled = false; return; }
-    m.cerrar(); UI.toast(r.aviso || '✓ Módulos publicados'); cargar();
+    m.cerrar(); UI.toast(r.aviso || '✓ Menús publicados'); cargar();
   });
 }
 /** Guarda la configuración del cliente en su registro y la publica (celulares + su servidor). */
@@ -401,7 +405,7 @@ function pintar(){
       '<div class="m">' + esc([s.nit ? 'NIT ' + s.nit : '', s.trabajadores ? s.trabajadores + ' trabajadores' : '', s.claseRiesgo ? 'riesgo ' + s.claseRiesgo : '', codigo(x) ? 'código ' + codigo(x) : '', s.ciudad].filter(Boolean).join(' · ')) + '</div>' +
       '<div class="tags">' + tSrv + tMod + '<span class="tag ' + (ve ? 'mal' : '') + '">' + ab + ' tarea' + (ab === 1 ? '' : 's') + ' abierta' + (ab === 1 ? '' : 's') + (ve ? ' · ' + ve + ' vencida' + (ve === 1 ? '' : 's') : '') + '</span></div>' +
       '<div class="bts">' + (sitio(x) ? '<a href="' + esc(sitio(x)) + '" target="_blank" rel="noopener">Abrir su portal ↗</a>' : '<button type="button" disabled>Sin portal</button>') +
-      '<button type="button" data-mod="' + esc(x.id) + '"' + (codigo(x) && ME ? '' : ' disabled title="Solo para empresas dentro de tu sitio multiempresa"') + '>Módulos</button>' +
+      '<button type="button" data-mod="' + esc(x.id) + '"' + (codigo(x) && ME ? '' : ' disabled title="Solo para empresas dentro de tu sitio multiempresa"') + '>Menús</button>' +
       '<button type="button" data-edit="' + esc(x.id) + '"' + (codigo(x) && ME ? '' : ' disabled') + '>Editar todo</button>' +
       '<a class="p" href="asesor.html#cli=' + encodeURIComponent(x.id) + '">Tareas</a>' +
       '<button type="button" data-rev="' + esc(x.id) + '">Revisar</button></div></div>';
