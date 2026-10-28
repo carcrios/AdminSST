@@ -152,7 +152,13 @@
     // Si en otra pestaña se cambió de empresa, esta se recarga para no mezclar datos.
     if (!enConsola && !editar) try { window.addEventListener('storage', (ev) => { if (ev.key === 'ssta-empresa' && (ev.newValue || '') !== cod) location.reload(); }); } catch (e) {}
     // Con señal, se refrescan los datos de la empresa (logo, formatos, módulos…) para la próxima vez.
-    if (cargada && typeof fetch !== 'undefined') setTimeout(() => { traer(cod).then((d) => { const a = JSON.stringify(d.empresa); if (a !== JSON.stringify(datos.empresa) && ls('ssta-empresa') === cod) ls('ssta-empresa-datos', JSON.stringify(d)); }).catch(() => {}); }, 2500);
+    if (cargada && typeof fetch !== 'undefined') setTimeout(() => { traer(cod).then((d) => { const a = JSON.stringify(d.empresa); if (a !== JSON.stringify(datos.empresa) && ls('ssta-empresa') === cod) {
+        ls('ssta-empresa-datos', JSON.stringify(d));
+        // v125: en el inicio (donde no se está llenando nada) lo nuevo se ve de una vez: menús, nombres, marca.
+        const pg = location.pathname.split('/').pop() || 'index.html';
+        let ya = 0; try { ya = Number(sessionStorage.getItem('ssta-recargo-config') || 0); } catch (e) {}
+        if (pg === 'index.html' && Date.now() - ya > 60000) { try { sessionStorage.setItem('ssta-recargo-config', String(Date.now())); } catch (e) {} location.reload(); }
+      } }).catch(() => {}); }, 2500);
     // Sin empresa elegida, las páginas llevan al inicio (allí se escribe el código).
     const pagina = location.pathname.split('/').pop() || 'index.html';
     if (E.sinEmpresa && !/^(index\.html|estado\.html|configurar-empresa\.html|instalar\.html|offline\.html|ayuda\.html|admin\.html)?$/.test(pagina)) {
@@ -190,6 +196,16 @@
     const PERMISOS_MOD = ['caliente', 'alturas', 'confinados', 'izajes', 'electrico'];
     /** v124: lo que el administrador apagó dentro de un módulo para esta empresa
         (E.ocultos = { preop: [ids], inspecciones: [ids] }). */
+    /** v125: cada empresa le pone a los preoperacionales e inspecciones su nombre y su código
+        (E.bautizos = { preop: { id: { nombre, codigo } }, inspecciones: { … } }). */
+    function bautizar(lista, f) {
+      const b = f && E.bautizos && E.bautizos[lista] && E.bautizos[lista][f.id];
+      if (!b) return f;
+      const o = Object.assign({}, f);
+      if (b.nombre) { o.nombre = b.nombre; o.titulo = b.nombre; }
+      if (b.codigo) { o.codigo = b.codigo; o.codigoEmpresa = b.codigo; }
+      return o;
+    }
     function visible(lista, id) { const o = E.ocultos && E.ocultos[lista]; return !(Array.isArray(o) && o.indexOf(id) !== -1); }
     function moduloActivo(k) {
       if (!E.modulos) return true;
@@ -347,7 +363,7 @@
     else if (document.body) iniciar();
 
     return {
-      formato, codigo, moduloActivo, visible, aplicar, moduloDeHref, esPublico, accesoRol, rolActual, tablaAcceso,
+      formato, codigo, moduloActivo, visible, bautizar, aplicar, moduloDeHref, esPublico, accesoRol, rolActual, tablaAcceso,
       logo: () => E.logo,
       producto: PRODUCTO,
       pie: () => PRODUCTO + ' · ' + (E.nombreCorto || E.nombre)

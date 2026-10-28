@@ -1,6 +1,7 @@
 /* ============================================================
    preop-base.js — Preoperacionales base del portal (v123–v124)
-   Hechos con los formatos de la empresa (SSTA-F-082, 171, 065, 083, 018, 163;
+   Hechos a partir de formatos reales; van SIN código: cada empresa les pone
+   su nombre y su código en «Menús» (EMPRESA.bautizos.preop). Basados en los formatos (SSTA-F-082, 171, 065, 083, 018, 163;
    v124: 010, 011, 012, 015, 047, 048, 167 y 189).
    Sirven a toda empresa nueva; si la empresa importa sus formularios de Google
    (preop-formularios.js) con el mismo id, se usa el suyo. El administrador puede
@@ -12,7 +13,7 @@ const PREOP_BASE = [
   "nombre": "Montacargas",
   "grupo": "Equipos móviles",
   "titulo": "Montacargas",
-  "codigo": "SSTA-F-082",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "paginas": [
@@ -205,7 +206,7 @@ const PREOP_BASE = [
   "nombre": "Plataforma eléctrica tipo tijera",
   "grupo": "Equipos móviles",
   "titulo": "Plataforma eléctrica tipo tijera",
-  "codigo": "SSTA-F-171",
+  "codigo": "",
   "descripcion": "Antes de usarla: equipo de alturas y capacidad de carga revisados. Si algo está «Malo», no se inicia el trabajo.",
   "base": true,
   "paginas": [
@@ -365,7 +366,7 @@ const PREOP_BASE = [
   "nombre": "Camioneta / vehículo",
   "grupo": "Equipos móviles",
   "titulo": "Camioneta / vehículo",
-  "codigo": "SSTA-F-065",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "paginas": [
@@ -682,7 +683,7 @@ const PREOP_BASE = [
   "nombre": "Escalera de mano",
   "grupo": "Trabajo en alturas",
   "titulo": "Escalera de mano",
-  "codigo": "SSTA-F-083",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "paginas": [
@@ -808,7 +809,7 @@ const PREOP_BASE = [
   "nombre": "Equipo de alturas (arnés, eslinga, tie off)",
   "grupo": "Trabajo en alturas",
   "titulo": "Equipo de alturas (arnés, eslinga, tie off)",
-  "codigo": "SSTA-F-018",
+  "codigo": "",
   "descripcion": "Se inspecciona antes de cada uso. Solo se llena el día que se usa el equipo.",
   "base": true,
   "paginas": [
@@ -1125,7 +1126,7 @@ const PREOP_BASE = [
   "nombre": "Camilla",
   "grupo": "Emergencias",
   "titulo": "Camilla",
-  "codigo": "SSTA-F-163",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "paginas": [
@@ -1344,7 +1345,7 @@ const PREOP_BASE = [
   "nombre": "Herramientas menores",
   "grupo": "Herramientas y equipos",
   "titulo": "Herramientas menores",
-  "codigo": "SSTA-F-010",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -1597,7 +1598,7 @@ const PREOP_BASE = [
   "nombre": "Equipo de soldar",
   "grupo": "Herramientas y equipos",
   "titulo": "Equipo de soldar",
-  "codigo": "SSTA-F-011",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -1737,7 +1738,7 @@ const PREOP_BASE = [
   "nombre": "Equipo de oxicorte",
   "grupo": "Herramientas y equipos",
   "titulo": "Equipo de oxicorte",
-  "codigo": "SSTA-F-012",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -1935,7 +1936,7 @@ const PREOP_BASE = [
   "nombre": "Pulidora",
   "grupo": "Herramientas y equipos",
   "titulo": "Pulidora",
-  "codigo": "SSTA-F-015",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -2127,7 +2128,7 @@ const PREOP_BASE = [
   "nombre": "Taladro",
   "grupo": "Herramientas y equipos",
   "titulo": "Taladro",
-  "codigo": "SSTA-F-047",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -2300,7 +2301,7 @@ const PREOP_BASE = [
   "nombre": "Motortool",
   "grupo": "Herramientas y equipos",
   "titulo": "Motortool",
-  "codigo": "SSTA-F-048",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -2473,7 +2474,7 @@ const PREOP_BASE = [
   "nombre": "Roladora",
   "grupo": "Herramientas y equipos",
   "titulo": "Roladora",
-  "codigo": "SSTA-F-167",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,
@@ -2608,7 +2609,7 @@ const PREOP_BASE = [
   "nombre": "Diferencial con cadena",
   "grupo": "Herramientas y equipos",
   "titulo": "Diferencial con cadena",
-  "codigo": "SSTA-F-189",
+  "codigo": "",
   "descripcion": "",
   "base": true,
   "herramienta": true,

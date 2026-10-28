@@ -29,3 +29,7 @@ body.consola .acciones-top .btn.ghost{background:rgba(255,255,255,.08);color:#ff
 body.consola .card .btn.ghost,body.consola .modal .btn.ghost{background:#fff;color:#10213a;}
 body.consola .card,body.consola .cli{color:#10213a;}
 @media print{html body.consola{background:#fff;color:#000;}}
+/* v125: las ventanas de la consola son claras: su texto va oscuro (antes heredaba el blanco del fondo). */
+body.consola .modal{color:#10213a;}
+body.consola .modal h3,body.consola .modal h4,body.consola .modal label,body.consola .modal b{color:#10213a;}
+body.consola .modal .ayuda,body.consola .modal small{color:#5b6b80;}

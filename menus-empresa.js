@@ -1,7 +1,8 @@
 /* ============================================================
    menus-empresa.js — Qué ve cada empresa en sus menús (v124)
    Lo usan la consola del administrador (botón «Menús» de cada empresa) y el
-   configurador. Tres partes:
+   configurador (v125: también el nombre y el código de cada preoperacional e inspección
+   → config.bautizos). Tres partes:
      · Módulos, por categoría (lo que sale en Gestión, en la barra de abajo y lo
        que el servidor acepta) → config.modulos
      · Preoperacionales que se ofrecen          → config.ocultos.preop
@@ -32,28 +33,33 @@ const MenusEmpresa = (function () {
     return out;
   }
 
-  function grupo(tipo, g, items, apagado) {
+  function grupo(tipo, g, items, apagado, baut) {
     const on = items.filter((x) => !apagado(x.id)).length;
+    // v125: preoperacionales e inspecciones llevan, además, el nombre y el código que les pone la empresa.
+    const fila = (x) => { const b = (baut && baut[x.id]) || {};
+      return '<div class="me-it me-con"><label class="me-chk"><input type="checkbox" data-me="' + tipo + '" data-id="' + esc(x.id) + '"' + (apagado(x.id) ? '' : ' checked') + '><span>' + esc(x.t) + '</span></label>' +
+        '<div class="me-baut"><input type="text" data-bn="' + tipo + '" data-id="' + esc(x.id) + '" value="' + esc(b.nombre || '') + '" placeholder="Nombre en esta empresa (opcional)" aria-label="Nombre de ' + esc(x.t) + ' en esta empresa" maxlength="80">' +
+        '<input type="text" data-bc="' + tipo + '" data-id="' + esc(x.id) + '" value="' + esc(b.codigo || '') + '" placeholder="Código' + (x.c ? ' (hoy ' + esc(x.c) + ')' : '') + '" aria-label="Código de ' + esc(x.t) + '" maxlength="30"></div></div>'; };
     return '<details class="me-g"><summary><span class="me-gt">' + esc(g) + '</span><span class="me-n" data-n>' + on + ' de ' + items.length + '</span>' +
       '<button type="button" class="me-todos" data-todos>' + (on === items.length ? 'Ninguno' : 'Todos') + '</button>' + CHEV + '</summary><div class="me-items">' +
-      items.map((x) => '<label class="me-it"><input type="checkbox" data-me="' + tipo + '" data-id="' + esc(x.id) + '"' + (apagado(x.id) ? '' : ' checked') + '><span>' + esc(x.t) + (x.c ? '<small>' + esc(x.c) + '</small>' : '') + '</span></label>').join('') + '</div></details>';
+      items.map((x) => baut ? fila(x) : '<label class="me-it"><input type="checkbox" data-me="' + tipo + '" data-id="' + esc(x.id) + '"' + (apagado(x.id) ? '' : ' checked') + '><span>' + esc(x.t) + (x.c ? '<small>' + esc(x.c) + '</small>' : '') + '</span></label>').join('') + '</div></details>';
   }
-  function seccion(tipo, titulo, ayuda, items, apagado) {
+  function seccion(tipo, titulo, ayuda, items, apagado, baut) {
     if (!items.length) return '';
     const gs = []; items.forEach((x) => { if (gs.indexOf(x.g) === -1) gs.push(x.g); });
     return '<section class="me-sec" data-sec="' + tipo + '"><h4>' + esc(titulo) + '</h4><p class="me-ayuda">' + esc(ayuda) + '</p>' +
-      gs.map((g) => grupo(tipo, g, items.filter((x) => x.g === g), apagado)).join('') + '</section>';
+      gs.map((g) => grupo(tipo, g, items.filter((x) => x.g === g), apagado, baut)).join('') + '</section>';
   }
 
   /** HTML de las tres partes, según la configuración de la empresa (config.modulos y config.ocultos). */
   function html(config, opciones) {
     config = config || {}; opciones = opciones || {};
-    const mods = config.modulos || {}, o = config.ocultos || {};
+    const mods = config.modulos || {}, o = config.ocultos || {}, bz = config.bautizos || {};
     const en = (l) => (id) => Array.isArray(o[l]) && o[l].indexOf(id) !== -1;
     return '<div class="me">' +
       (opciones.sinModulos ? '' : seccion('modulo', 'Módulos del menú', 'Lo apagado sale de Gestión, de la barra de abajo y del inicio, y su servidor deja de aceptar registros de eso.', modulos(), (k) => mods[k] === false)) +
-      seccion('preop', 'Preoperacionales', 'Los que se ofrecen en la tarjeta «Preoperacional» del inicio.', preops(), en('preop')) +
-      seccion('inspecciones', 'Listas de inspección', 'Las que se pueden escoger en «Inspecciones planeadas».', inspecciones(), en('inspecciones')) +
+      seccion('preop', 'Preoperacionales', 'Marca los que se ofrecen en la tarjeta «Preoperacional» del inicio. Vienen sin código: escribe el nombre y el código con que esta empresa los tiene en su listado maestro (si lo dejas vacío, sale el nombre de la izquierda y sin código).', preops(), en('preop'), bz.preop || {}) +
+      seccion('inspecciones', 'Listas de inspección', 'Marca las que se pueden escoger en «Inspecciones planeadas». También puedes ponerles el nombre y el código de esta empresa.', inspecciones(), en('inspecciones'), bz.inspecciones || {}) +
       '</div>';
   }
   /** Después de pintar html(): activa «Todos / Ninguno» y los contadores. */
@@ -75,21 +81,31 @@ const MenusEmpresa = (function () {
       if (c.dataset.me === 'modulo') modulos[c.dataset.id] = c.checked;
       else if (!c.checked) ocultos[c.dataset.me].push(c.dataset.id);
     });
-    return { modulos, ocultos };
+    const bautizos = { preop: {}, inspecciones: {} };
+    raiz.querySelectorAll('input[data-bn]').forEach((i) => {
+      const l = i.dataset.bn, id = i.dataset.id, c = raiz.querySelector('input[data-bc="' + l + '"][data-id="' + id + '"]');
+      const nombre = i.value.trim().slice(0, 80), codigo = c ? c.value.trim().slice(0, 30) : '';
+      if (nombre || codigo) bautizos[l][id] = Object.assign({}, nombre ? { nombre } : {}, codigo ? { codigo } : {});
+    });
+    return { modulos, ocultos, bautizos };
   }
   let puesto = false;
   function estilos() {
     if (puesto || typeof document === 'undefined') return; puesto = true;
     const st = document.createElement('style');
-    st.textContent = '.me-sec{margin:14px 0 6px;}.me-sec h4{margin:0 0 2px;font-size:15px;}.me-ayuda{margin:0 0 8px;font-size:12.5px;color:var(--muted,#5b6b80);}' +
+    st.textContent = '.me{color:#10213a;}.me-sec{margin:14px 0 6px;}.me-sec h4{margin:0 0 2px;font-size:15px;}.me-ayuda{margin:0 0 8px;font-size:12.5px;color:var(--muted,#5b6b80);}' +
       '.me-g{border:1.5px solid var(--line,#dfe6ef);border-radius:14px;margin-bottom:8px;background:#fff;}.me-g.me-off{opacity:.7;}' +
       '.me-g summary{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;list-style:none;}.me-g summary::-webkit-details-marker{display:none;}' +
-      '.me-gt{font-weight:800;font-size:14px;}.me-n{margin-left:auto;font-size:12px;font-weight:800;background:#eef3f9;border-radius:99px;padding:3px 10px;white-space:nowrap;}' +
-      '.me-todos{border:1.5px solid var(--line,#dfe6ef);background:#fff;border-radius:99px;padding:5px 11px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;min-height:34px;}' +
+      '.me-gt{font-weight:800;font-size:14px;}.me-n{margin-left:auto;font-size:12px;font-weight:800;background:#eef3f9;color:#10213a;border-radius:99px;padding:3px 10px;white-space:nowrap;}' +
+      '.me-todos{border:1.5px solid var(--line,#dfe6ef);background:#fff;color:#10213a;border-radius:99px;padding:5px 11px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;min-height:34px;}' +
       '.me-chev{width:18px;height:18px;flex:none;transition:transform .2s;}.me-g[open] .me-chev{transform:rotate(180deg);}' +
       '.me-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2px 10px;padding:0 12px 10px;}' +
-      '.me-it{display:flex;gap:9px;align-items:flex-start;font-size:14px;padding:7px 2px;cursor:pointer;}.me-it input{width:20px;height:20px;flex:none;margin:1px 0 0;}' +
-      '.me-it small{display:block;font-size:11.5px;color:var(--muted,#5b6b80);}';
+      '.me-it{color:#10213a;display:flex;gap:9px;align-items:flex-start;font-size:14px;padding:7px 2px;cursor:pointer;}.me-it input{width:20px;height:20px;flex:none;margin:1px 0 0;}' +
+      '.me-it small{display:block;font-size:11.5px;color:var(--muted,#5b6b80);}' +
+      '.me-items:has(.me-con){grid-template-columns:1fr;}.me-con{flex-direction:column;gap:6px;border-top:1px solid #eef2f7;padding:9px 2px;cursor:default;}.me-con:first-child{border-top:0;}' +
+      '.me-chk{display:flex;gap:9px;align-items:flex-start;font-weight:700;cursor:pointer;}.me-chk input{width:20px;height:20px;flex:none;margin:1px 0 0;}' +
+      '.me-baut{display:grid;grid-template-columns:2fr 1fr;gap:6px;padding-left:29px;}.me-baut input{min-height:38px;border:1.5px solid #dfe6ef;border-radius:10px;padding:6px 10px;font:inherit;font-size:13.5px;color:#10213a;background:#fff;width:100%;box-sizing:border-box;}' +
+      '@media (max-width:520px){.me-baut{grid-template-columns:1fr;}}';
     document.head.appendChild(st);
   }
   return { html, activar, leer, preops, inspecciones, modulos };
