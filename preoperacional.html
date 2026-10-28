@@ -67,7 +67,7 @@
   <div id="avisoSrv"></div><div id="avisoCopia"></div>
   <div class="tabs" id="tabs"><button type="button" data-tab="formularios" class="on">Formularios</button><button type="button" data-tab="registros">Registros</button></div>
   <div id="panel"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v124</div>
+  <div class="version-portal">Portal SSTA · versión v125</div>
 </div>
 
 <div class="screen" id="scrForm">
@@ -112,7 +112,9 @@ if (typeof UpdateManager !== 'undefined') UpdateManager.init();
 const $ = UI.$;
 // v123: los de la empresa (formularios de Google importados) y los base del portal (sus formatos SSTA-F-…).
 const FORMS = (function () { const propios = typeof PREOP_FORMULARIOS !== 'undefined' ? PREOP_FORMULARIOS : [], base = typeof PREOP_BASE !== 'undefined' ? PREOP_BASE : [];
-  return propios.concat(base.filter((b)=> !propios.some((f)=> f.id === b.id || (f.codigo && f.codigo === b.codigo)))); })();
+  const todos = propios.concat(base.filter((b)=> !propios.some((f)=> f.id === b.id || (f.codigo && f.codigo === b.codigo))));
+  // v125: con el nombre y el código que les puso la empresa.
+  return typeof Empresa !== 'undefined' && Empresa.bautizar ? todos.map((f)=> Empresa.bautizar('preop', f)) : todos; })();
 const formDe = (id)=> FORMS.find((f)=> f.id === id);
 // v124: los que el administrador apagó para esta empresa no se ofrecen (los registros viejos sí se ven).
 const OFRECER = FORMS.filter((f)=> typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('preop', f.id));
@@ -121,7 +123,7 @@ let rows = [], equipos = [], tab = 'formularios', actual = null, resp = {}, hall
 
 function show(id){ document.querySelectorAll('.screen').forEach((s)=> s.classList.toggle('active', s.id === id)); window.scrollTo(0, 0); }
 /** Código del formato: el que la empresa le puso en empresa.js. */
-function codigoDe(f){ if (!f.codigo) return ''; const x = EMPRESA.formatos && EMPRESA.formatos[f.codigo]; return x && x.codigo && x.codigo !== f.codigo ? x.codigo : ''; }
+function codigoDe(f){ if (f.codigoEmpresa) return f.codigoEmpresa; if (!f.codigo) return ''; const x = EMPRESA.formatos && EMPRESA.formatos[f.codigo]; return x && x.codigo && x.codigo !== f.codigo ? x.codigo : ''; }
 /** Los centros de trabajo salen de empresa.js (centrosCosto), no de la lista del formulario original. */
 function opcionesDe(q){
   if (q.rol === 'centro') { const c = EMPRESA.centrosCosto || []; return c.length ? c.map((x)=> typeof x === 'string' ? x : (x.nombre || x.cliente || String(x))) : null; }

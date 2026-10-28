@@ -462,7 +462,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
       correos: { aprobacionEpp: $('cCorreoEpp').value.trim(), dominio: $('cDominio').value.trim().replace(/^@/, '') },
       privacidad: { correo: $('cPrivCorreo').value.trim(), politica: /^https:\/\//.test($('cPrivPolitica').value.trim()) ? $('cPrivPolitica').value.trim() : '' },
       contactoEpp: { nombre: $('cWaNombre').value.trim(), cargo: '', whatsapp: $('cWaNumero').value.trim() },
-      ocultos: MenusEmpresa.leer($('menusDentro')).ocultos,
+      ocultos: MenusEmpresa.leer($('menusDentro')).ocultos, bautizos: MenusEmpresa.leer($('menusDentro')).bautizos,
       centrosCosto: centros, servidor: srv.servidor, apiToken: srv.apiToken, demo: false,
       perfil0312: tipo === 'proveedor' ? undefined : p0312
     }, tipo === 'proveedor' ? { multiempresa: true, empresaPorDefecto: $('cDefecto').value.trim().toLowerCase(), producto: $('cProducto').value.trim() || 'Portal SSTA', sinEmpresa: undefined, codigo: undefined } : { multiempresa: undefined, producto: tipo === 'propio' && !ME ? (E.producto || undefined) : undefined, sinEmpresa: undefined, codigo: undefined });

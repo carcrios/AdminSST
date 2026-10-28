@@ -84,7 +84,7 @@ h3.sec-insp{margin:16px 0 6px;font-size:13px;letter-spacing:.06em;text-transform
   <input type="search" class="buscar" id="buscar" placeholder="Buscar por código, nombre o ubicación">
   <div id="fIns"></div>
   <div id="lista"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v124</div>
+  <div class="version-portal">Portal SSTA · versión v125</div>
 </div>
 
 <!-- ═══════ EQUIPO ═══════ -->
@@ -188,7 +188,8 @@ window.filtrarKpi = (v)=> { fHist = v || ''; pintar(); };
 function show(id){ document.querySelectorAll('.screen').forEach((s)=>s.classList.toggle('active', s.id === id)); window.scrollTo(0, 0); }
 /** Listas de chequeo: las del código más las de la empresa (ajustadas y propias). */
 function armarListas(){
-  LISTA = plantillasInspeccion(propias); PL = {};
+  // v125: con el nombre y el código que les puso la empresa (Menús de la consola).
+  LISTA = plantillasInspeccion(propias).map((p)=> typeof Empresa !== 'undefined' && Empresa.bautizar ? Empresa.bautizar('inspecciones', p) : p); PL = {};
   LISTA.forEach((p)=> { PL[p.id] = p; });
   pintarCategorias();
 }

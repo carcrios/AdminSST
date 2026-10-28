@@ -325,14 +325,14 @@ async function abrirModulos(x){
   if (!cfg.config) { m.el.innerHTML = tit + '<div class="aviso">Todavía no tiene configuración. Usa «Editar todo» para hacerla.</div><button type="button" class="btn ghost" data-cerrar>Cerrar</button>'; return; }
   m.el.innerHTML = tit +
     (cfg.deServidor ? '' : '<div class="aviso info">Hoy toma su configuración de <code>empresas/' + esc(codigo(x)) + '.json</code>. Al guardar pasa a tu servidor y ya no hay que subir archivos.</div>') +
-    '<p class="ayuda">Marca lo que esta empresa ve. Lo apagado no se borra: sus registros viejos se siguen viendo.</p>' +
+    '<p class="ayuda">Marca lo que esta empresa ve y ponle a sus formatos el nombre y el código que usa. Al tocar <b>Guardar y publicar</b> queda guardado en tu servidor: no hay que descargar ni subir nada. Sus celulares lo ven la próxima vez que abran el portal. Lo apagado no se borra: sus registros viejos se siguen viendo.</p>' +
     '<div id="mMenus" style="max-height:58vh;overflow:auto;margin:8px 0;">' + MenusEmpresa.html(cfg.config) + '</div>' +
     '<button type="button" class="btn amber" id="mGuardar">Guardar y publicar</button><button type="button" class="btn ghost" data-cerrar>Cancelar</button><div class="status-msg" id="mMsg"></div>';
   MenusEmpresa.activar(m.el.querySelector('#mMenus'));
   m.el.querySelector('#mGuardar').addEventListener('click', async ()=> {
     const msg = m.el.querySelector('#mMsg'), bt = m.el.querySelector('#mGuardar'); bt.disabled = true; msg.textContent = 'Guardando…';
     const l = MenusEmpresa.leer(m.el.querySelector('#mMenus'), cfg.config.modulos);
-    cfg.config.modulos = l.modulos; cfg.config.ocultos = l.ocultos;
+    cfg.config.modulos = l.modulos; cfg.config.ocultos = l.ocultos; cfg.config.bautizos = l.bautizos;
     const r = await guardarConfig(x, cfg.d, cfg.config);
     if (!r.ok) { msg.textContent = r.error; bt.disabled = false; return; }
     m.cerrar(); UI.toast(r.aviso || '✓ Menús publicados'); cargar();
