@@ -147,7 +147,7 @@ canvas.mini-pad{width:100%;height:150px;border:1.5px dashed #b9b2a2;border-radiu
   </details>
   <div class="sec-t">Semanas recientes <span id="semanasNota"></span></div>
   <div id="semanasList"><div class="status-msg">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v125</div>
+  <div class="version-portal">Portal SSTA · versión v127</div>
 </div>
 
 <!-- ═══════ SEMANA ═══════ -->
@@ -881,8 +881,8 @@ function htmlHojaF005(doc, nueva){
     '<table class="cab"><colgroup><col style="width:17%"><col><col style="width:22%"></colgroup><tr>' +
     '<td class="logo"><img src="' + (logoHoja || EMPRESA.logo) + '" alt="Logo"></td>' +
     '<td class="tit">CONTROL DE ASISTENCIA A CAPACITACION, EVENTOS Y REUNIONES.</td>' +
-    '<td class="meta-c"><table class="meta"><tr><td colspan="2">Página 1 de 1</td></tr><tr><td colspan="2">Versión: ' + e(F005.version) + '</td></tr>' +
-    '<tr><td colspan="2">Código: ' + e(F005.codigo) + '</td></tr><tr><td>Fecha: ' + e(F005.fecha) + '</td><td>Actualización: ' + e(F005.actualizacion) + '</td></tr></table></td>' +
+    '<td class="meta-c"><table class="meta"><tr><td colspan="2">Página 1 de 1</td></tr>' + (F005.version ? '<tr><td colspan="2">Versión: ' + e(F005.version) + '</td></tr>' : '') +
+    (F005.codigo ? '<tr><td colspan="2">Código: ' + e(F005.codigo) + '</td></tr>' : '') + (F005.fecha || F005.actualizacion ? '<tr><td>' + (F005.fecha ? 'Fecha: ' + e(F005.fecha) : '') + '</td><td>' + (F005.actualizacion ? 'Actualización: ' + e(F005.actualizacion) : '') + '</td></tr>' : '') + '</table></td>' +
     '</tr></table>' +
     '<table class="tem"><colgroup><col style="width:37%"><col style="width:11.5%"><col style="width:13%"><col></colgroup>' +
     '<tr><td class="azul">Temario</td><td><b>Semana del:</b> ' + e(fechaCorta(doc.semanaDel)) + '</td><td><b>Al:</b> ' + e(fechaCorta(doc.semanaAl || sumarDias(doc.semanaDel,6))) + '</td><td><b>Lugar de trabajo:</b> ' + e(doc.lugar) + '</td></tr>' +

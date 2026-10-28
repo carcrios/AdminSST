@@ -83,8 +83,9 @@ h3.sec-insp{margin:16px 0 6px;font-size:13px;letter-spacing:.06em;text-transform
   </div>
   <input type="search" class="buscar" id="buscar" placeholder="Buscar por código, nombre o ubicación">
   <div id="fIns"></div>
+  <div class="sel-barra" id="selBarra"></div>
   <div id="lista"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v125</div>
+  <div class="version-portal">Portal SSTA · versión v127</div>
 </div>
 
 <!-- ═══════ EQUIPO ═══════ -->
@@ -232,6 +233,8 @@ async function cargar(){
   armarListas();
   pintar();
 }
+// v127: quitar varios equipos o herramientas del inventario a la vez.
+UI.seleccionVarios({ lista: $('lista'), barra: $('selBarra'), atributo: 'eq', que: 'este equipo', alTerminar: ()=> cargar() });
 function pintar(){
   const q = UI.norm($('buscar').value).trim();
   const act = equipos.filter((e)=> e.resumen.activo !== false);
@@ -247,6 +250,7 @@ function pintar(){
     '<div class="kpi ' + (ncMes.length ? 'mal' : '') + '" data-ir="tab:historial|filtro:' + (ncMes.length ? 'ncmes' : 'mes') + '"><div class="v">' + delMes.filter((i)=> i.resumen.resultado === 'NO CONFORME').length + '</div><div class="n">no conformes este mes</div></div>' +
     '<div class="kpi ' + (cron.pct == null ? '' : cron.pct >= 90 ? 'ok' : cron.pct >= 70 ? '' : 'mal') + '" data-ir="tab:cronograma"><div class="v">' + (cron.pct == null ? '—' : cron.pct + '%') + '</div><div class="n">cumplimiento del cronograma ' + UI.hoy().slice(0, 4) + '</div><div class="f">' + cron.ok + ' de ' + cron.due + ' programadas a la fecha</div></div>';
   $('buscar').hidden = tab === 'cronograma' || tab === 'listas';
+  $('selBarra').hidden = !(tab === 'equipos' || tab === 'pendientes');
   const vehMes = delMes.filter((i)=> i.resumen.plantilla === 'vehiculo');
   $('fIns').innerHTML = tab === 'historial' && inspecciones.length ? UI.chipsFiltro([['', 'Todas (' + inspecciones.length + ')'], ['mes', 'Este mes (' + delMes.length + ')'], ['ncmes', 'No conformes este mes (' + ncMes.length + ')'], ['nc', 'Todas las no conformes (' + ncTodas.length + ')']]
     .concat(vehMes.length || fHist === 'vehmes' ? [['vehmes', 'Vehículos este mes (' + vehMes.length + ')']] : []), fHist) : '';
@@ -286,6 +290,9 @@ function abrirEquipo(id){
   $('eqActivo').value = r.activo === false ? '0' : '1';
   pintarVenc(r.vencimientos || {});
   $('btnInspEq').hidden = !eqActual; $('btnQrEq').hidden = !eqActual; $('msgEq').textContent = '';
+  // v127: quitar del inventario lo que se agregó mal (sus inspecciones viejas se conservan).
+  const viejo = document.getElementById('btnElimEq'); if (viejo) viejo.remove();
+  if (eqActual) { const be = UI.botonEliminar(id, 'este equipo del inventario', ()=> { show('scrLista'); cargar(); }); be.id = 'btnElimEq'; $('msgEq').insertAdjacentElement('beforebegin', be); }
   const hist = eqActual ? inspecciones.filter((i)=> i.resumen.equipoId === id).sort((a, b)=> String(b.resumen.fecha).localeCompare(String(a.resumen.fecha))) : [];
   $('cardHistEq').hidden = !hist.length;
   $('histEq').innerHTML = hist.map((i)=> '<button type="button" class="item ' + (i.resumen.resultado === 'NO CONFORME' ? 'mal' : 'ok') + '" data-insp="' + esc(i.id) + '"><div class="t">' + esc(UI.corta(i.resumen.fecha)) + ' · ' + esc(i.resumen.resultado) + '</div><div class="m">' + esc(i.resumen.inspector || '') + '</div></button>').join('');

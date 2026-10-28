@@ -54,8 +54,9 @@
     <button type="button" data-tab="reponer">Reposición <span class="n" id="nRep">0</span></button>
     <button type="button" data-tab="matriz">Matriz por cargo <span class="n" id="nMat">0</span></button>
   </div>
+  <div class="sel-barra" id="selBarra" hidden></div>
   <div id="panel"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v125</div>
+  <div class="version-portal">Portal SSTA · versión v127</div>
 </div>
 <div class="screen" id="scrEnt"></div>
 </div>
@@ -167,6 +168,7 @@ function pintar(){
     '<div class="kpi ' + (sinEnt.length ? 'mal' : 'ok') + '"' + (sinEnt.length ? ' data-ir="fn:verSinEntrega"' : '') + '><div class="v">' + sinEnt.length + '</div><div class="n">personas activas sin entrega registrada</div></div>' +
     '<div class="kpi ' + (sinMat.length ? 'pronto' : 'ok') + '" data-ir="tab:matriz"><div class="v">' + (cargos.size - sinMat.length) + ' / ' + cargos.size + '</div><div class="n">cargos con matriz de EPP</div></div>';
   $('nPer').textContent = personasEpp().length;
+  $('selBarra').hidden = tab !== 'entregas';
   ({ entregas: pintarEntregas, personas: pintarPersonas, reponer: pintarReponer, matriz: pintarMatriz })[tab]($('panel'));
 }
 function item(x, titulo, sub, chip, clase, data){ return '<button type="button" class="item ' + (clase || '') + '" data-' + (data || 'id') + '="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + titulo + '</div>' + (sub || []).filter(Boolean).map((s)=> '<div class="m">' + s + '</div>').join('') + (x.pendiente ? '<div class="m"><span class="pend">⏳ pendiente de enviar</span></div>' : '') + '</div>' + (chip ? '<span class="chip ' + (clase || '') + '">' + chip + '</span>' : '') + '</div></button>'; }
@@ -406,6 +408,7 @@ async function verEntrega(id){
     '<button type="button" class="btn ghost" id="vPdf">🖨️ Registro de entrega (PDF)</button><div class="card"><div id="vAdj"></div><div id="vHist"></div></div>';
   UI.adjuntos($('vAdj'), { id: d.id, lista: d.adjuntos || [], titulo: 'Soportes' });
   $('vHist').appendChild(UI.botonHistorial(d.id, 'Entrega a ' + d.nombre));
+  $('vHist').appendChild(UI.botonEliminar(d.id, 'esta entrega', ()=> { personaAbierta = null; show('scrLista'); cargar(); }));
   $('vPdf').addEventListener('click', ()=> pdfEntregas([d], d.nombre));
   show('scrEnt');
 }
@@ -482,6 +485,8 @@ async function pdfMatriz(){
       '<td class="a" style="font-weight:400;">' + esc(e.elemento) + '</td><td class="a" style="font-weight:400;">' + esc(e.norma || '') + '</td><td class="a">' + esc(e.vidaUtil || '') + '</td></tr>').join('')).join('') + '</table>'], true);
 }
 
+// v127: eliminar varias entregas registradas por error.
+UI.seleccionVarios({ lista: $('panel'), barra: $('selBarra'), atributo: 'id', que: 'esta entrega', alTerminar: ()=> cargar() });
 $('tabs').addEventListener('click', (e)=>{ const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; document.querySelectorAll('#tabs button').forEach((x)=> x.classList.toggle('on', x === b)); pintar(); });
 // Desde un registro abierto en el historial de una persona, «Volver» regresa a ese historial.
 let personaAbierta = null;

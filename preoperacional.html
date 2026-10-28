@@ -66,8 +66,9 @@
   </div>
   <div id="avisoSrv"></div><div id="avisoCopia"></div>
   <div class="tabs" id="tabs"><button type="button" data-tab="formularios" class="on">Formularios</button><button type="button" data-tab="registros">Registros</button></div>
+  <div class="sel-barra" id="selBarra" hidden></div>
   <div id="panel"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v125</div>
+  <div class="version-portal">Portal SSTA · versión v127</div>
 </div>
 
 <div class="screen" id="scrForm">
@@ -143,6 +144,7 @@ async function cargar(){
 function pintar(){
   document.querySelectorAll('#tabs button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === tab));
   const p = $('panel');
+  $('selBarra').hidden = tab !== 'registros';
   if (tab === 'formularios') {
     const grupos = []; OFRECER.forEach((f)=> { if (grupos.indexOf(f.grupo) === -1) grupos.push(f.grupo); });
     p.innerHTML = '<input type="search" class="buscar" id="bForm" placeholder="Buscar equipo (pulidora, andamio, taladro…)">' + grupos.map((g)=> '<div data-g><h2 class="grupo-h">' + esc(g) + '</h2><div class="forms">' +
@@ -164,6 +166,8 @@ function pintar(){
   }
 }
 $('tabs').addEventListener('click', (e)=> { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; pintar(); });
+// v127: en «Registros», eliminar varios hechos por error (solo SST y Administrador).
+if (typeof Sesion !== 'undefined' && Sesion.yo && Sesion.yo()) UI.seleccionVarios({ lista: $('panel'), barra: $('selBarra'), atributo: 'r', que: 'este preoperacional', alTerminar: ()=> cargar() });
 document.addEventListener('click', (e)=> {
   const f = e.target.closest('[data-f]'); if (f) { abrirForm(f.dataset.f); return; }
   const r = e.target.closest('[data-r]'); if (r) { verRegistro(r.dataset.r); return; }
@@ -216,6 +220,19 @@ function qHTML(q){
   if (esMala(q, v)) { const x = hall[q.k] || {}; h += '<div class="hallazgo"><label for="h_' + q.k + '">¿Qué encontraste? (para corregirlo)</label><textarea id="h_' + q.k + '" data-hall="' + q.k + '" rows="2">' + esc(x.obs || '') + '</textarea><div data-hfotos="' + q.k + '"></div></div>'; }
   return h + '<div class="qe">Esta pregunta es obligatoria.</div></div>';
 }
+/* v127: en el código del equipo solo se ofrecen los equipos de ESE preoperacional
+   (en el de soldar, solo los equipos de soldadura del inventario), no todas las herramientas. */
+const EQUIPO_DE = { montacargas: ['montacargas'], 'plataforma-tijera': ['plataforma'], camioneta: ['vehiculo'], escalera: ['escalera'], 'equipo-alturas': ['arnes'],
+  camilla: ['camilla'], 'herramientas-menores': ['herramientas_menores'], 'equipo-soldar': ['soldadura'], 'equipo-oxicorte': ['oxicorte'],
+  pulidora: ['pulidora', 'herramienta_electrica'], taladro: ['taladro', 'herramienta_electrica'], motortool: ['motortool', 'herramienta_electrica'], roladora: ['roladora'], 'diferencial-cadena': ['diferencial'] };
+function equiposDe(f){
+  const cats = (f && (f.equipos || EQUIPO_DE[f.id])) || null;
+  if (!cats) return equipos;   // formularios propios de la empresa: todos
+  const l = equipos.filter((e)=> cats.indexOf(e.resumen.categoria) !== -1);
+  // Equipos viejos de la lista combinada de herramienta eléctrica: solo si su nombre coincide.
+  const tipo = String(f.id).split('-')[0];
+  return l.filter((e)=> e.resumen.categoria !== 'herramienta_electrica' || UI.norm(e.resumen.nombre || '').includes(tipo));
+}
 function pintarPagina(){
   const f = actual, pg = f.paginas[pagina], ult = siguiente() === 'fin', total = f.paginas.length;
   $('fCuerpo').innerHTML = (pagina === 0 && f.descripcion ? '<div class="card"><div class="pf-desc">' + esc(f.descripcion) + '</div></div>' : '') +
@@ -223,7 +240,7 @@ function pintarPagina(){
     (pg.titulo ? '<div class="pg-tit">' + esc(pg.titulo) + '</div>' : '') + (pg.descripcion ? '<div class="pg-desc">' + esc(pg.descripcion) + '</div>' : '') +
     pg.items.map(qHTML).join('') +
     (ult ? '<div class="card"><h2 style="font-size:15px;">Firma de quien inspecciona (opcional)</h2>' + UI.padHTML('pfFirma') + '</div>' : '') +
-    '<datalist id="dlEquipos">' + equipos.map((e)=> '<option value="' + esc(e.resumen.codigo || '') + '">' + esc(e.resumen.nombre || '') + '</option>').join('') + '</datalist>' +
+    '<datalist id="dlEquipos">' + equiposDe(f).map((e)=> '<option value="' + esc(e.resumen.codigo || '') + '">' + esc(e.resumen.nombre || '') + '</option>').join('') + '</datalist>' +
     '<div class="nav-pf">' + (pila.length > 1 ? '<button type="button" class="btn ghost" id="pfAtras">Atrás</button>' : '') + '<button type="button" class="btn amber" id="pfSig">' + (ult ? 'Enviar' : 'Siguiente') + '</button></div><div class="status-msg" id="pfMsg"></div>';
   enlazar(pg);
   if (ult) { UI.activarPad('pfFirma', resp.__firma || ''); firmaPad = true; } else firmaPad = false;
@@ -326,6 +343,8 @@ async function verRegistro(id){
     (UI.src(d.firma) ? '<div class="card"><div class="ayuda">Firma</div><img src="' + UI.src(d.firma) + '" alt="Firma" style="max-height:70px;"></div>' : '') +
     '<button type="button" class="btn ghost" id="vPdf">🖨️ PDF</button>';
   $('vPdf').addEventListener('click', ()=> pdf(d));
+  // v127: un preoperacional hecho por error (equipo equivocado, repetido…).
+  if (typeof Sesion !== 'undefined' && Sesion.yo && Sesion.yo()) $('vCuerpo').appendChild(UI.botonEliminar(id, 'este preoperacional', ()=> { show('scrLista'); cargar(); }));
   show('scrVer');
 }
 function pdf(d){

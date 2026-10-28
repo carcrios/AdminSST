@@ -44,8 +44,9 @@
     <button type="button" data-tab="venc">Vencimientos</button>
   </div>
   <input type="search" class="buscar" id="buscar" placeholder="Buscar por nombre, cédula, cargo, área o empresa">
+  <div class="sel-barra" id="selBarra"></div>
   <div id="lista"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v125</div>
+  <div class="version-portal">Portal SSTA · versión v127</div>
 </div>
 
 <!-- ═══════ FICHA ═══════ -->
@@ -165,6 +166,8 @@ async function cargar(){
   Habilitacion.cargar(true).catch(()=>{});
   pintar();
 }
+// v127: varias personas a la vez (las agregadas por error).
+UI.seleccionVarios({ lista: $('lista'), barra: $('selBarra'), atributo: 'id', que: 'esta persona', alTerminar: ()=> cargar() });
 function pintar(){
   const q = UI.norm($('buscar').value).trim();
   const conEstado = filas.map((r)=> ({ r, e: estadoDe(r) }));
@@ -232,6 +235,8 @@ function pintarFicha(){
     const refs = {}; REQS.forEach((k)=> { refs[k] = CFG.requisitos[k].nombre; }); refs.otro = 'Otro soporte';
     UI.adjuntos($('fAdj'), { id: actual.id, refs, titulo: 'Certificados y soportes' });
     $('fHist').innerHTML = ''; $('fHist').appendChild(UI.botonHistorial(actual.id, actual.nombre));
+    // v127: si se agregó por error (persona duplicada, cédula mal escrita…).
+    $('fHist').appendChild(UI.botonEliminar(actual.id, 'a ' + actual.nombre, ()=> { show('scrLista'); cargar(); }));
   } else if (!actual) adjMontado = null;
   $('msgDatos').textContent = '';
   const exig = Habilitacion.exigidos([]);

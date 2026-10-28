@@ -569,7 +569,7 @@ let uidSeq = Date.now();
 const uid = () => 'u' + (uidSeq++).toString(36);
 const hoyISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 
-$('codFormato').textContent = $('codFormatoMenu').textContent = ATS_FORMATO.codigo + ' · Versión ' + ATS_FORMATO.version;
+$('codFormato').textContent = $('codFormatoMenu').textContent = [ATS_FORMATO.codigo, ATS_FORMATO.version ? 'Versión ' + ATS_FORMATO.version : ''].filter(Boolean).join(' · ');
 
 /* ================= ESTADO ================= */
 function nuevoAts() {
@@ -1672,7 +1672,7 @@ function armarHoja() {
     '<tr><td rowspan="4" class="logo c"><img src="' + esc(EMPRESA.logo) + '" alt="Logo"></td><td rowspan="4" class="titulo">' + esc(ATS_FORMATO.titulo) +
     (ats.code ? '<div style="font-size:9px;font-weight:400;margin-top:4px;">Registro ' + esc(ats.code) + ' · versión ' + (ats.version || 1) + (ats.estado === 'CERRADO' ? ' · CERRADO' : '') + (ats.sucio && ats.estado !== 'CERRADO' ? ' (con cambios sin subir)' : '') + '</div>' : '') + '</td><td>' + esc(ATS_FORMATO.pagina) + '</td>' +
     (qr ? '<td rowspan="4" class="qr-hoja c"><img src="' + qr + '" alt="QR del ATS"><div>' + (ats.estado === 'CERRADO' ? 'Escanea para ver este ATS' : 'Escanea para ver este ATS o agregar personal') + '</div></td>' : '') + '</tr>' +
-    '<tr><td>Versión: ' + esc(ATS_FORMATO.version) + '</td></tr><tr><td>Código: ' + esc(ATS_FORMATO.codigo) + '</td></tr><tr><td>Fecha: ' + esc(ATS_FORMATO.fecha) + '</td></tr></table>' +
+    '<tr><td>' + (ATS_FORMATO.version ? 'Versión: ' + esc(ATS_FORMATO.version) : '') + '</td></tr><tr><td>' + (ATS_FORMATO.codigo ? 'Código: ' + esc(ATS_FORMATO.codigo) : '') + '</td></tr><tr><td>' + (ATS_FORMATO.fecha ? 'Fecha: ' + esc(ATS_FORMATO.fecha) : '') + '</td></tr></table>' +
     '<table><colgroup><col style="width:18%"><col style="width:40%"><col style="width:17%"><col style="width:25%"></colgroup>' +
     '<tr><td class="r">Centro de costos</td><td>' + esc(centro) + '</td><td class="r">Fecha</td><td>' + esc(fecha) + '</td></tr>' +
     '<tr><td class="r">Área</td><td>' + esc(c.area) + '</td><td class="r">Horario de trabajo</td><td>' + esc(horario) + '</td></tr>' +

@@ -126,7 +126,7 @@ canvas.mini-pad{width:100%;height:170px;border:1.5px dashed #b9b2a2;border-radiu
   <div class="acciones-top" style="margin-bottom:14px;"><button type="button" class="btn amber" id="btnNuevaObra">+ Nueva obra</button>
   <button type="button" class="btn ghost" id="btnBaseDatos">👥 Base de datos de personal</button></div>
   <div id="obrasList"></div>
-  <div class="version-portal" id="versionPortal">Portal SSTA · versión v125</div>
+  <div class="version-portal" id="versionPortal">Portal SSTA · versión v127</div>
 </div>
 
 <!-- ═══════ BASE DE DATOS DE PERSONAL ═══════ -->
@@ -988,7 +988,7 @@ function htmlHojaAnexo(reg, obra, primera){
     '<table class="hp-cab"><colgroup><col style="width:16%"><col><col style="width:26%"></colgroup><tr>' +
     '<td class="hp-logo"><img src="' + (logoHoja || EMPRESA.logo) + '" alt="Logo"></td>' +
     '<td class="hp-tit">PERSONAL AUTORIZADO — REGISTRO DIARIO<div>Anexo del permiso de trabajo · Anexado a: <b>' + e(anexadoA) + '</b></div></td>' +
-    '<td class="hp-meta">Código: <b>' + e(Empresa.codigo('SSTA-F-149')) + '</b><br>Fecha del registro: <b>' + e(fechaHoja(reg.fecha)) + '</b><br>' + e(fechaLarga(reg.fecha)) + '</td>' +
+    '<td class="hp-meta">' + (Empresa.codigo('SSTA-F-149') ? 'Código: <b>' + e(Empresa.codigo('SSTA-F-149')) + '</b><br>' : '') + 'Fecha del registro: <b>' + e(fechaHoja(reg.fecha)) + '</b><br>' + e(fechaLarga(reg.fecha)) + '</td>' +
     '</tr></table>';
   h += '<div class="hp-sec"><table><tr><td class="hp-st">Datos de la obra</td></tr></table>' +
     '<table class="hp-campos"><colgroup><col style="width:13%"><col style="width:37%"><col style="width:13%"><col style="width:37%"></colgroup>' +

@@ -499,7 +499,7 @@ const CORREO_APROBACION = (EMPRESA.correos && EMPRESA.correos.aprobacionEpp) || 
 /** Arma el enlace de WhatsApp con el mensaje ya escrito, para que el inspector
  *  solo tenga que adjuntar las fotos y darle enviar. */
 function enlaceWhatsApp(nombre, cedula, fecha, malos, registro, observaciones){
-  let msg = 'Solicitud de reposición — ' + FORMATO.titulo + ' (' + FORMATO.codigo + ')\n\n';
+  let msg = 'Solicitud de reposición — ' + FORMATO.titulo + (FORMATO.codigo ? ' (' + FORMATO.codigo + ')' : '') + '\n\n';
   msg += 'Trabajador: ' + (nombre || '') + '\n';
   if(cedula) msg += 'Cédula: ' + cedula + '\n';
   if(fecha)  msg += 'Inspección: ' + fecha + '\n';
@@ -570,7 +570,8 @@ const FORMATOS = {
 
 const TIPO = (new URLSearchParams(location.search).get('tipo') === 'brigadista') ? 'brigadista' : 'epp';
 // Código y versión propios de la empresa (empresa.js).
-['epp', 'brigadista'].forEach((t) => { const f = Empresa.formato(FORMATOS[t].codigo); if (f.codigo) FORMATOS[t].codigo = f.codigo; if (f.version) FORMATOS[t].version = f.version; });
+// v126: sin código ni versión de fábrica; los pone la empresa en el configurador.
+['epp', 'brigadista'].forEach((t) => { const f = Empresa.formato(FORMATOS[t].codigo); FORMATOS[t].id = FORMATOS[t].codigo; FORMATOS[t].codigo = f.codigo || ''; FORMATOS[t].version = f.version || ''; });
 const FORMATO = FORMATOS[TIPO];
 const ELEMENTOS = FORMATO.elementos.map(e => e.nombre);
 const CANTIDAD_ESPERADA = {};
@@ -1417,7 +1418,7 @@ async function abrirFicha(cedula, origen){
 
     box.innerHTML = `
       <div class="ficha-head">
-        <div class="codigo">${esc(FORMATO.codigo)} · Ficha de ${esc(FORMATO.titulo.toLowerCase())}</div>
+        <div class="codigo">${FORMATO.codigo ? esc(FORMATO.codigo) + ' · ' : ''}Ficha de ${esc(FORMATO.titulo.toLowerCase())}</div>
         <h2>${esc(p.nombre||'—')}</h2>
         <div class="sub">CC ${esc(p.cedula||'—')}${p.cargo?' · '+esc(p.cargo):''}</div>
         <div class="sub" style="margin-top:4px;">${rows.length} inspección(es) registrada(s) · documento generado el ${formatFechaHora(new Date())}</div>
@@ -1443,7 +1444,7 @@ document.getElementById('btnVolverDeFicha').addEventListener('click', ()=> showS
   document.title = FORMATO.titulo + ' · Portal SSTA';
   document.getElementById('tituloFormato').innerHTML =
     esc(FORMATO.titulo) +   // v112: sin emoji en el título (el diseño usa iconos de línea)
-    '<span class="cod">' + esc(FORMATO.codigo) + ' · versión ' + esc(FORMATO.version) + '</span>';
+    (FORMATO.codigo || FORMATO.version ? '<span class="cod">' + esc([FORMATO.codigo, FORMATO.version ? 'versión ' + FORMATO.version : ''].filter(Boolean).join(' · ')) + '</span>' : '');
   const etTrab = document.getElementById('etiquetaTrabajador');
   if (etTrab) etTrab.textContent = FORMATO.sujeto === 'brigadista' ? 'Brigadista inspeccionado' : 'Trabajador inspeccionado';
   const etProg = document.getElementById('progresoEpp');
