@@ -189,10 +189,13 @@
       'contratistas.html': 'contratistas', 'usuarios.html': 'usuarios', 'entrega-epp.html': 'dotacion', 'induccion.html': 'induccion', 'programas.html': 'programas', 'pesv.html': 'pesv', 'gerencia.html': 'gerencia', 'informe.html': 'gerencia', 'ambiental.html': 'ambiental', 'quimicos.html': 'quimicos', 'documentos.html': 'kit', 'calidad.html': 'calidad', 'asesor.html': 'asesor', 'cierre-mes.html': 'cierre', 'evidencias.html': 'evidencias', 'preoperacional.html': 'preop', 'proveedores.html': 'proveedores'
     };
 
+    /* v126: los formatos del portal (SSTA-F-…) vienen SIN código: cada empresa pone el suyo en el
+       configurador («Códigos de los formatos»). Sin código, no se muestra ninguno. */
+    const DE_FABRICA = (id) => /^SSTA-F-/.test(String(id));
     function formato(id) {
-      return Object.assign({ codigo: id, version: '', fecha: '', actualizacion: '' }, (E.formatos && E.formatos[id]) || {});
+      return Object.assign({ codigo: DE_FABRICA(id) ? '' : id, version: '', fecha: '', actualizacion: '' }, (E.formatos && E.formatos[id]) || {});
     }
-    function codigo(id) { return formato(id).codigo || id; }
+    function codigo(id) { return formato(id).codigo || (DE_FABRICA(id) ? '' : id); }
     const PERMISOS_MOD = ['caliente', 'alturas', 'confinados', 'izajes', 'electrico'];
     /** v124: lo que el administrador apagó dentro de un módulo para esta empresa
         (E.ocultos = { preop: [ids], inspecciones: [ids] }). */
@@ -251,7 +254,14 @@
     /* ── Reemplazo de textos: nombre del producto y códigos propios de los formatos ── */
     const reemplazos = [];
     if (PRODUCTO !== 'Portal SSTA') reemplazos.push([/Portal SSTA/g, PRODUCTO]);
-    FABRICA.forEach((id) => { const c = codigo(id); if (c !== id) reemplazos.push([new RegExp(id.replace(/-/g, '\\-') + '(?!\\d)', 'g'), c]); });
+    FABRICA.forEach((id) => {
+      const c = codigo(id), x = id.replace(/-/g, '\\-') + '(?!\\d)';
+      if (c === id) return;
+      if (c) { reemplazos.push([new RegExp(x, 'g'), c]); return; }
+      // Sin código de la empresa: se quita el de fábrica con lo que lo acompaña («(…)», «… · », «Anexo …»).
+      reemplazos.push([new RegExp('\\s*\\((?:[Ff]ormato\\s+)?' + x + '\\)', 'g'), ''], [new RegExp('(?:Anexo\\s+|[Ff]ormato\\s+)?' + x + '\\s*·\\s*', 'g'), ''],
+        [new RegExp('\\s*·\\s*(?:[Ff]ormato\\s+)?' + x, 'g'), ''], [new RegExp('(?:Anexo\\s+|[Ff]ormato\\s+)?' + x, 'g'), '']);
+    });
     function cambiarTexto(s) {
       let r = s;
       for (let i = 0; i < reemplazos.length; i++) r = r.replace(reemplazos[i][0], reemplazos[i][1]);
@@ -266,7 +276,7 @@
       const f = formato(m[0]);
       el.dataset.empresaMeta = '1';
       const largo = el.dataset.meta === 'largo' || /Versión|Fecha/.test(el.textContent);
-      el.innerHTML = 'Código: <b>' + esc(f.codigo) + '</b>' + (f.version ? (largo ? ' · Versión: <b>' + esc(f.version) + '</b>' : ' · V' + esc(f.version)) : '') +
+      el.innerHTML = [f.codigo ? 'Código: <b>' + esc(f.codigo) + '</b>' : '', f.version ? (largo ? 'Versión: <b>' + esc(f.version) + '</b>' : 'V' + esc(f.version)) : ''].filter(Boolean).join(' · ') +
         (largo && (f.fecha || f.actualizacion) ? '<br>' + [f.fecha ? 'Fecha doc: ' + esc(f.fecha) : '', f.actualizacion ? 'Act.: ' + esc(f.actualizacion) : ''].filter(Boolean).join(' · ') : '');
     }
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }

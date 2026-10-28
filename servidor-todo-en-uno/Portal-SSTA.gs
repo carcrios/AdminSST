@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v125';
+const VERSION_PORTAL = 'v127';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -1286,7 +1286,7 @@ function recordatorioPermisosAbiertos() {
     }
   }
   if (pendientes.length === 0) return; // nada que avisar
-  const cuerpo = 'Estos permisos de ' + PERMISO_NOMBRE + ' (' + PERMISO_CODIGO + ') llevan abiertos '
+  const cuerpo = 'Estos permisos de ' + PERMISO_NOMBRE + ' llevan abiertos '
     + HORAS_ALERTA + ' horas o más sin cerrarse:\n\n' + pendientes.join('\n');
   CORREOS_AVISO.forEach(correo => {
     MailApp.sendEmail(correo, 'Permisos de ' + PERMISO_NOMBRE + ' pendientes de cierre', cuerpo);
@@ -1423,7 +1423,7 @@ function auditarIntegridad() {
     hoja.getRange(hoja.getLastRow() + 1, 1, filasReporte.length, 11).setValues(filasReporte);
   }
 
-  let cuerpo = 'AUDITORÍA DE INTEGRIDAD — ' + PERMISO_NOMBRE + ' (' + PERMISO_CODIGO + ')\n';
+  let cuerpo = 'AUDITORÍA DE INTEGRIDAD — ' + PERMISO_NOMBRE + '\n';
   cuerpo += Utilities.formatDate(ahora, 'America/Bogota', 'dd/MM/yyyy HH:mm') + '\n';
   cuerpo += '------------------------------------------------------------\n\n';
   cuerpo += 'Permisos revisados : ' + total + '\n';
@@ -1526,7 +1526,7 @@ function revisarIntentosSospechosos() {
   if (!sospechosos.length) { console.log('Sin intentos sospechosos en las últimas 24 horas.'); return 'Sin intentos sospechosos en las últimas 24 horas.'; }
 
   let cuerpo = 'INTENTOS DE ACCESO CON TOKEN INVÁLIDO\n';
-  cuerpo += PERMISO_NOMBRE + ' (' + PERMISO_CODIGO + ')\n';
+  cuerpo += PERMISO_NOMBRE + '\n';
   cuerpo += '------------------------------------------------------------\n\n';
   cuerpo += 'Se registraron ' + sospechosos.length + ' intento(s) en las últimas 24 horas.\n\n';
   sospechosos.slice(0, 40).forEach(s => {
@@ -2560,7 +2560,7 @@ function verificarIntegridad() {
   console.log(resumen);
   if (problemas.length && CORREOS_AVISO.length) {
     CORREOS_AVISO.forEach(correo => {
-      MailApp.sendEmail(correo, '⚠ Revisión de integridad — Personal Autorizado (SSTA-F-149)', resumen);
+      MailApp.sendEmail(correo, '⚠ Revisión de integridad — Personal Autorizado', resumen);
     });
   }
   return resumen;
@@ -2823,7 +2823,7 @@ function libro_() {
   if (id) return SpreadsheetApp.openById(id);
   // Sin bloqueo propio: los guardados ya llegan aquí dentro del bloqueo de
   // doPost, y el libro solo se crea una vez (la primera petición).
-  const nuevo = SpreadsheetApp.create('ATS - Portal SSTA (SSTA-F-007)');
+  const nuevo = SpreadsheetApp.create('ATS - Portal SSTA');
   props.setProperty('ATS_SHEET_ID', nuevo.getId());
   return nuevo;
 }
@@ -3448,7 +3448,7 @@ function auditarIntegridad() {
   if (filas.length) aud.getRange(aud.getLastRow() + 1, 1, filas.length, 7).setValues(filas);
 
   const total = filas.length;
-  let cuerpo = 'AUDITORÍA DE ATS (SSTA-F-007)\n' + Utilities.formatDate(ahora, 'America/Bogota', 'dd/MM/yyyy HH:mm') + '\n\n';
+  let cuerpo = 'AUDITORÍA DE ATS\n' + Utilities.formatDate(ahora, 'America/Bogota', 'dd/MM/yyyy HH:mm') + '\n\n';
   cuerpo += 'ATS revisados: ' + total + '\nCon observaciones: ' + conProblemas.length + '\n\n';
   conProblemas.forEach(function (c) {
     cuerpo += c.code + '  ' + (c.fecha || '') + '\n';
@@ -3608,7 +3608,7 @@ function libro_() {
   const props = PropertiesService.getScriptProperties();
   const id = props.getProperty('ASISTENCIA_SHEET_ID');
   if (id) return SpreadsheetApp.openById(id);
-  const nuevo = SpreadsheetApp.create('Asistencia a charlas - Portal SSTA (SSTA-F-005)');
+  const nuevo = SpreadsheetApp.create('Asistencia a charlas - Portal SSTA');
   props.setProperty('ASISTENCIA_SHEET_ID', nuevo.getId());
   return nuevo;
 }
@@ -4413,12 +4413,12 @@ function enviarSolicitudReposicion_(datos, inspeccionId) {
 
   const fecha = datos.fechaInspeccion || Utilities.formatDate(new Date(), 'America/Bogota', 'dd/MM/yyyy');
   const tituloFormato = (datos.formato && datos.formato.titulo) ? datos.formato.titulo : 'Inspección de EPP';
-  const codigoFormato = (datos.formato && datos.formato.codigo) ? datos.formato.codigo : 'SSTA-F-006';
+  const codigoFormato = (datos.formato && datos.formato.codigo) ? datos.formato.codigo : '';   // v126: sin código de fábrica
   const asunto = 'Solicitud de reposición — ' + tituloFormato + ' — ' + (datos.nombre || 's/n');
 
   let cuerpo = '';
   cuerpo += 'SOLICITUD DE REPOSICIÓN DE ELEMENTOS\n';
-  cuerpo += 'Formato ' + codigoFormato + ' · ' + tituloFormato + '\n';
+  cuerpo += (codigoFormato ? 'Formato ' + codigoFormato + ' · ' : '') + tituloFormato + '\n';
   cuerpo += '------------------------------------------------------------\n\n';
   cuerpo += 'Trabajador:  ' + (datos.nombre || '') + '\n';
   cuerpo += 'Cédula:      ' + (datos.cedula || '') + '\n';
@@ -4867,7 +4867,7 @@ function armarHtmlResumenDiario_(hoy, totalInspecciones, trabajadores,
   h += '<div style="border-bottom:3px solid ' + TINTA + ';padding-bottom:10px;margin-bottom:16px;">'
      + '<div style="font-size:18px;font-weight:bold;">Resumen diario de reposición de EPP</div>'
      + '<div style="font-size:13px;color:' + SUAVE + ';margin-top:3px;">'
-     + esc(hoy) + ' · Formato SSTA-F-006</div></div>';
+     + esc(hoy) + '</div></div>';
 
   // Cifras del día, en recuadros
   h += '<table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:20px;"><tr>';
@@ -5013,7 +5013,7 @@ function auditarIntegridad() {
     h.getRange(h.getLastRow() + 1, 1, filas.length, 9).setValues(filas);
   }
 
-  let cuerpo = 'AUDITORÍA DE INSPECCIONES DE EPP (SSTA-F-006)\n';
+  let cuerpo = 'AUDITORÍA DE INSPECCIONES DE EPP\n';
   cuerpo += Utilities.formatDate(ahora, 'America/Bogota', 'dd/MM/yyyy HH:mm') + '\n';
   cuerpo += '------------------------------------------------------------\n\n';
   cuerpo += 'Inspecciones revisadas : ' + total + '\n';
@@ -5144,7 +5144,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: ▶ Ejecutar → instalarAvisosDiarios (una vez).
    ============================================================ */
 
-const VERSION_SGSST = 'v125';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v127';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,

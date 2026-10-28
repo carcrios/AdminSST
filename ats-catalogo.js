@@ -25,8 +25,8 @@
 
 const ATS_FORMATO = {
   titulo: 'ANÁLISIS DE TRABAJO SEGURO',
-  // Código, versión y fecha: los de la empresa (empresa.js → formatos).
-  codigo: 'SSTA-F-007',
+  // Código, versión y fecha: los de la empresa (empresa.js → formatos). v126: sin código de fábrica.
+  codigo: '',
   version: '',
   fecha: '',
   pagina: 'Página: 1 de 1'

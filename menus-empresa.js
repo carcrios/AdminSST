@@ -20,7 +20,7 @@ const MenusEmpresa = (function () {
       .filter((f) => !f.salud).map((f) => ({ id: f.id, t: f.nombre, g: f.grupo || 'Otros', c: f.codigo || '' }));
   }
   function inspecciones() {
-    return (typeof PLANTILLAS_INSPECCION !== 'undefined' ? PLANTILLAS_INSPECCION : []).map((p) => ({ id: p.id, t: p.nombre, g: p.equipo ? 'De equipos' : 'De áreas y puestos', c: p.codigo || '' }));
+    return (typeof PLANTILLAS_INSPECCION !== 'undefined' ? PLANTILLAS_INSPECCION : []).filter((p) => !p.retirada).map((p) => ({ id: p.id, t: p.nombre, g: p.equipo ? 'De equipos' : 'De áreas y puestos', c: p.codigo || '' }));
   }
   function modulos() {
     const cat = typeof CATALOGO_MODULOS !== 'undefined' ? CATALOGO_MODULOS : [], nom = {};

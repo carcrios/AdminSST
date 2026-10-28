@@ -1021,3 +1021,4 @@ body.con-barra-inferior .subir-arriba,body.con-barra-inferior .back-to-top{botto
 body.con-barra-inferior #botonDemo{bottom:calc(92px + env(safe-area-inset-bottom,0px)) !important;}
 body.con-barra-inferior .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px)) !important;}
 @media print{ .barra-inferior{display:none !important;} }
+.cod:empty,.codigo:empty,.meta:empty{display:none !important;}

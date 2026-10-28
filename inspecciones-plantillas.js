@@ -19,7 +19,7 @@
    ajústalas a los formatos de la empresa.
    ============================================================ */
 const PLANTILLAS_INSPECCION = [
-  {"id":"extintor","nombre":"Extintor","icono":"🧯","codigo":"SSTA-F-017","equipo":true,"frecuencia":"mensual","vencimientos":["Recarga","Prueba hidrostática"], items: [
+  {"id":"extintor","nombre":"Extintor","icono":"🧯","equipo":true,"frecuencia":"mensual","vencimientos":["Recarga","Prueba hidrostática"], items: [
     "Ubicación | Ubicado en el sitio asignado, visible y señalizado",
     "Ubicación | Acceso libre de obstáculos",
     "Partes | Manómetro en zona verde (presión correcta)",
@@ -32,7 +32,7 @@ const PLANTILLAS_INSPECCION = [
     "Partes | Pintura en buen estado",
     "Partes | Seguro y sello en su lugar",
     "Recarga | Fecha de próxima recarga vigente"] },
-  {"id":"botiquin","nombre":"Botiquín y camillas","icono":"🩹","codigo":"SSTA-F-062","equipo":true,"frecuencia":"mensual","vencimientos":["Insumo más próximo a vencer"], items: [
+  {"id":"botiquin","nombre":"Botiquín y camillas","icono":"🩹","equipo":true,"frecuencia":"mensual","vencimientos":["Insumo más próximo a vencer"], items: [
     "Estado del botiquín | El botiquín está en buenas condiciones",
     "Estado del botiquín | El botiquín está limpio, sin manchas ni derrames de productos",
     "Estado del botiquín | El botiquín está señalizado",
@@ -65,7 +65,7 @@ const PLANTILLAS_INSPECCION = [
     "Camillas | Las camillas están limpias y en buenas condiciones",
     "Camillas | Están señalizadas y son de fácil acceso",
     "Camillas | Están instaladas en sitios adecuados"] },
-  {"id":"camilla","nombre":"Camilla","icono":"🚑","codigo":"SSTA-F-163","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
+  {"id":"camilla","nombre":"Camilla","icono":"🚑","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
     "Inspección visual | Sin daños visibles en la estructura (grietas, roturas o partes sueltas)",
     "Inspección visual | Partes móviles íntegras (bisagras y seguros de bloqueo)",
     "Superficie | Superficie sin imperfecciones (rayones, abolladuras o manchas)",
@@ -80,7 +80,7 @@ const PLANTILLAS_INSPECCION = [
     "Señalización | Manual de instrucciones a la mano",
     "Capacitación | El personal que la usa está capacitado en su manejo y transporte",
     "Capacitación | El personal conoce los primeros auxilios y el uso correcto de la camilla"] },
-  {"id":"kit_derrames","nombre":"Kit de derrames","icono":"🧪","codigo":"SSTA-F-178","equipo":true,"frecuencia":"mensual","vencimientos":["Elemento más próximo a vencer"], items: [
+  {"id":"kit_derrames","nombre":"Kit de derrames","icono":"🧪","equipo":true,"frecuencia":"mensual","vencimientos":["Elemento más próximo a vencer"], items: [
     "Estado del kit | El kit está limpio, sin manchas ni derrames de productos",
     "Estado del kit | El kit está señalizado",
     "Estado del kit | Está en un lugar visible y de fácil acceso",
@@ -101,7 +101,7 @@ const PLANTILLAS_INSPECCION = [
     "Elementos | Tacos de madera",
     "Elementos | Linterna",
     "Elementos | Maletín o contenedor que protege los elementos"] },
-  {"id":"arnes","nombre":"Equipo de alturas (arnés, eslinga, tie off)","icono":"🪢","codigo":"SSTA-F-018","equipo":true,"frecuencia":"diaria","vencimientos":["Inspección certificada anual","Vida útil (fabricante)"],"preoperacional":true, items: [
+  {"id":"arnes","nombre":"Equipo de alturas (arnés, eslinga, tie off)","icono":"🪢","equipo":true,"frecuencia":"diaria","vencimientos":["Inspección certificada anual","Vida útil (fabricante)"],"preoperacional":true, items: [
     "Arnés · cintas y correas | Sin hoyos ni agujeros",
     "Arnés · cintas y correas | Sin cintas deshilachadas",
     "Arnés · cintas y correas | Sin desgaste",
@@ -170,7 +170,7 @@ const PLANTILLAS_INSPECCION = [
     "Tie off · costuras | Sin hebras sueltas",
     "Tie off · costuras | Sin costuras reventadas",
     "Tie off · costuras | Sin otros daños"] },
-  {"id":"escalera","nombre":"Escalera de mano","icono":"🪜","codigo":"SSTA-F-083","equipo":true,"frecuencia":"diaria","vencimientos":[],"preoperacional":true, items: [
+  {"id":"escalera","nombre":"Escalera de mano","icono":"🪜","equipo":true,"frecuencia":"diaria","vencimientos":[],"preoperacional":true, items: [
     "Zapatas / patas en buen estado",
     "Rieles / planos verticales en buen estado",
     "Escalones / peldaños en buen estado",
@@ -180,7 +180,7 @@ const PLANTILLAS_INSPECCION = [
     "Seguros de peldaños funcionan",
     "Cuerdas / poleas en buen estado (escalera de extensión)",
     "¿Se puede usar? (si algo está mal, NO se usa)"] },
-  {"id":"andamio","nombre":"Andamio","icono":"🏗️","codigo":"4811.SHE.FOR.025","equipo":true,"frecuencia":"semanal","vencimientos":[],"preoperacional":true, items: [
+  {"id":"andamio","nombre":"Andamio","icono":"🏗️","equipo":true,"frecuencia":"semanal","vencimientos":[],"preoperacional":true, items: [
     "Terreno | El terreno es firme y estable.",
     "Ruedas, collarín y bases collarín | Los elementos se encuentran íntegros, sin golpes ni abolladuras.",
     "Ruedas, collarín y bases collarín | Los elementos están libres de corrosión o sustancias químicas que los afecten.",
@@ -224,7 +224,7 @@ const PLANTILLAS_INSPECCION = [
     "Armado General | El andamio armado con BASE PLANA, cumple la relación altura vs base con pie de amigo de mínimo 4:1.",
     "Armado General | El andamio armado con RUEDAS cumple la relación de altura vs base con pie de amigo de mínimo 3:1.",
     "Armado General | El andamio debe estar asegurado o anclado a alguna estructura fija según relación altura vs base con pie de amigo."] },
-  {"id":"plataforma","nombre":"Plataforma eléctrica tipo tijera","icono":"🏗️","codigo":"SSTA-F-171","equipo":true,"frecuencia":"diaria","vencimientos":["Mantenimiento","Certificación"],"preoperacional":true, items: [
+  {"id":"plataforma","nombre":"Plataforma eléctrica tipo tijera","icono":"🏗️","equipo":true,"frecuencia":"diaria","vencimientos":["Mantenimiento","Certificación"],"preoperacional":true, items: [
     "EPP | Casco con careta de seguridad",
     "EPP | Protección auditiva",
     "EPP | Gafas",
@@ -248,7 +248,7 @@ const PLANTILLAS_INSPECCION = [
     "Equipo | Paradas de emergencia",
     "Equipo | Cables de alimentación eléctrica",
     "Condiciones | El terreno donde se va a trabajar está nivelado"] },
-  {"id":"montacargas","nombre":"Montacargas","icono":"🚚","codigo":"SSTA-F-082","equipo":true,"frecuencia":"diaria","vencimientos":["Mantenimiento (horómetro)","Licencia del operador"],"preoperacional":true, items: [
+  {"id":"montacargas","nombre":"Montacargas","icono":"🚚","equipo":true,"frecuencia":"diaria","vencimientos":["Mantenimiento (horómetro)","Licencia del operador"],"preoperacional":true, items: [
     "EPP | Gafas de lente claro en buen estado",
     "EPP | Casco en buen estado",
     "EPP | Usa el cinturón de seguridad",
@@ -283,7 +283,7 @@ const PLANTILLAS_INSPECCION = [
     "Interior de la cabina | Timón o volante en perfectas condiciones",
     "Interior de la cabina | Frenos: pedales antideslizantes y nivel de líquido correcto",
     "Interior de la cabina | Horómetro funciona, legible y dentro del rango de mantenimiento"] },
-  {"id":"vehiculo","nombre":"Camioneta / vehículo","icono":"🚚","codigo":"SSTA-F-065","equipo":true,"frecuencia":"diaria","vencimientos":["SOAT","Revisión técnico-mecánica","Licencia del conductor"],"preoperacional":true, items: [
+  {"id":"vehiculo","nombre":"Camioneta / vehículo","icono":"🚚","equipo":true,"frecuencia":"diaria","vencimientos":["SOAT","Revisión técnico-mecánica","Licencia del conductor"],"preoperacional":true, items: [
     "Documentos | Licencia de tránsito",
     "Documentos | Revisión técnico-mecánica",
     "Documentos | Seguro obligatorio (SOAT)",
@@ -347,7 +347,7 @@ const PLANTILLAS_INSPECCION = [
     "Neumáticos (desgaste, estructura y presión) | Trasero derecho",
     "Neumáticos (desgaste, estructura y presión) | Trasero izquierdo",
     "Neumáticos (desgaste, estructura y presión) | Llanta de repuesto"] },
-  {"id":"electrica","nombre":"Instalaciones eléctricas","icono":"💡","codigo":"SSTA-F-078","equipo":true,"frecuencia":"trimestral","vencimientos":["Mantenimiento anual","Mantenimiento puesta a tierra"], items: [
+  {"id":"electrica","nombre":"Instalaciones eléctricas","icono":"💡","equipo":true,"frecuencia":"trimestral","vencimientos":["Mantenimiento anual","Mantenimiento puesta a tierra"], items: [
     "Aspectos generales | Los cables principales y la derivaciones de las instalaciones electricas estan entubados o empotrados",
     "Aspectos generales | Para el caso de instalaciones expuestas, se cuenta con canaletas, accesorios y/o fijacion apropiada",
     "Aspectos generales | Los tableros o cajas de control electrico estan adecuadamente señalizados ( Riesgo Electrico)",
@@ -366,7 +366,7 @@ const PLANTILLAS_INSPECCION = [
     "Instalaciones Electricas Temporales | Los cables y conexiones no pasan por vías de circulacion, caso contrario  estan protegidos o enterrados.",
     "Puesta A Tierra | Las instalaciones electricas de produccion cuentan con sistema de puesta a tierra.",
     "Puesta A Tierra | Se realiza mantenimiento de puesta a tierra por lo menos una vez al año. Fecha del Ultimo Mantenimiento. __________________________"] },
-  {"id":"tablero_electrico","nombre":"Tablero eléctrico","icono":"⚡","codigo":"SSTA-F-159","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
+  {"id":"tablero_electrico","nombre":"Tablero eléctrico","icono":"⚡","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
     "El acceso al tablero esta despejado y este se encuentra cercano al área de trabajo y cuenta con balizado perimetral.",
     "Tiene señalización de \"Riesgo eléctrico\" en la puerta frontal",
     "Tiene características de tensión (Voltios sistema Hz)",
@@ -380,7 +380,7 @@ const PLANTILLAS_INSPECCION = [
     "Puesta a tierra instalada correctamente  (Varilla de cobre, conector, cable de cobre)",
     "Toma corrientes industriales cuentan con tapa de protección y aseguradas al chasis del tablero eléctrico.",
     "_______________________________________________________"] },
-  {"id":"locativa","nombre":"Áreas de trabajo (general)","icono":"🏢","codigo":"SSTA-F-079","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
+  {"id":"locativa","nombre":"Áreas de trabajo (general)","icono":"🏢","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
     "Condiciones Locativas | ¿El área de trabajo cuenta con señalización, demarcación y está en buen estado?",
     "Condiciones Locativas | ¿El área cuenta con adecuada iluminación?",
     "Condiciones Locativas | ¿El área cuenta con adecuada ventilación?",
@@ -439,7 +439,7 @@ const PLANTILLAS_INSPECCION = [
     "Gestión Ambiental | ¿Los residuos peligrosos (RESPEL: aceites, baterías, luminarias, etc.) se almacenan de forma diferenciada y segura?",
     "Gestión Ambiental | ¿La empresa tiene contrato vigente con gestor ambiental autorizado para RESPEL?",
     "Gestión Ambiental | ¿Existe kit antiderrame disponible y en buen estado en áreas con productos químicos o lubricantes?"] },
-  {"id":"areas_admin","nombre":"Áreas de trabajo administrativas","icono":"🏢","codigo":"SSTA-F-079","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
+  {"id":"areas_admin","nombre":"Áreas de trabajo administrativas","icono":"🏢","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
     "Condiciones Locativas | ¿El área de trabajo cuenta con señalización, demarcación y está en buen estado?",
     "Condiciones Locativas | ¿El área cuenta con adecuada iluminación?",
     "Condiciones Locativas | ¿El área cuenta con adecuada ventilación?",
@@ -492,7 +492,7 @@ const PLANTILLAS_INSPECCION = [
     "Riesgo Quimico | ¿Los productos almacenados se encuentran en buen estado y sin deterioro?",
     "Riesgo Quimico | ¿Se usan correctamente los recipientes para el manejo de residuos químicos?",
     "Riesgo Quimico | ¿El área cuenta con diques, bandejas o sistemas de contención para almacenamiento de líquidos peligrosos?"] },
-  {"id":"areas_oper","nombre":"Áreas de trabajo operativas","icono":"🏭","codigo":"SSTA-F-079","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
+  {"id":"areas_oper","nombre":"Áreas de trabajo operativas","icono":"🏭","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
     "Condiciones Locativas | ¿El área de trabajo cuenta con señalización, demarcación y está en buen estado?",
     "Condiciones Locativas | ¿El área cuenta con adecuada iluminación?",
     "Condiciones Locativas | ¿El área cuenta con adecuada ventilación?",
@@ -557,7 +557,7 @@ const PLANTILLAS_INSPECCION = [
     "Riesgo Mecánico | ¿Existe y se aplica el procedimiento de bloqueo y etiquetado (LOTO) para mantenimiento o intervención de equipos?",
     "Riesgo Mecánico | ¿Los puntos de operación, corte, aplastamiento o atrapamiento están señalizados y cuentan con dispositivos de protección?",
     "Riesgo Mecánico | ¿Los colaboradores usan los elementos de protección personal adecuados frente al riesgo mecánico (guantes, gafas, careta, calzado de seguridad)?"] },
-  {"id":"gerencial","nombre":"Inspección gerencial","icono":"📋","codigo":"SSTA-F-003","equipo":true,"frecuencia":"trimestral","vencimientos":[], items: [
+  {"id":"gerencial","nombre":"Inspección gerencial","icono":"📋","equipo":true,"frecuencia":"trimestral","vencimientos":[], items: [
     "Área administrativa | ¿Están publicadas las políticas de SSTA y los trabajadores las conocen?",
     "Área administrativa | Los extintores están en el área de trabajo, señalizados y libres de obstáculos",
     "Área administrativa | Los trabajadores participan en reuniones de SSTA (ver registros)",
@@ -590,7 +590,7 @@ const PLANTILLAS_INSPECCION = [
     "Área operativa | El personal recibió su inducción",
     "Área operativa | Los residuos se separan correctamente",
     "Área operativa | Hay seguimiento al mantenimiento de la maquinaria y los equipos"] },
-  {"id":"puesto_trabajo","nombre":"Puesto de trabajo administrativo","icono":"🖥️","codigo":"SSTA-F-153","equipo":true,"frecuencia":"anual","vencimientos":[], items: [
+  {"id":"puesto_trabajo","nombre":"Puesto de trabajo administrativo","icono":"🖥️","equipo":true,"frecuencia":"anual","vencimientos":[], items: [
     "Pantalla | ¿La pantalla es ajustable en giro, inclinación y altura?",
     "Pantalla | ¿La pantalla está a 50-70 cm del cuerpo?",
     "Pantalla | ¿El borde superior de la pantalla está a la altura de los ojos?",
@@ -628,7 +628,7 @@ const PLANTILLAS_INSPECCION = [
     "Requerimientos (¿tiene lo que necesita?) | Mouse",
     "Requerimientos (¿tiene lo que necesita?) | Teclado",
     "Requerimientos (¿tiene lo que necesita?) | Pad mouse"] },
-  {"id":"ergo_admin","nombre":"Ergonomía — puesto administrativo","icono":"🖥️","codigo":"SSTA-F-195","equipo":true,"frecuencia":"anual","vencimientos":[], items: [
+  {"id":"ergo_admin","nombre":"Ergonomía — puesto administrativo","icono":"🖥️","equipo":true,"frecuencia":"anual","vencimientos":[], items: [
     "Aspectos Relacionados Con El Puesto De Trabajo | La pantalla se encuentra ubicada frente al usuario (sin giro lateral > 15°).",
     "Aspectos Relacionados Con El Puesto De Trabajo | El borde superior de la pantalla está a la altura de los ojos del usuario.",
     "Aspectos Relacionados Con El Puesto De Trabajo | La pantalla se encuentra a una distancia de 45 a 70 cm de los ojos.",
@@ -678,7 +678,7 @@ const PLANTILLAS_INSPECCION = [
     "Manipulación Manual De Cargas | El Trabajador manipula cargas con las dos manos (agarre simétrico).",
     "Factores Psicosociales Observables | No manifiesta síntomas de fatiga visual (ojos rojos, lagrimeo, cefalea).",
     "Factores Psicosociales Observables | No refiere molestias musculoesqueléticas relacionadas con el puesto."] },
-  {"id":"ergo_oper","nombre":"Ergonomía — puesto operativo","icono":"🦺","codigo":"SSTA-F-196","equipo":true,"frecuencia":"anual","vencimientos":[], items: [
+  {"id":"ergo_oper","nombre":"Ergonomía — puesto operativo","icono":"🦺","equipo":true,"frecuencia":"anual","vencimientos":[], items: [
     "Aspectos Ambientales | La iluminación es adecuada para el tipo de labor (sin sombras, sin deslumbramiento directo o reflejado).",
     "Aspectos Ambientales | El trabajador no está expuesto a radiación solar directa durante la jornada.",
     "Aspectos Ambientales | No hay ruido que genere disconfort o dificulte la comunicación.",
@@ -735,7 +735,7 @@ const PLANTILLAS_INSPECCION = [
     "Herramientas, Equipos Y Superficies De Trabajo | No trabaja solo en zonas aisladas sin poder pedir ayuda.",
     "Herramientas, Equipos Y Superficies De Trabajo | El Trabajador cuenta con tiempo suficiente para completar sus tareas sin sobreesfuerzo.",
     "Herramientas, Equipos Y Superficies De Trabajo | El Trabajador ha recibido inducción y entrenamiento específico para las tareas que realiza."] },
-  {"id":"herramienta_electrica","nombre":"Herramienta eléctrica (pulidora, taladro, esmeril…)","icono":"🔌","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":[], items: [
+  {"id":"herramienta_electrica","retirada":true,"nombre":"Herramienta eléctrica (lista anterior)","icono":"🔌","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":[], items: [
     "Cable y clavija sin empalmes, cortes ni partes expuestas",
     "Carcasa sin fisuras, tornillos completos",
     "Guarda de protección instalada y bien ajustada",
@@ -745,26 +745,186 @@ const PLANTILLAS_INSPECCION = [
     "RPM del disco compatibles con la herramienta",
     "Llave del mandril / herramientas de ajuste disponibles",
     "Se conecta a tomacorriente con polo a tierra / GFCI"] },
+  {"id":"pulidora","nombre":"Pulidora","icono":"🔌","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":["Consumible (disco)"], items: [
+    "EPP | Careta en buen estado",
+    "EPP | Protección auditiva en buen estado",
+    "EPP | Gafas en buen estado",
+    "EPP | Protección respiratoria en buen estado",
+    "EPP | Guantes de vaqueta en buen estado",
+    "EPP | Peto y mangas en buen estado",
+    "Consumibles y accesorios | Libre de fisuras, fracturas o desgastes irregulares",
+    "Consumibles y accesorios | Eje sin deformaciones ni doblado",
+    "Consumibles y accesorios | Desgaste dentro del límite útil",
+    "Consumibles y accesorios | Sin desprendimiento de partículas o del abrasivo",
+    "Consumibles y accesorios | Sin oxidación ni corrosión",
+    "Herramienta | Cable de alimentación en buen estado",
+    "Herramienta | Polo a tierra en buen estado",
+    "Herramienta | Acople del disco y rosca bien instalados",
+    "Herramienta | Tornillos de ensamble de la pulidora completos y ajustados",
+    "Herramienta | Mango bien instalado y en buen estado",
+    "Herramienta | Mango auxiliar en buen estado",
+    "Herramienta | Interruptor de encendido en buen estado",
+    "Herramienta | Seguro en buen estado",
+    "Herramienta | Guarda instalada y en buen estado",
+    "Herramienta | Estado general de la pulidora (sin fisuras ni rupturas, aseada)"] },
+  {"id":"taladro","nombre":"Taladro","icono":"🔌","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":[], items: [
+    "EPP | Careta en buen estado",
+    "EPP | Protección auditiva en buen estado",
+    "EPP | Gafas en buen estado",
+    "EPP | Protección respiratoria en buen estado",
+    "EPP | Guantes de vaqueta en buen estado",
+    "EPP | Peto y mangas en buen estado",
+    "Consumibles y accesorios | Libre de fisuras, fracturas o desgastes irregulares",
+    "Consumibles y accesorios | Eje sin deformaciones ni doblado",
+    "Consumibles y accesorios | Desgaste dentro del límite útil",
+    "Consumibles y accesorios | Sin desprendimiento de partículas o del abrasivo",
+    "Consumibles y accesorios | Sin oxidación ni corrosión",
+    "Herramienta | Cable de alimentación en buen estado",
+    "Herramienta | Polo a tierra en buen estado",
+    "Herramienta | Cuerpo del equipo en buen estado",
+    "Herramienta | Mandril en buen estado",
+    "Herramienta | Interruptor de encendido y apagado en buen estado",
+    "Herramienta | Mango de sujeción auxiliar en buen estado",
+    "Herramienta | Llave del mandril en buen estado"] },
+  {"id":"motortool","nombre":"Motortool","icono":"🔌","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":["Consumible"], items: [
+    "EPP | Careta en buen estado",
+    "EPP | Protección auditiva en buen estado",
+    "EPP | Gafas en buen estado",
+    "EPP | Protección respiratoria en buen estado",
+    "EPP | Guantes de vaqueta en buen estado",
+    "EPP | Peto y mangas en buen estado",
+    "Consumibles y accesorios | Libre de fisuras, fracturas o desgastes irregulares",
+    "Consumibles y accesorios | Eje sin deformaciones ni doblado",
+    "Consumibles y accesorios | Desgaste dentro del límite útil",
+    "Consumibles y accesorios | Sin desprendimiento de partículas o del abrasivo",
+    "Consumibles y accesorios | Sin oxidación ni corrosión",
+    "Herramienta | Cable de alimentación en buen estado",
+    "Herramienta | Conexión de polo a tierra en buen estado",
+    "Herramienta | Cuerpo del equipo en buen estado",
+    "Herramienta | Mandril en buen estado",
+    "Herramienta | Interruptor de encendido y apagado en buen estado",
+    "Herramienta | Cuello en buen estado",
+    "Herramienta | Llaves del equipo en buen estado"] },
+  {"id":"herramientas_menores","nombre":"Herramientas menores (manuales)","icono":"🛠️","equipo":true,"frecuencia":"semanal","preoperacional":true,"vencimientos":[], items: [
+    "Llaves expansivas | El sinfín está en buen estado, sin desgastes ni hilos quebrados, y se desliza sin forzarlo",
+    "Llaves expansivas | La cremallera y el sinfín ajustan sin juego que permita que se suelten",
+    "Llaves expansivas | Boca libre de deformaciones o grietas, ajusta sin torcerse",
+    "Llaves expansivas | Es original, sin signos de reparación",
+    "Llaves mixtas | Las estrías están en buen estado",
+    "Llaves mixtas | Las bocas de las llaves fijas están originales, sin desbastar",
+    "Llaves mixtas | Conservan su forma original, no están torcidas ni dobladas",
+    "Llaves mixtas | Bocas sin deformaciones ni grietas y paralelas a sus caras",
+    "Llaves mixtas | Hay llaves suficientes en tamaños, sin necesidad de acuñarlas o usar extensiones de tubo",
+    "Martillos | El mango está acuñado con seguridad y encaja en la cabeza",
+    "Martillos | Los mangos están libres de asperezas y astillas",
+    "Martillos | Las cabezas están libres de rebabas",
+    "Pinzas | Las quijadas están sin desgastes ni golpes",
+    "Pinzas | Mangos en buen estado, sin deformaciones y aislados",
+    "Pinzas | El tornillo o pasador está en buen estado, sin juego en las quijadas",
+    "Hombresolo | El sinfín está en buen estado y se desliza sin forzarlo",
+    "Hombresolo | El dispositivo de fijación ajusta correctamente, no se suelta",
+    "Hombresolo | Boca libre de deformaciones o grietas, ajusta sin torcerse",
+    "Destornilladores | Mangos sin roturas, sueltos ni partidos",
+    "Destornilladores | Hoja y vástago alineados, sin torceduras",
+    "Destornilladores | Palas a escuadra, estrías afiladas y limpias",
+    "Destornilladores | Mangos aislados",
+    "Ratches | El mecanismo de reversión funciona sin retenciones",
+    "Ratches | Hay copas en cantidad y medidas suficientes para el trabajo",
+    "Ratches | Las estrías de las copas están en perfecto estado",
+    "Otros | Las herramientas están libres de aceites y materiales deslizantes",
+    "Otros | Se trasladan en cajas adecuadas, diseñadas para tal fin",
+    "Otros | Se guardan de forma que no se deterioran unas con otras",
+    "Otros | Hay un sistema de reposición de herramientas y los trabajadores lo conocen",
+    "Otros | Las herramientas dañadas se cambian a tiempo, no se reparan"] },
+  {"id":"roladora","nombre":"Roladora","icono":"🏭","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":[], items: [
+    "EPP | Careta en buen estado",
+    "EPP | Protección auditiva en buen estado",
+    "EPP | Gafas en buen estado",
+    "EPP | Protección respiratoria en buen estado",
+    "EPP | Guantes en buen estado",
+    "EPP | Peto y mangas en buen estado",
+    "Máquina | Interruptor de encendido/apagado funciona",
+    "Máquina | Máquina limpia",
+    "Máquina | Botón de emergencia en buen estado",
+    "Máquina | El sistema de transmisión mueve los rodillos en sincronía",
+    "Máquina | El control de manejo manual funciona correctamente",
+    "Máquina | Conexiones eléctricas y cables en buen estado",
+    "Máquina | Nivel de aceite de la parte hidráulica correcto",
+    "Máquina | La máquina está en un lugar estable y nivelado"] },
+  {"id":"diferencial","nombre":"Diferencial con cadena","icono":"🏗️","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":[], items: [
+    "Diferencial | El soporte de anclaje (gancho de anclaje) está en buen estado, sin daños visibles",
+    "Diferencial | Los eslabones de la cadena están libres de desgaste, óxido o deformaciones",
+    "Diferencial | La cadena está adecuadamente lubricada",
+    "Diferencial | El sistema de rotación de cadenas funciona sin atascos",
+    "Diferencial | El gancho de sujeción está libre de deformaciones o daños",
+    "Diferencial | El gancho de sujeción tiene la lengüeta de seguridad instalada y funcional",
+    "Diferencial | La tornillería está en buen estado, sin holguras ni daños",
+    "Diferencial | Los elementos auxiliares (poleas, rodamientos, etc.) están en buen estado"] },
   {"id":"soldadura","nombre":"Equipo de soldadura eléctrica","icono":"⚡","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":[], items: [
-    "Cables de alimentación y de soldar sin daños ni empalmes expuestos",
-    "Pinza portaelectrodo con aislamiento completo",
-    "Pinza de tierra firme y bien conectada",
-    "Carcasa y conexiones sin daños; polo a tierra",
-    "Interruptor y perillas funcionan",
-    "Extintor a menos de 10 m",
-    "Biombo / pantalla para proteger a terceros",
-    "Área sin materiales combustibles"] },
+    "EPP | Careta en buen estado",
+    "EPP | Protección auditiva en buen estado",
+    "EPP | Gafas en buen estado",
+    "EPP | Protección respiratoria en buen estado",
+    "EPP | Guantes de vaqueta en buen estado",
+    "EPP | Peto y mangas en buen estado",
+    "Equipo | Estructura física en buen estado, sin deterioro, rayones ni corrosión",
+    "Equipo | El tablero o toma está en buen estado",
+    "Equipo | El equipo tiene conexión de polo a tierra",
+    "Equipo | Hay un extintor asignado al equipo",
+    "Equipo | La antorcha TIG / MIG está en buen estado",
+    "Equipo | El portaelectrodo está en buen estado",
+    "Equipo | Tiene pinza de masa",
+    "Equipo | El cable de alimentación está en buen estado",
+    "Equipo | Los conectores tienen el ajuste adecuado",
+    "Equipo | El indicador de encendido funciona",
+    "Equipo | El selector de polaridad funciona correctamente",
+    "Equipo | Los interruptores de arranque y parada funcionan",
+    "Equipo | El equipo está sobre terreno seco y nivelado",
+    "Área y conexiones | Cables de alimentación y de soldar sin daños ni empalmes expuestos",
+    "Área y conexiones | Pinza portaelectrodo con aislamiento completo",
+    "Área y conexiones | Pinza de tierra firme y bien conectada",
+    "Área y conexiones | Carcasa y conexiones sin daños; polo a tierra",
+    "Área y conexiones | Interruptor y perillas funcionan",
+    "Área y conexiones | Extintor a menos de 10 m",
+    "Área y conexiones | Biombo / pantalla para proteger a terceros",
+    "Área y conexiones | Área sin materiales combustibles"] },
   {"id":"oxicorte","nombre":"Equipo de oxicorte","icono":"🔥","equipo":true,"frecuencia":"diaria","preoperacional":true,"vencimientos":["Prueba hidrostática cilindros"], items: [
-    "Cilindros en posición vertical, asegurados con cadena",
-    "Capuchón de protección disponible",
-    "Reguladores y manómetros en buen estado",
-    "Válvulas antirretroceso (arresta llamas) instaladas en ambos extremos",
-    "Mangueras sin fisuras, quemaduras ni empalmes con cinta",
-    "Abrazaderas adecuadas (no alambre)",
-    "Prueba de fugas con agua jabonosa sin fugas",
-    "Soplete y boquillas en buen estado",
-    "Chispero disponible (no se enciende con fósforo o encendedor)",
-    "Extintor a menos de 10 m"] },
+    "EPP | Careta en buen estado",
+    "EPP | Protección auditiva en buen estado",
+    "EPP | Gafas de protección para corte en buen estado",
+    "EPP | Protección respiratoria en buen estado",
+    "EPP | Guantes en buen estado",
+    "EPP | Peto y mangas en buen estado",
+    "Botellas | Las botellas de oxígeno y acetileno están identificadas",
+    "Botellas | Las botellas están en posición vertical",
+    "Botellas | Las botellas están libres de abolladuras",
+    "Botellas | Las botellas están aseguradas en su canastilla",
+    "Botellas | Hay un extintor a la mano",
+    "Botellas | Los cilindros están libres de escapes o fugas",
+    "Botellas | Cilindro y regulador libres de grasa, aceite o combustibles",
+    "Botellas | Libre de caída de objetos al mismo nivel",
+    "Botellas | La válvula del cilindro está en buen estado",
+    "Manómetros | El múltiple o manifold está en buenas condiciones",
+    "Manómetros | Los manómetros están en buen estado",
+    "Mangueras | Mangueras sin cortes, empalmes ni grasa",
+    "Mangueras | Conexiones a las botellas con abrazaderas en buen estado y ajustadas",
+    "Mangueras | El color de la manguera corresponde al gas",
+    "Mangueras | Las mangueras están fuera de las vías de circulación",
+    "Mangueras | Las mangueras están lejos de superficies calientes o cortantes",
+    "Soplete o caña de corte | Los orificios de salida de gas están libres de obstrucciones",
+    "Soplete o caña de corte | La caña está libre de obstrucciones y en buen estado",
+    "Soplete o caña de corte | Las válvulas de la caña están en buen estado",
+    "Soplete o caña de corte | El accionador de la caña está en buenas condiciones",
+    "Seguridad del equipo | Cilindros en posición vertical, asegurados con cadena",
+    "Seguridad del equipo | Capuchón de protección disponible",
+    "Seguridad del equipo | Reguladores y manómetros en buen estado",
+    "Seguridad del equipo | Válvulas antirretroceso (arresta llamas) instaladas en ambos extremos",
+    "Seguridad del equipo | Mangueras sin fisuras, quemaduras ni empalmes con cinta",
+    "Seguridad del equipo | Abrazaderas adecuadas (no alambre)",
+    "Seguridad del equipo | Prueba de fugas con agua jabonosa sin fugas",
+    "Seguridad del equipo | Soplete y boquillas en buen estado",
+    "Seguridad del equipo | Chispero disponible (no se enciende con fósforo o encendedor)",
+    "Seguridad del equipo | Extintor a menos de 10 m"] },
   {"id":"quimicos","nombre":"Almacenamiento de sustancias químicas","icono":"⚗️","equipo":true,"frecuencia":"mensual","vencimientos":[], items: [
     "Inventario de sustancias del área actualizado (Res. 773 de 2021, art. 21)",
     "Todos los envases con etiqueta SGA legible (pictogramas, palabra de advertencia, indicaciones de peligro)",
@@ -796,7 +956,9 @@ const ICONOS_INSPECCION = ['📋', '🧪', '🧯', '🩹', '🚑', '🪢', '🪜
  *  Cada lista sale con origen: 'original' | 'ajustada' | 'propia', y activa. */
 function plantillasInspeccion(propias){
   const lineas = (t)=> String(t || '').split(/\n/).map((x)=> x.trim()).filter(Boolean);
-  const out = PLANTILLAS_INSPECCION.map((p)=> Object.assign({}, p, { origen: 'original', activa: true }));
+  // v127: una lista «retirada» (p. ej. la herramienta eléctrica combinada, que se separó en pulidora,
+  // taladro, motortool…) ya no se ofrece, pero sus equipos e inspecciones viejas se siguen viendo.
+  const out = PLANTILLAS_INSPECCION.map((p)=> Object.assign({}, p, { origen: 'original', activa: !p.retirada }));
   (propias || []).forEach((x)=> {
     const r = x.resumen || {}; if (x.borrado) return;
     const def = { nombre: r.nombre || 'Lista sin nombre', icono: ICONOS_INSPECCION.indexOf(r.icono) !== -1 ? r.icono : '📋', equipo: true, frecuencia: FRECUENCIAS[r.frecuencia] ? r.frecuencia : 'mensual',

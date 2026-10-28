@@ -311,6 +311,81 @@ const UI = (function () {
     return b;
   }
 
+  /* ── v127: eliminar lo que se agregó mal (una cosa o varias) ──
+     El servidor no borra la fila: la marca «BORRADO» con fecha, motivo y quién (queda en el
+     historial). Solo Administrador y SST; el servidor también lo exige. */
+  const puedeEliminar = () => { try { const r = Sesion.rol(); return !r || r === 'admin' || r === 'sst'; } catch (e) { return true; } };
+  async function eliminarVarios(ids, que) {
+    const n = ids.length; if (!n) return false;
+    const m = modal('<h3>¿Eliminar ' + (n === 1 ? esc(que || 'este registro') : n + ' registros') + '?</h3>' +
+      '<p class="ayuda">Deja de aparecer en las listas. No se pierde: queda en el historial con la fecha y quién lo eliminó.</p>' +
+      '<div class="field"><label>¿Por qué? (opcional)</label><input type="text" id="elMot" maxlength="200" placeholder="Ej.: se registró por error, persona duplicada…"></div>' +
+      '<button type="button" class="btn rojo" id="elOk">Eliminar' + (n > 1 ? ' ' + n : '') + '</button><button type="button" class="btn ghost" data-cerrar>Cancelar</button><div class="status-msg" id="elMsg"></div>');
+    return new Promise((fin) => {
+      let hecho = false;
+      const obs = new MutationObserver(() => { if (!document.body.contains(m.el)) { obs.disconnect(); if (!hecho) fin(false); } });
+      obs.observe(document.body, { childList: true });
+      m.el.querySelector('#elOk').addEventListener('click', async () => {
+        const b = m.el.querySelector('#elOk'), msg = m.el.querySelector('#elMsg'), mot = m.el.querySelector('#elMot').value.trim();
+        b.disabled = true; let ok = 0, mal = '';
+        for (let i = 0; i < n; i++) {
+          msg.textContent = 'Eliminando ' + (i + 1) + ' de ' + n + '…';
+          const r = await SGSST.enviar({ action: 'borrar', id: ids[i], motivo: mot || 'Eliminado desde el portal' });
+          if (r && r.ok) ok++; else mal = (r && r.error) || 'sin respuesta';
+        }
+        hecho = true;
+        if (ok === n) { m.cerrar(); toast('✓ ' + (n === 1 ? 'Eliminado' : n + ' eliminados')); fin(true); }
+        else { msg.textContent = 'Se eliminaron ' + ok + ' de ' + n + '. ' + mal; b.disabled = false; if (ok) fin(true); }
+      });
+    });
+  }
+  /** Botón «Eliminar» para la ficha de un registro. alTerminar() se llama si se eliminó. */
+  function botonEliminar(id, que, alTerminar) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ghost btn-eliminar'; b.textContent = 'Eliminar';
+    if (!puedeEliminar()) { b.hidden = true; return b; }
+    b.addEventListener('click', async () => { if (await eliminarVarios([id], que)) { if (alTerminar) alTerminar(); } });
+    return b;
+  }
+  /** Selección de varios para eliminar en una lista cuyos elementos tienen [data-<atributo>]=id.
+      seleccionVarios({ lista, barra, atributo: 'id', que: 'personas', alTerminar }) */
+  function seleccionVarios(o) {
+    if (!o.lista || !o.barra || !puedeEliminar()) return;
+    const at = o.atributo || 'id', sel = new Set();
+    let activo = false;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn ghost mini sel-varios'; btn.textContent = 'Seleccionar para eliminar';
+    o.barra.appendChild(btn);
+    const pie = document.createElement('div'); pie.className = 'sel-pie'; pie.hidden = true;
+    pie.innerHTML = '<span class="sel-n">0 seleccionados</span><button type="button" class="btn ghost mini" data-todo>Todos</button><button type="button" class="btn rojo mini" data-elim disabled>Eliminar</button><button type="button" class="btn ghost mini" data-salir>Cancelar</button>';
+    document.body.appendChild(pie);
+    const items = () => [...o.lista.querySelectorAll('[data-' + at + ']')];
+    const marcar = () => {
+      items().forEach((el) => { const on = sel.has(el.getAttribute('data-' + at)); el.classList.toggle('sel-on', activo && on); el.classList.toggle('sel-modo', activo); });
+      pie.querySelector('.sel-n').textContent = sel.size + (sel.size === 1 ? ' seleccionado' : ' seleccionados');
+      pie.querySelector('[data-elim]').disabled = !sel.size;
+      pie.querySelector('[data-elim]').textContent = 'Eliminar' + (sel.size ? ' ' + sel.size : '');
+    };
+    const salir = () => { activo = false; sel.clear(); pie.hidden = true; btn.textContent = 'Seleccionar para eliminar'; marcar(); };
+    btn.addEventListener('click', () => { if (activo) { salir(); return; } activo = true; pie.hidden = false; btn.textContent = 'Terminar selección'; marcar(); });
+    // En modo selección, tocar un elemento lo marca en vez de abrirlo.
+    o.lista.addEventListener('click', (e) => {
+      if (!activo) return; const el = e.target.closest('[data-' + at + ']'); if (!el || !o.lista.contains(el)) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      const id = el.getAttribute('data-' + at); if (sel.has(id)) sel.delete(id); else sel.add(id); marcar();
+    }, true);
+    new MutationObserver(() => { if (activo) marcar(); }).observe(o.lista, { childList: true, subtree: true });
+    pie.querySelector('[data-salir]').addEventListener('click', salir);
+    pie.querySelector('[data-todo]').addEventListener('click', () => { const ids = items().map((el) => el.getAttribute('data-' + at)); const todos = ids.every((i) => sel.has(i)); ids.forEach((i) => { if (todos) sel.delete(i); else sel.add(i); }); marcar(); });
+    pie.querySelector('[data-elim]').addEventListener('click', async () => { if (await eliminarVarios([...sel], o.que)) { salir(); if (o.alTerminar) o.alTerminar(); } });
+    if (!document.getElementById('estiloSelVarios')) {
+      const st = document.createElement('style'); st.id = 'estiloSelVarios';
+      st.textContent = '.sel-barra{display:flex;justify-content:flex-end;margin:2px 0 8px;}.sel-barra[hidden]{display:none;}.sel-pie[hidden]{display:none !important;}.sel-barra .sel-varios{width:auto;margin:0;min-height:38px;font-size:13.5px;}.btn-eliminar{color:#b42318 !important;}' + '.sel-modo{position:relative;padding-left:46px !important;}.sel-modo::before{content:"";position:absolute;left:14px;top:50%;width:20px;height:20px;margin-top:-10px;border:2px solid #9aa9bd;border-radius:6px;background:#fff;}' +
+        '.sel-on{outline:2.5px solid #d92d20;outline-offset:-2px;}.sel-on::before{background:#d92d20 url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27white%27 stroke-width=%273.5%27%3E%3Cpath d=%27M5 12l5 5L20 7%27/%3E%3C/svg%3E") center/14px no-repeat;border-color:#d92d20;}' +
+        '.sel-pie{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom));z-index:60;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;background:#10213a;color:#fff;border-radius:18px;padding:10px 12px;box-shadow:0 14px 34px rgba(16,33,58,.35);max-width:calc(100vw - 24px);}' +
+        '.sel-pie .sel-n{font-weight:800;font-size:14px;padding:0 4px;}.sel-pie .btn{margin:0 !important;min-height:40px;width:auto;}.btn.rojo{background:#d92d20 !important;color:#fff !important;border-color:#d92d20 !important;}.btn.rojo:disabled{opacity:.45;}';
+      document.head.appendChild(st);
+    }
+  }
+
   /* ── Adjuntos (certificados, actas escaneadas, hojas de seguridad…) ──
      Van a Google Drive a través del servidor; en el registro queda la ficha.
      adjuntos(contenedor, { id, lista?, refs?: {clave: 'nombre'}, ref?, soloLectura?, titulo? }) */
@@ -509,5 +584,5 @@ const UI = (function () {
 
   return { $, toast, modal, src, imgs, avisoServidor, avisoCopia, hoy, corta, semaforo, diasHasta, cuandoTexto, comprimir, fotos, sig, padHTML, activarPad, firma,
            cargarPersonas, autocompletar, norm, cabecera, seccion, tablaDatos, textoLargo, fotosHoja, firmaHoja, imprimir, ORIGENES, nuevaAccion, guardarAccion,
-           historial, botonHistorial, adjuntos, perfilEmpresa, perfilInstalacion, editarPerfil, textoGrupo, irKpi, chipsFiltro };
+           historial, botonHistorial, botonEliminar, seleccionVarios, eliminarVarios, adjuntos, perfilEmpresa, perfilInstalacion, editarPerfil, textoGrupo, irKpi, chipsFiltro };
 })();
