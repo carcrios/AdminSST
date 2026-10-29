@@ -109,7 +109,7 @@ details.grupo summary .n{font-weight:600;color:var(--muted);font-size:12px;}
   <div id="filtroActivo"></div>
   <input type="search" class="buscar" id="buscar" placeholder="Buscar por lugar, descripción o persona">
   <div id="lista"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v128</div>
+  <div class="version-portal">Portal SSTA · versión v129</div>
 </div>
 
 <!-- ═══════ NUEVO REPORTE ═══════ -->
@@ -159,7 +159,7 @@ details.grupo summary .n{font-weight:600;color:var(--muted);font-size:12px;}
     <div class="field"><label>¿Qué sucedió? *</label><div class="ayuda" style="margin:-2px 0 6px;">Por favor describa de forma clara y objetiva la situación observada, indicando qué, dónde y cómo.</div><textarea id="nDesc" placeholder="Qué se vio, dónde y cómo"></textarea></div>
     <div class="field" id="filaRelacionados" hidden><label>Persona(s), equipo(s), máquina(s) o instalaciones relacionadas *</label><textarea id="nRelacionados" maxlength="1000" style="min-height:56px;" placeholder="Ej.: pulidora PUL-03, área de corte, ayudante de turno"></textarea></div>
     <div class="field"><label>Fotos</label><div id="nFotos"></div></div>
-    <div class="field"><label>Potencial de daño</label><div class="chips" id="nPot"><button type="button" data-v="Alto">Alto</button><button type="button" data-v="Medio" class="on">Medio</button><button type="button" data-v="Bajo">Bajo</button></div></div>
+    <div class="field" id="filaPot"><label>Potencial de daño</label><div class="chips" id="nPot"><button type="button" data-v="Alto">Alto</button><button type="button" data-v="Medio" class="on">Medio</button><button type="button" data-v="Bajo">Bajo</button></div></div>
     <div class="field" id="filaInmediataTxt"><label>Acción inmediata tomada</label><textarea id="nInmediata" placeholder="Ej: se suspendió la tarea y se aisló el área"></textarea></div>
     <div class="field" id="filaAccionTomada" hidden><label>Acción inmediata tomada *</label>
       <div class="checks" id="nAccionTomada"></div>
@@ -479,9 +479,10 @@ function ponerClase(c){
   $('filaCategoria').hidden = !obs || c === 'Acto seguro'; $('filaRelacionados').hidden = !obs;
   $('filaAccionTomada').hidden = !obs || c === 'Acto seguro'; $('filaInmediataTxt').hidden = obs && c !== 'Acto seguro';
   $('filaPlan').hidden = $('filaConsecuencias').hidden = !obs || c === 'Acto seguro';
+  // v129: el acto seguro no lleva potencial de daño ni campo de reconocimiento.
+  $('filaPot').hidden = c === 'Acto seguro'; if (c === 'Acto seguro') $('filaInmediataTxt').hidden = true;
   if (obs) pintarCategorias(c);
-  $('nInmediata').placeholder = c === 'Acto seguro' ? 'Ej.: se felicitó a la persona frente al grupo' : 'Ej: se suspendió la tarea y se aisló el área';
-  document.querySelector('#filaInmediataTxt label').textContent = c === 'Acto seguro' ? 'Reconocimiento dado (opcional)' : 'Acción inmediata tomada';
+
 }
 function nuevo(){
   const ahora = new Date(); ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
@@ -504,6 +505,13 @@ function nuevo(){
   ponerClase(''); $('msgNuevo').textContent = '';
   show('scrNuevo');
 }
+/* v129: solo los tipos de reporte que la empresa ofrece (consola → Menús → Tipos de reporte). */
+(function(){
+  const ve = (t)=> typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('reportes', t);
+  document.querySelectorAll('#clases [data-c]').forEach((b)=> { if (!ve(b.dataset.c)) b.hidden = true; });
+  if (!ve('Accidente de trabajo')) { const t = document.querySelector('#tabs [data-tab="accidentes"]'); if (t) t.hidden = true; }
+  if (!ve('PQRS')) { const t = document.querySelector('#tabs [data-tab="pqrs"]'); if (t) t.hidden = true; }
+})();
 $('clases').addEventListener('click', (e)=>{ const b = e.target.closest('[data-c]'); if (b) ponerClase(b.dataset.c); });
 $('nPot').addEventListener('click', (e)=>{ const b = e.target.closest('[data-v]'); if (!b) return; $('nPot').querySelectorAll('button').forEach((x)=> x.classList.toggle('on', x === b)); });
 /* PQRS: una sola opción por grupo; la empresa solo para cliente o contratista; anónima oculta los datos. */

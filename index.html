@@ -488,7 +488,7 @@
     <div class="pub-panel pub-lista" id="panPreop" hidden><div id="pubPreopLista"></div><a class="pub-op pub-todos" href="preoperacional.html"><span class="pub-op-t"><b>Ver todos y los ya hechos</b></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a></div>
     <div class="pub-panel pub-lista" id="panReportar" hidden>
       <div id="pubLista">
-      <a class="pub-op" href="reportes.html?nuevo=1"><span class="sg-iso tri" aria-hidden="true"><svg class="ic"><use href="#i-alerta"/></svg></span><span class="pub-op-t"><b>Acto, condición o evento</b><small>Acto seguro o inseguro, condición insegura, hallazgo ambiental, incidente o accidente</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
+      <a class="pub-op" href="reportes.html?nuevo=1"><span class="sg-iso tri" aria-hidden="true"><svg class="ic"><use href="#i-alerta"/></svg></span><span class="pub-op-t"><b>Acto, condición o evento</b><small>Acto seguro o inseguro, condición insegura, hallazgo ambiental o incidente</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
       <a class="pub-op" href="reportes.html?nuevo=1&amp;pqrs=1"><span class="sg-iso circ" aria-hidden="true"><svg class="ic"><use href="#i-documentos"/></svg></span><span class="pub-op-t"><b>PQRS</b><small>Petición, queja, reclamo o sugerencia</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
       <a class="pub-op" href="buzon.html?tipo=convivencia" data-conv><span class="sg-iso cuad" aria-hidden="true"><svg class="ic"><use href="#i-candado"/></svg></span><span class="pub-op-t"><b>Queja al Comité de Convivencia</b><small>Reservada: solo la lee el comité · no anónima</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
       <a class="pub-op" href="buzon.html?tipo=acoso" data-conv><span class="sg-iso cuad" aria-hidden="true"><svg class="ic"><use href="#i-escudo"/></svg></span><span class="pub-op-t"><b>Reporte de acoso sexual</b><small>Reservado · Ley 2365 de 2024</small></span><svg class="ic chev-d" aria-hidden="true"><use href="#i-chevron"/></svg></a>
@@ -1088,6 +1088,10 @@ window.Agenda = (function () {
   if (p && !on('preop')) p.hidden = true;
   if (!on('reportes')) { document.querySelectorAll('#pubLista a[href^="reportes.html"]').forEach((a) => { a.hidden = true; }); }
   if (!on('convivencia')) { document.querySelectorAll('#pubLista a[data-conv]').forEach((a) => { a.hidden = true; }); }   // v128: el buzón reservado del comité
+  // v129: los tipos de reporte que la empresa ofrece (consola → Menús).
+  const ve = (t) => typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('reportes', t);
+  [['a[href*="pqrs=1"]', 'PQRS'], ['a[href="buzon.html?tipo=convivencia"]', 'Queja al Comité de Convivencia'], ['a[href="buzon.html?tipo=acoso"]', 'Reporte de acoso sexual']].forEach(([sel, t]) => { const a = document.querySelector('#pubLista ' + sel); if (a && !ve(t)) a.hidden = true; });
+  if (['Acto seguro', 'Acto inseguro', 'Condición insegura', 'Hallazgo ambiental', 'Incidente', 'Accidente de trabajo'].every((t) => !ve(t))) { const a = document.querySelector('#pubLista a[href="reportes.html?nuevo=1"]'); if (a) a.hidden = true; }
   if (r && !document.querySelector('#pubLista a:not([hidden])')) r.hidden = true;
   const tiles = document.querySelector('.pub-tiles');
   if (tiles && p && r && (p.hidden || r.hidden)) tiles.style.gridTemplateColumns = '1fr';
