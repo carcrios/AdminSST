@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v127';
+const VERSION_PORTAL = 'v128';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5144,7 +5144,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: ▶ Ejecutar → instalarAvisosDiarios (una vez).
    ============================================================ */
 
-const VERSION_SGSST = 'v127';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v128';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5296,6 +5296,11 @@ const TIPOS_GEN = {
   cierremes: { hoja: 'Cierres de mes', titulo: 'mes', fecha: 'fechaCierre', estado: 'estado', responsable: 'cerradoPor', vence: '',
     campos: ['mes', 'fechaCierre', 'cerradoPor', 'trabajadores', 'accidentes', 'frecuencia', 'severidad', 'ausentismo', 'inspProgramadas', 'inspHechas', 'planProgramadas', 'planHechas',
              'accionesAbiertas', 'accionesVencidas', 'accionesCerradas', 'pasosOk', 'pasosTotal', 'observaciones', 'estado'] },
+  /* v128: buzón reservado del Comité de Convivencia (quejas de acoso laboral y reportes de acoso sexual).
+     El trabajador lo llena sin usuario y llega CIFRADO con la llave pública del comité: el servidor
+     y la hoja solo ven el código, la clase y la fecha. Solo el comité, con su clave, lo puede leer. */
+  buzon: { hoja: 'Buzón del comité (sin datos)', titulo: 'clase', fecha: 'fecha', estado: 'estado', responsable: '', vence: '',
+    campos: ['codigo', 'clase', 'fecha', 'estado'] },
   reporteanual: { hoja: 'Reporte anual 0312', titulo: 'anio', fecha: 'fechaRegistro', estado: 'estado', responsable: 'responsable', vence: '',
     campos: ['anio', 'puntaje', 'valoracion', 'fechaAutoevaluacion', 'acciones', 'fechaRegistro', 'radicado', 'fechaArl', 'responsable', 'estado'] }
 };
@@ -5440,10 +5445,10 @@ function opIdYaAplicado_(opId) {
 const ROLES = { admin: 'Administrador', sst: 'SST (todo el SG-SST)', supervisor: 'Supervisor / campo', comite: 'Integrante de comité', consulta: 'Solo consulta (gerencia, auditor)' };
 const ESCRIBE_ROL = {
   supervisor: ['reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro'],
-  comite: ['reunion', 'queja', 'comite', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
+  comite: ['reunion', 'queja', 'buzon', 'comite', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
   consulta: []
 };
-const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs'];   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
+const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs', 'buzon'];   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
 const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'psico', 'preopsalud', 'cliente'];   // salud individual y conexiones a clientes
 const ITER_USUARIO = 150000;
 const USR_COLS = ['usuario', 'nombre', 'cedula', 'cargo', 'rol', 'correo', 'activo', 'salt', 'iter', 'hash', 'debeCambiar', 'sesionDesde', 'intentos', 'bloqueadoHasta', 'ultimoIngreso', 'creado', 'actualizado'];
@@ -5566,6 +5571,7 @@ function puedeEscribir_(tipo, accion, existe) {
 function puedeLeer_(tipo) {
   if (!CTX_.modo) return true;
   if (!CTX_.u || CTX_.u.debeCambiar === 'Sí') return false;
+  if (tipo === 'buzon') return esSst_() || CTX_.u.rol === 'comite';   // v128: aunque va cifrado, ni que exista se muestra a otros
   return SOLO_SST.indexOf(tipo) === -1 || esSst_();
 }
 /* Las restricciones médicas (texto libre) solo las ven Administrador y SST;
@@ -5841,7 +5847,7 @@ function resumen_(tipo, d) {
   }
   if (tipo === 'reporte') {
     const inv = d.investigacion || {};
-    return { clase: texto_(d.clase), fecha: texto_(d.fecha), hora: texto_(d.hora), lugar: corto_(d.lugar, 80), centro: corto_(d.centro, 60),
+    return { clase: texto_(d.clase), categoria: corto_(d.categoria, 120), fecha: texto_(d.fecha), hora: texto_(d.hora), lugar: corto_(d.lugar, 80), centro: corto_(d.centro, 60),
              descripcion: corto_(d.descripcion, 160), potencial: texto_(d.potencial), reportadoPor: corto_(d.anonimo ? 'Anónimo' : d.reportadoPor, 60),
              lesionado: corto_(d.lesionado && d.lesionado.nombre, 60), diasIncapacidad: Number(d.diasIncapacidad) || 0, diasCargados: Number(d.diasCargados) || 0,
              mortal: !!d.mortal, grave: !!d.grave, fotos: (d.fotos || []).length,
@@ -5965,10 +5971,13 @@ const VISTAS = {
   trabajador: { hoja: 'Requisitos', cols: ['id', 'cédula', 'nombre', 'cargo', 'empresa', 'requisito', 'fecha', 'vence', 'apto', 'restricciones', 'actualizado'],
     filas: function (id, d) { const req = d.requisitos || {}; const ks = Object.keys(req); if (!ks.length) ks.push('');
       return ks.map(function (k) { const r = req[k] || {}; return [id, texto_(d.cedula), texto_(d.nombre), texto_(d.cargo), texto_(d.empresa), k, texto_(r.fecha), texto_(r.vence), texto_(r.apto), texto_(r.restricciones), new Date()]; }); } },
-  reporte: { hoja: 'Reportes', cols: ['id', 'clase', 'fecha', 'hora', 'lugar', 'centro', 'descripción', 'potencial', 'reportado por', 'lesionado', 'días incapacidad', 'FURAT', 'investigación', 'estado', 'actualizado'],
+  reporte: { hoja: 'Reportes', cols: ['id', 'clase', 'fecha', 'hora', 'lugar', 'centro', 'descripción', 'potencial', 'reportado por', 'lesionado', 'días incapacidad', 'FURAT', 'investigación', 'estado', 'actualizado', 'categoría', 'acción tomada', 'relacionados', 'plan sugerido', 'consecuencias que se evitan'],
     filas: function (id, d) { return [[id, texto_(d.clase), texto_(d.fecha), texto_(d.hora), texto_(d.lugar), texto_(d.centro), corto_(d.descripcion, 2000), texto_(d.potencial),
       d.anonimo ? 'Anónimo' : texto_(d.reportadoPor), texto_(d.lesionado && d.lesionado.nombre), Number(d.diasIncapacidad) || 0,
-      d.furat && d.furat.radicado ? 'Radicado ' + texto_(d.furat.numero) : '', texto_(d.investigacion && d.investigacion.estado), texto_(d.estado || 'ABIERTO'), new Date()]]; } },
+      d.furat && d.furat.radicado ? 'Radicado ' + texto_(d.furat.numero) : '', texto_(d.investigacion && d.investigacion.estado), texto_(d.estado || 'ABIERTO'), new Date(),
+      // v128: lo nuevo del reporte de actos y condiciones (al final, para no mover las columnas de siempre)
+      corto_(d.categoria === 'Otros' ? 'Otros: ' + texto_(d.categoriaOtra) : d.categoria, 200), corto_((d.accionTomada || []).join(', ') + (d.accionTomadaOtra ? ' · ' + texto_(d.accionTomadaOtra) : ''), 300),
+      corto_(d.relacionados, 500), corto_(d.planSugerido, 1000), corto_(d.consecuencias, 1000)]]; } },
   accion: { hoja: 'Plan de acción', cols: ['id', 'origen', 'referencia', 'hallazgo', 'acción', 'tipo', 'responsable', 'fecha compromiso', 'estado', 'fecha cierre', 'eficaz', 'actualizado'],
     filas: function (id, d) { return [[id, texto_(d.origen), texto_(d.origenRef), corto_(d.hallazgo, 2000), corto_(d.accion, 2000), texto_(d.tipoAccion), texto_(d.responsable),
       texto_(d.fechaCompromiso), texto_(d.estado || 'ABIERTA'), texto_(d.cierre && d.cierre.fecha), texto_(d.cierre && d.cierre.eficaz), new Date()]]; } },
@@ -5999,7 +6008,14 @@ function vistaSheet_(tipo) { return hoja_(VISTAS[tipo].hoja, VISTAS[tipo].cols);
 /* Si una versión nueva agregó columnas a un tipo genérico, la hoja legible vieja queda con el
    encabezado de antes: se rehace una vez desde "Registros" (el resumen trae los mismos campos). */
 function encabezadoAlDia_(tipo, sheet) {
-  const v = VISTAS[tipo], g = TIPOS_GEN[tipo]; if (!g || sheet.getLastRow() < 1) return;
+  const v = VISTAS[tipo], g = TIPOS_GEN[tipo];
+  if (!g && v && sheet.getLastRow() >= 1 && sheet.getLastColumn() < v.cols.length) {
+    // v128: hojas de siempre a las que se les agregan columnas al final: solo se completan los títulos.
+    const ya = sheet.getLastColumn();
+    sheet.getRange(1, ya + 1, 1, v.cols.length - ya).setValues([v.cols.slice(ya)]).setFontWeight('bold');
+    return;
+  }
+  if (!g || sheet.getLastRow() < 1) return;
   CTX_.vistasRevisadas = CTX_.vistasRevisadas || {};
   if (CTX_.vistasRevisadas[tipo]) return; CTX_.vistasRevisadas[tipo] = true;
   const ancho = Math.max(v.cols.length, sheet.getLastColumn());
@@ -6124,6 +6140,13 @@ function guardar_(body) {
     const err = validarQueja_(body.doc || {}, body);
     if (err) { registrarEvento_(id, 'GUARDAR', 'RECHAZADO', err, body.opId, versionActual, tipo); return { ok: false, error: err }; }
   }
+  if (tipo === 'buzon' && !body._sistema) {
+    // v128: solo se crea (no se edita) y solo llega cifrado con la llave pública del comité.
+    const eb = body.action !== 'guardar' || prev ? 'Lo que llega al buzón no se modifica.' : (!/^BZN-[A-Za-z0-9-]{6,40}$/.test(id) ? 'Identificador inválido.' : '');
+    const lb = eb ? eb : limpiarBuzon_(body.doc || {});
+    if (typeof lb === 'string') { registrarEvento_(id, 'GUARDAR', 'RECHAZADO', lb, body.opId, versionActual, tipo); return { ok: false, error: lb }; }
+    body.doc = lb;
+  }
   if (tipo === 'encpeligro' && !body._sistema) {
     // v107: la encuesta de peligros de los trabajadores se limpia en el servidor (solo se crea, no se edita).
     if (body.action !== 'guardar' || prev) return { ok: false, error: 'La encuesta de peligros no se modifica.' };
@@ -6185,14 +6208,14 @@ function guardar_(body) {
   // La clave del Comité de Convivencia: crearla, cambiarla y cerrar el cambio
   // tienen reglas estrictas (ver reglaCifradoComite_).
   if (tipo === 'comite') {
-    const r = reglaCifradoComite_(prevDoc(), doc, body);
+    const r = reglaCifradoComite_(prevDoc(), doc, body) || reglaBuzon_(prevDoc(), doc, body);
     if (r) { registrarEvento_(id, body.action, 'RECHAZADO', r.error, body.opId, versionActual, tipo); return r; }
   }
   const ahora = new Date();
   // Adjuntar o quitar un adjunto no cambia la versión: así quien tiene el registro
   // abierto puede guardarlo igual (los adjuntos los conserva el servidor).
   const version = body._sinVersion && prev ? versionActual : versionActual + 1;
-  if (CTX_.modo && tipo !== 'queja') {   // en las quejas (reservadas) no se anota nombre en el registro
+  if (CTX_.modo && tipo !== 'queja' && tipo !== 'buzon') {   // en las quejas (reservadas) no se anota nombre en el registro
     if (prev) prevDoc();   // se lee ANTES de escribir, para anotar qué cambió
     const quien = etiquetaUsuario_();
     const por = prev ? (doc.registradoPor || prevRes._por || '') : quien;
@@ -6213,7 +6236,7 @@ function guardar_(body) {
   if (limpio.registradoPor) c.resumen._por = corto_(limpio.registradoPor, 120);
   // Qué cambió, para la bitácora (solo con usuarios: cuesta una lectura más).
   let cambio = '';
-  if (CTX_.modo && (tipo !== 'queja')) {
+  if (CTX_.modo && tipo !== 'queja' && tipo !== 'buzon') {
     const ks = body.action === 'parche' ? Object.keys(body.campos || {}).concat(Object.keys(body.agregar || {}).map(function (k) { return k + ' (+)'; }))
       : (prev ? camposCambiados_(prevDoc(), limpio) : []);
     if (ks.length) cambio = ' · cambió: ' + ks.slice(0, 15).join(', ') + (ks.length > 15 ? '…' : '');
@@ -6225,6 +6248,7 @@ function guardar_(body) {
   escribirVista_(tipo, id, limpio, false);
   registrarEvento_(id, body.action === 'parche' ? 'PARCHE' : (prev ? 'ACTUALIZAR' : 'CREAR'), 'APLICADO', corto_(c.titulo, 300) + cambio, body.opId, version, tipo);
   if (tipo === 'reporte' && !prev && limpio.clase === 'Accidente de trabajo') avisarAccidente_(id, limpio);
+  if (tipo === 'buzon' && !prev) avisarBuzon_(limpio);
   if (tipo === 'accion' && limpio.origen === ORIGEN_ASESOR_ && texto_(limpio.asignadaPor).trim()) {
     try {
       if (!prev && puedeAvisarTarea_()) avisarTareaAsesor_(id, limpio, 'nueva');
@@ -6479,6 +6503,52 @@ function reglaCifradoComite_(antes, doc, body) {
   return null;
 }
 
+/* ── v128: buzón reservado del comité ──
+   comite.buzon = { publica: JWK RSA-OAEP (pública, la usan los celulares para cifrar),
+                    privada: {v, kid, iv, data} (la privada, cifrada con la clave del comité),
+                    correo: a dónde se avisa que llegó algo (sin contenido) }. */
+function reglaBuzon_(antes, doc, body) {
+  const A = antes.buzon || null, N = doc.buzon || null;
+  if (JSON.stringify(A) === JSON.stringify(N)) return null;
+  if (!N) { if (A) doc.buzon = A; return null; }                       // no se quita por un parche que no lo trae
+  const conf = (doc.cifrado && doc.cifrado.actual) || (antes.cifrado && antes.cifrado.actual);
+  if (!conf || !pruebaValida_(body, conf)) { doc.buzon = A; if (!A) delete doc.buzon; return { ok: false, error: 'Para activar o cambiar el buzón hace falta la clave del comité.' }; }
+  const pub = N.publica, pri = N.privada, b64 = /^[A-Za-z0-9+/=_-]+$/;
+  if (!pub || typeof pub !== 'object' || pub.kty !== 'RSA' || !b64.test(texto_(pub.n)) || !b64.test(texto_(pub.e)) || texto_(pub.n).length > 1200) return { ok: false, error: 'Llave pública del buzón inválida.' };
+  if (!pri || typeof pri !== 'object' || !b64.test(texto_(pri.iv)) || !b64.test(texto_(pri.data)) || texto_(pri.data).length > 8000) return { ok: false, error: 'Llave privada del buzón inválida.' };
+  const correo = texto_(N.correo).trim();
+  if (correo && !/^[^\s@]{1,64}@[^\s@]{1,120}\.[a-z]{2,}$/i.test(correo)) return { ok: false, error: 'El correo del comité no es válido.' };
+  doc.buzon = { publica: { kty: 'RSA', n: texto_(pub.n), e: texto_(pub.e), alg: 'RSA-OAEP-256', ext: true }, privada: { v: 1, kid: texto_(pri.kid), iv: texto_(pri.iv), data: texto_(pri.data) }, correo: correo.slice(0, 120) };
+  return null;
+}
+/** Lo que necesita el formulario público: la llave pública y el correo del comité. */
+function buzonPublico_() {
+  const d = leerDoc_('CMT-CONVIVENCIA', false) || {}, b = d.buzon || {};
+  return { ok: true, activo: !!(b.publica && b.publica.n), publica: b.publica || null, correo: texto_(b.correo), empresa: texto_(PropertiesService.getScriptProperties().getProperty('EMPRESA')) };
+}
+/** De lo que llega al buzón solo se acepta: clase, fecha, código y el bloque cifrado. */
+function limpiarBuzon_(d) {
+  const clase = texto_(d.clase);
+  if (['convivencia', 'acoso'].indexOf(clase) === -1) return 'Clase inválida.';
+  const c = d.cifrado, b64 = /^[A-Za-z0-9+/=]+$/;
+  if (!c || typeof c !== 'object') return 'Debe llegar cifrado.';
+  for (const k in c) if (['v', 'kp', 'ek', 'iv', 'data'].indexOf(k) === -1) return 'Debe llegar cifrado.';
+  if (!b64.test(texto_(c.ek)) || !b64.test(texto_(c.iv)) || !b64.test(texto_(c.data)) || !/^[0-9a-f]{8,40}$/.test(texto_(c.kp))) return 'Debe llegar cifrado.';
+  if (texto_(c.data).length > 9000000) return 'Es demasiado grande: deja menos evidencias o envíalas al correo del comité.';
+  const b = buzonPublico_(); if (!b.activo) return 'El comité todavía no ha activado el buzón.';
+  return { clase: clase, fecha: hoyISO_(), codigo: corto_(d.codigo, 20), estado: 'RECIBIDA', cifrado: { v: 1, kp: texto_(c.kp), ek: texto_(c.ek), iv: texto_(c.iv), data: texto_(c.data) } };
+}
+/** Aviso al correo del comité: solo que llegó algo y su código (nunca el contenido). */
+function avisarBuzon_(d) {
+  try {
+    const b = buzonPublico_(); if (!b.correo) return;
+    const que = d.clase === 'acoso' ? 'un reporte de acoso sexual' : 'una queja de convivencia laboral';
+    MailApp.sendEmail(b.correo, 'Buzón del comité: llegó ' + que + ' (' + d.codigo + ')',
+      'Llegó ' + que + ' al buzón reservado del portal, con el código ' + d.codigo + ' (' + d.fecha + ').\n\n' +
+      'Por reserva, este correo no trae el contenido. Ábrelo en el portal: Gestión → Comité de Convivencia → Buzón, con la clave del comité.');
+  } catch (e) { registrarEvento_('BUZON', 'CORREO', 'RECHAZADO', 'No salió el aviso del buzón: ' + e.message, '', '', 'buzon'); }
+}
+
 function borrar_(body) {
   const id = texto_(body.id), fila = filaDe_(id);
   if (fila === -1) return { ok: true, id: id, noExistia: true };
@@ -6486,7 +6556,7 @@ function borrar_(body) {
   const sinPermiso = puedeEscribir_(prev.tipo, 'borrar', true);
   if (sinPermiso) { registrarEvento_(id, 'BORRAR', 'RECHAZADO', sinPermiso.error, body.opId, prev.version, prev.tipo); return sinPermiso; }
   if (prev.tipo === 'comite') return { ok: false, error: 'La conformación de un comité no se borra (queda como historial).' };
-  if (prev.tipo === 'queja') { const conf = cifradoConvivencia_(); if (!conf || !pruebaValida_(body, conf.actual)) return { ok: false, error: 'Clave del comité incorrecta.' }; }
+  if (prev.tipo === 'queja' || prev.tipo === 'buzon') { const conf = cifradoConvivencia_(); if (!conf || !pruebaValida_(body, conf.actual)) return { ok: false, error: 'Clave del comité incorrecta.' }; }
   regSheet_().getRange(fila, 12).setValue('BORRADO ' + new Date().toISOString() + (body.motivo ? ' · ' + corto_(body.motivo, 200) : ''));
   try { escribirVista_(prev.tipo, id, { mes: prev.tipo === 'mes' ? JSON.parse(prev.resumen || '{}').mes : '' }, true); } catch (e) {}
   registrarEvento_(id, 'BORRAR', 'APLICADO', body.motivo || '', body.opId, prev.version, prev.tipo);
@@ -6762,7 +6832,8 @@ function doGet(e) {
   if (p.action === 'historial') return jsonOut_(historial_(p));
   if (p.action === 'actividad') return jsonOut_(actividad_(p));
   if (p.action === 'adjunto') return jsonOut_(leerAdjunto_(p));
-  if (p.action === 'encuestaPublica') return jsonOut_(encuestaPublica_(p));   // v107: el cliente responde sin usuario (solo ESA encuesta, con su clave)
+  if (p.action === 'encuestaPublica') return jsonOut_(encuestaPublica_(p));
+  if (p.action === 'buzonPublico') return jsonOut_(buzonPublico_());   // v128: llave pública y correo del comité (sin usuario)   // v107: el cliente responde sin usuario (solo ESA encuesta, con su clave)
   if (p.action === 'novedadesNormas') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_(novedadesNormas_(p.forzar === '1')); }
 
   if (p.action === 'list' || p.list) {

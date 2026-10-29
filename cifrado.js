@@ -74,5 +74,39 @@ const Cifrado = (function () {
     if (!ok) throw new Error('Clave incorrecta.');
     return llave;
   }
-  return { ITER, crear, abrir, cifrar: cifrarCon, descifrar: descifrarCon, claveDebil, _b64: { aB64, deB64 } };
+  /* ── v128: buzón reservado ──
+     El trabajador no conoce la clave del comité, así que su queja se cifra con la LLAVE PÚBLICA
+     del comité (RSA-OAEP 3072 + AES-GCM 256): cualquiera puede cifrar, pero solo se descifra con la
+     llave privada, que el servidor guarda cifrada con la clave del comité. */
+  const RSA = { name: 'RSA-OAEP', hash: 'SHA-256' };
+  async function huella(pub) { const d = await sub().digest('SHA-256', new TextEncoder().encode(String(pub.n))); return hex(new Uint8Array(d)).slice(0, 16); }
+  /** Par nuevo del buzón: { publica (JWK, va al servidor tal cual), privadaCifrada (con la llave del comité), privada (CryptoKey en memoria) }. */
+  async function parBuzon(llave) {
+    const par = await sub().generateKey(Object.assign({ modulusLength: 3072, publicExponent: new Uint8Array([1, 0, 1]) }, RSA), true, ['encrypt', 'decrypt']);
+    const pub = await sub().exportKey('jwk', par.publicKey), pri = await sub().exportKey('jwk', par.privateKey);
+    return { publica: { kty: 'RSA', n: pub.n, e: pub.e, alg: 'RSA-OAEP-256', ext: true }, privadaCifrada: await cifrarCon(llave, pri), privada: par.privateKey };
+  }
+  /** Abre la llave privada del buzón con la llave del comité. */
+  async function abrirBuzon(llave, privadaCifrada) {
+    const jwk = await descifrarCon(llave, privadaCifrada);
+    return sub().importKey('jwk', jwk, RSA, false, ['decrypt']);
+  }
+  /** Vuelve a cifrar la llave privada con otra llave del comité (cambio de clave). */
+  async function recifrarBuzon(llaveVieja, llaveNueva, privadaCifrada) { return cifrarCon(llaveNueva, await descifrarCon(llaveVieja, privadaCifrada)); }
+  /** Lo que manda el formulario público: {v, kp, ek, iv, data}. */
+  async function cifrarParaBuzon(publica, obj) {
+    const pk = await sub().importKey('jwk', Object.assign({ key_ops: ['encrypt'] }, publica), RSA, false, ['encrypt']);
+    const aes = await sub().generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']);
+    const iv = azar(12);
+    const data = await sub().encrypt({ name: 'AES-GCM', iv }, aes, new TextEncoder().encode(JSON.stringify(obj)));
+    const ek = await sub().encrypt(RSA, pk, await sub().exportKey('raw', aes));
+    return { v: 1, kp: await huella(publica), ek: aB64(ek), iv: aB64(iv), data: aB64(data) };
+  }
+  async function descifrarBuzon(privada, blob) {
+    const raw = await sub().decrypt(RSA, privada, deB64(blob.ek));
+    const aes = await sub().importKey('raw', raw, { name: 'AES-GCM' }, false, ['decrypt']);
+    const plano = await sub().decrypt({ name: 'AES-GCM', iv: deB64(blob.iv) }, aes, deB64(blob.data));
+    return JSON.parse(new TextDecoder().decode(plano));
+  }
+  return { ITER, crear, abrir, cifrar: cifrarCon, descifrar: descifrarCon, claveDebil, parBuzon, abrirBuzon, recifrarBuzon, cifrarParaBuzon, descifrarBuzon, huella, _b64: { aB64, deB64 } };
 })();

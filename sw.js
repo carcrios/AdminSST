@@ -17,7 +17,7 @@
      la versión más nueva del formulario cuando hay señal).
    ============================================================ */
 
-const CACHE_NAME = 'ssta-portal-v127';
+const CACHE_NAME = 'ssta-portal-v128';
 
 const PAGES = [
   './',
@@ -62,6 +62,7 @@ const STATIC_ASSETS = [
   './preop-formularios.js',
   './preop-base.js',
   './menus-empresa.js',
+  './buzon.html',
   './evidencias.html',
   './evidencias-reglas.js',
   './peligros.html',
