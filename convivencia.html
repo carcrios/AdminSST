@@ -62,13 +62,14 @@ const MOTIVOS_CIERRE = ['Acuerdo y compromisos cumplidos', 'Las partes desistier
 const etapaDe = (n) => ETAPAS.find((e) => e.n === n);
 
 let cfgCif = null, llave = null, llaveAnt = null, quejas = [], actual = null, P = null, inactividad = null;
+let buzon = [], privBuzon = null;   // v128: lo que llega al buzón reservado y su llave privada (solo en memoria)
 let fQ = '';   // v109: filtro de la lista de quejas (lo dejan las cifras)
 
 /* ── Clave en memoria; se cierra sola a los 15 minutos sin uso ── */
 function tocar() { clearTimeout(inactividad); if (llave) inactividad = setTimeout(bloquear, 15 * 60 * 1000); }
 ['click', 'keydown', 'touchstart'].forEach((e) => document.addEventListener(e, tocar, { passive: true }));
 function bloquear() {
-  llave = null; llaveAnt = null; actual = null; P = null;
+  llave = null; llaveAnt = null; actual = null; P = null; privBuzon = null;
   document.querySelectorAll('.modal-fondo').forEach((m) => m.remove());
   const hp = document.getElementById('hojaPermiso'); if (hp) hp.innerHTML = '';
   const enQueja = document.getElementById('scrQueja') && document.getElementById('scrQueja').classList.contains('active');
@@ -253,13 +254,14 @@ function leerDatos(base) {
   });
 }
 function activarChips() { const c = $('qMod'); if (c) c.addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (b) b.classList.toggle('on'); }); }
-function nuevaQueja() {
+function nuevaQueja(pre) {
+  pre = pre && pre.datos ? pre : {};   // v128: desde el buzón llega con los datos de quien la presentó
   const s = $('scrQueja');
   s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><div class="eyebrow">Comité de Convivencia · <span class="reservado">RESERVADO</span></div><h1>Registrar queja</h1><p>Todo lo que escribas aquí se guarda cifrado</p></div>' +
     '<div class="card"><div class="grid2"><div class="field"><label>Fecha de recepción</label><input type="date" id="qFR" value="' + UI.hoy() + '"></div>' +
-    '<div class="field"><label>Cómo llegó</label><select id="qMedio"><option>Por escrito</option><option>Correo electrónico</option><option>Verbal (se levantó acta)</option><option>Buzón</option></select></div></div>' +
-    '<div class="field"><label>¿Los hechos son de acoso sexual?</label><select id="qSex"><option value="No">No</option><option value="Sí">Sí</option></select></div><div id="qSexAviso"></div></div>' +
-    formDatos() +
+    '<div class="field"><label>Cómo llegó</label><select id="qMedio"><option>Por escrito</option><option>Correo electrónico</option><option>Verbal (se levantó acta)</option><option' + (pre.datos ? ' selected' : '') + '>Buzón</option></select></div></div>' +
+    '<div class="field"><label>¿Los hechos son de acoso sexual?</label><select id="qSex"><option value="No">No</option><option value="Sí"' + (pre.sexual ? ' selected' : '') + '>Sí</option></select></div><div id="qSexAviso"></div></div>' +
+    formDatos(pre.datos) +
     '<button type="button" class="btn amber" id="qGuardar">🔒 Guardar queja cifrada</button><div class="status-msg" id="qMsg"></div>';
   activarChips();
   $('qSex').addEventListener('change', () => {
@@ -283,10 +285,97 @@ function nuevaQueja() {
     b.disabled = false;
     if (!r.ok) { msg.textContent = 'No se guardó: ' + (r.error || ''); return; }
     UI.toast(r.enCola ? '⏳ Queja guardada (cifrada) en el equipo; se envía al volver la señal.' : '✓ Queja ' + q.codigo + ' registrada.');
+    if (pre.alGuardar) await pre.alGuardar(q);
     await Comite.cargar();
     if (!r.enCola) abrirQueja(q.id); else Comite.show('scrInicio');
   });
+  if (pre.sexual) $('qSex').dispatchEvent(new Event('change'));
   Comite.show('scrQueja');
+}
+
+/* ── v128: Buzón reservado ──
+   Los trabajadores presentan su queja (o su reporte de acoso sexual) desde buzon.html, sin usuario.
+   Llega cifrada con la llave pública del comité; aquí se abre con la clave del comité. */
+const ENLACE_BUZON = (t) => location.href.replace(/[^/]*$/, '') + 'buzon.html?tipo=' + t;
+async function asegurarBuzon() {
+  const d = await SGSST.doc(ID_COMITE);
+  if (!d) throw new Error('sin conexión');
+  let b = d.buzon;
+  if (!b || !b.publica) {
+    const par = await Cifrado.parBuzon(llave);
+    b = { publica: par.publica, privada: par.privadaCifrada, correo: (b && b.correo) || '' };
+    const r = await SGSST.enviar({ action: 'parche', tipo: 'comite', id: ID_COMITE, prueba: llave.prueba, campos: { buzon: b } }, null, { sinCola: true });
+    if (!r.ok) throw new Error(r.error || 'no se activó');
+    privBuzon = par.privada;
+    return b;
+  }
+  if (!privBuzon) {
+    if (b.privada.kid !== llave.kid && !llaveAnt) throw new Error('El buzón quedó con la clave anterior del comité: termina el cambio de clave (pestaña Quejas).');
+    privBuzon = await Cifrado.abrirBuzon(b.privada.kid === llave.kid ? llave : llaveAnt, b.privada);
+  }
+  return b;
+}
+async function pintarBuzon(panel) {
+  if (!SGSST.url()) { panel.innerHTML = ''; return; }
+  if (!cfgCif || !cfgCif.actual) return pintarCrearClave(panel);
+  if (!llave) return pintarAbrir(panel);
+  panel.innerHTML = '<div class="empty">Abriendo el buzón…</div>';
+  let b;
+  try { b = await asegurarBuzon(); } catch (e) { panel.innerHTML = '<div class="aviso">' + esc(e.message) + '</div>'; return; }
+  const l = buzon.slice().sort((x, y) => String(y.creado || y.resumen.fecha).localeCompare(String(x.creado || x.resumen.fecha)));
+  panel.innerHTML = '<div class="aviso ok">🔓 Buzón activo. Lo que llega se cifra en el celular de quien lo envía: solo este comité, con su clave, lo puede leer.</div>' +
+    '<div class="card"><h2>Formularios para los trabajadores</h2><p class="ayuda">Compártelos (cartelera, correo, QR). No piden usuario. El comité no recibe quejas anónimas.</p>' +
+    '<div class="field"><label>Queja de convivencia laboral (acoso laboral)</label><input type="text" readonly value="' + esc(ENLACE_BUZON('convivencia')) + '" onclick="this.select()"></div>' +
+    '<div class="field"><label>Reporte de acoso sexual en el trabajo (Ley 2365 de 2024)</label><input type="text" readonly value="' + esc(ENLACE_BUZON('acoso')) + '" onclick="this.select()"></div>' +
+    '<div class="field"><label>Correo del comité (sale en los formularios y recibe el aviso de que llegó algo, sin el contenido)</label><input type="email" id="bzCorreo" value="' + esc(b.correo || '') + '" placeholder="comite.convivencia@empresa.com"></div>' +
+    '<button type="button" class="btn ghost" id="bzGuardarCorreo">Guardar el correo</button><div class="status-msg" id="bzMsg"></div></div>' +
+    '<h2 style="font-size:16px;margin:14px 0 8px;">Recibidas <span class="n">' + l.length + '</span></h2>' +
+    (l.length ? l.map((x) => '<button type="button" class="item ' + (x.resumen.clase === 'acoso' ? 'mal' : 'pronto') + '" data-bz="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + esc(x.resumen.codigo || x.id) + ' · ' + (x.resumen.clase === 'acoso' ? 'Acoso sexual' : 'Queja de convivencia') + '</div>' +
+      '<div class="m">Llegó el ' + esc(UI.corta(x.resumen.fecha)) + '</div></div><span class="chip ' + (x.resumen.clase === 'acoso' ? 'mal' : 'pronto') + '">Sin tramitar</span></div></button>').join('')
+      : '<div class="empty">No ha llegado nada al buzón.</div>');
+  $('bzGuardarCorreo').addEventListener('click', async () => {
+    const c = $('bzCorreo').value.trim(), msg = $('bzMsg');
+    if (c && !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(c)) { msg.textContent = 'Revisa el correo.'; return; }
+    msg.textContent = 'Guardando…';
+    const r = await SGSST.enviar({ action: 'parche', tipo: 'comite', id: ID_COMITE, prueba: llave.prueba, campos: { buzon: Object.assign({}, b, { correo: c }) } }, null, { sinCola: true });
+    msg.textContent = r.ok ? '✓ Guardado' : 'No se guardó: ' + (r.error || 'sin conexión');
+  });
+  panel.querySelectorAll('[data-bz]').forEach((el) => el.addEventListener('click', () => abrirBuzon(el.dataset.bz)));
+}
+async function abrirBuzon(id) {
+  const s = $('scrQueja');
+  s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><h1>Abriendo…</h1></div>';
+  Comite.show('scrQueja');
+  const d = await SGSST.doc(id);
+  let x;
+  try { if (!d || !d.cifrado) throw new Error('no se pudo leer'); x = await Cifrado.descifrarBuzon(privBuzon, d.cifrado); }
+  catch (e) { s.innerHTML += '<div class="aviso">No se pudo abrir: ' + esc(e.message) + '</div>'; return; }
+  const acoso = d.clase === 'acoso';
+  const fila = (t, v) => v ? '<div class="field"><label>' + esc(t) + '</label><div class="texto-largo">' + esc(Array.isArray(v) ? v.join(' · ') : v) + '</div></div>' : '';
+  const ev = (x.evidencias || []).map((f, i) => '<a class="btn ghost mini" download="' + esc(f.nombre || ('evidencia-' + (i + 1))) + '" href="data:' + esc(f.tipo || 'application/octet-stream') + ';base64,' + f.data + '">Descargar ' + esc(f.nombre || ('Evidencia ' + (i + 1))) + '</a>').join(' ');
+  const p = x.persona || {};
+  s.innerHTML = '<div class="hdr"><a class="back" href="#" data-volver>← Volver</a><div class="eyebrow">Buzón · <span class="reservado">RESERVADO</span></div><h1>' + esc(d.codigo) + '</h1><p>' + (acoso ? 'Reporte de acoso sexual en el trabajo' : 'Queja de convivencia laboral') + ' · llegó el ' + esc(UI.corta(d.fecha)) + '</p></div>' +
+    (acoso ? '<div class="aviso">El Comité de Convivencia <b>no es competente</b> en acoso sexual (Res. 3461 de 2025, art. 6, par. 1): se registra como remitida a la instancia que defina el protocolo de la empresa (Ley 2365 de 2024). Si el presunto agresor es un superior jerárquico, la queja va al inspector de trabajo (art. 11, par. 3).</div>' : '') +
+    '<div class="card"><h2>Quien la presenta</h2>' + fila('Nombre', p.nombre) + fila('Cédula', p.cedula) + fila('Cargo y área', [p.cargo, p.area].filter(Boolean).join(' · ')) + fila('Correo', p.correo) + fila('Teléfono', p.telefono) + '</div>' +
+    '<div class="card"><h2>Lo que cuenta</h2>' + fila('Presunto(s) agresor(es) o persona(s) señalada(s)', x.senalados) + fila(acoso ? 'Conductas, cuándo y dónde' : 'Hechos (quién, cuándo, cómo y dónde)', x.hechos) +
+      fila('¿Conoce las conductas de acoso sexual (Ley 2365 de 2024)?', x.conoceConductas) + fila('Evidencia', x.evidencia) + fila('Testigos', x.testigos) + fila('Sugerencias para prevenir', x.sugerencias) +
+      fila('Intención al dar a conocer la situación', x.intencion) + fila('Solicitud específica', x.solicitud) + (ev ? '<div class="field"><label>Archivos de evidencia</label>' + ev + '</div>' : '') + '</div>' +
+    (x.autorizaciones ? '<div class="card"><h2>Autorizaciones</h2>' + fila('Entregar copia de la queja a la parte señalada', x.autorizaciones.copia ? 'Sí' : 'No') + fila('Recibir información e invitaciones al correo', x.autorizaciones.correo ? 'Sí' : 'No') + '</div>' : '') +
+    '<button type="button" class="btn amber" id="bzReg">' + (acoso ? 'Registrar como queja remitida' : 'Registrar como queja del comité') + '</button>' +
+    '<button type="button" class="btn ghost" id="bzArch">Archivar sin registrar</button><div class="status-msg" id="bzMsg2"></div>';
+  const archivar = async (motivo) => {
+    const r = await SGSST.enviar({ action: 'borrar', id, motivo, prueba: llave.prueba }, null, { sinCola: true });
+    if (!r.ok) { UI.toast('No se archivó: ' + (r.error || ''), 'mal'); return false; }
+    buzon = buzon.filter((y) => y.id !== id); return true;
+  };
+  $('bzReg').addEventListener('click', () => nuevaQueja({ sexual: acoso,
+    datos: { quejoso: { nombre: p.nombre || '', cargo: p.cargo || '', area: p.area || '' }, querellados: String(x.senalados || '').split('\n').map((t) => t.trim()).filter(Boolean).map((t) => ({ nombre: t, cargo: '', area: '' })),
+      hechos: x.hechos || '', testigos: x.testigos || '', pruebas: [x.evidencia, (x.evidencias || []).length ? (x.evidencias.length + ' archivo(s) en el buzón ' + d.codigo) : ''].filter(Boolean).join(' · ') },
+    alGuardar: () => archivar('Registrada como queja del comité') }));
+  $('bzArch').addEventListener('click', async () => {
+    const mot = prompt('¿Por qué se archiva sin registrar? (queda en el historial)'); if (mot === null) return;
+    if (await archivar(mot || 'Archivada por el comité')) { UI.toast('✓ Archivada'); Comite.show('scrInicio'); Comite.pintar(); }
+  });
 }
 
 /* ── Detalle de la queja ── */
@@ -485,7 +574,12 @@ async function migrar(progreso) {
     l[i].resumen.kid = kidActual();
   }
   progreso('Terminando…');
-  const r = await SGSST.enviar({ action: 'parche', tipo: 'comite', id: ID_COMITE, prueba: llave.prueba, campos: { cifrado: { anterior: null } } }, null, { sinCola: true });
+  const campos = { cifrado: { anterior: null } };
+  // v128: la llave privada del buzón también pasa a la clave nueva.
+  const dc = await SGSST.doc(ID_COMITE);
+  if (dc && dc.buzon && dc.buzon.privada && dc.buzon.privada.kid !== llave.kid && llaveAnt) campos.buzon = Object.assign({}, dc.buzon, { privada: await Cifrado.recifrarBuzon(llaveAnt, llave, dc.buzon.privada) });
+  privBuzon = null;
+  const r = await SGSST.enviar({ action: 'parche', tipo: 'comite', id: ID_COMITE, prueba: llave.prueba, campos }, null, { sinCola: true });
   if (!r.ok) throw new Error(r.error || 'no se cerró el cambio');
   cfgCif.anterior = null; llaveAnt = null;
 }
@@ -586,7 +680,7 @@ Comite.iniciar({
   avisoActa: '🔒 En las actas <b>no</b> se escriben nombres ni hechos de los casos: eso va en cada queja, que se guarda cifrada. Aquí solo códigos (CCL-…) y temas generales.',
   ordenOrdinaria: ['Verificación del quórum', 'Lectura y aprobación del acta anterior', 'Estado general de los casos (solo códigos y etapas)', 'Seguimiento a compromisos y planes de mejora', 'Actividades de prevención del acoso laboral', 'Varios'],
   ordenExtraordinaria: ['Verificación del quórum', 'Atención de la queja (el detalle queda en la queja cifrada)', 'Próximos pasos'],
-  tabsExtra: [{ id: 'quejas', nombre: 'Quejas 🔒', pintar: pintarQuejas, filtrar: (v) => { fQ = v; pintarQuejas($('panel')); } }, { id: 'informes', nombre: 'Informes', pintar: pintarInformes }],
+  tabsExtra: [{ id: 'quejas', nombre: 'Quejas 🔒', pintar: pintarQuejas, filtrar: (v) => { fQ = v; pintarQuejas($('panel')); } }, { id: 'buzon', nombre: 'Buzón 🔒', pintar: pintarBuzon }, { id: 'informes', nombre: 'Informes', pintar: pintarInformes }],
   pantallasExtra: '<div class="screen" id="scrQueja"></div>',
   alCargar: async (ctx) => {
     cfgCif = ctx.comite && ctx.comite.resumen.cifrado ? ctx.comite.resumen.cifrado : null;
@@ -597,10 +691,12 @@ Comite.iniciar({
       setTimeout(() => UI.toast('🔑 La clave del comité cambió. Escribe la clave nueva.', 'mal'), 50);
     }
     if (SGSST.url()) quejas = (await SGSST.listar('queja')).rows;
+    if (SGSST.url()) buzon = (await SGSST.listar('buzon', { sinPedir: true })).rows || [];
   },
   alertas: () => {
     const out = [], v = quejas.filter((q) => q.estado === 'ABIERTA' && claseQueja(q.resumen) === 'mal');
     if (v.length) out.push('<div class="aviso">⚠ ' + v.length + ' queja(s) con plazo vencido: ' + esc(v.map((q) => q.resumen.codigo).join(', ')) + '.</div>');
+    if (buzon.length) out.push('<div class="aviso">' + buzon.length + ' sin tramitar en el buzón reservado (pestaña Buzón). Hay 5 días calendario para darle trámite.</div>');
     if (EMPRESA.demo) out.push('<div class="aviso info">🧪 Demo: la clave del comité es <b>Convivencia2026</b>.</div>');
     return out;
   }
