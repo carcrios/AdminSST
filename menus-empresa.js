@@ -22,6 +22,12 @@ const MenusEmpresa = (function () {
   function inspecciones() {
     return (typeof PLANTILLAS_INSPECCION !== 'undefined' ? PLANTILLAS_INSPECCION : []).filter((p) => !p.retirada).map((p) => ({ id: p.id, t: p.nombre, g: p.equipo ? 'De equipos' : 'De áreas y puestos', c: p.codigo || '' }));
   }
+  /* v129: qué tipos de reporte se ofrecen y qué guías salen en «Ayuda». */
+  const TIPOS_REPORTE = [['Acto seguro', 'Actos y condiciones'], ['Acto inseguro', 'Actos y condiciones'], ['Condición insegura', 'Actos y condiciones'], ['Hallazgo ambiental', 'Actos y condiciones'],
+    ['Incidente', 'Eventos'], ['Accidente de trabajo', 'Eventos'], ['PQRS', 'Otros reportes'], ['Queja al Comité de Convivencia', 'Otros reportes'], ['Reporte de acoso sexual', 'Otros reportes']];
+  const REPORTES_OCULTOS_FABRICA = ['Accidente de trabajo'];
+  function reportes() { return TIPOS_REPORTE.map(([t, g]) => ({ id: t, t, g, c: '' })); }
+  function ayuda() { return (typeof GUIAS !== 'undefined' ? GUIAS : []).map((x) => ({ id: x.id, t: x.t, g: x.rol && x.rol.indexOf('todos') !== -1 ? 'Para todos' : x.rol && x.rol.indexOf('campo') !== -1 ? 'Campo' : 'SST, comités y gerencia', c: '' })); }
   function modulos() {
     const cat = typeof CATALOGO_MODULOS !== 'undefined' ? CATALOGO_MODULOS : [], nom = {};
     cat.forEach(([k, t]) => { nom[k] = limpio(t); });
@@ -55,10 +61,12 @@ const MenusEmpresa = (function () {
   function html(config, opciones) {
     config = config || {}; opciones = opciones || {};
     const mods = config.modulos || {}, o = config.ocultos || {}, bz = config.bautizos || {};
-    const en = (l) => (id) => Array.isArray(o[l]) && o[l].indexOf(id) !== -1;
+    const en = (l) => (id) => (Array.isArray(o[l]) ? o[l] : (l === 'reportes' ? REPORTES_OCULTOS_FABRICA : [])).indexOf(id) !== -1;
     return '<div class="me">' +
       (opciones.sinModulos ? '' : seccion('modulo', 'Módulos del menú', 'Lo apagado sale de Gestión, de la barra de abajo y del inicio, y su servidor deja de aceptar registros de eso.', modulos(), (k) => mods[k] === false)) +
       seccion('preop', 'Preoperacionales', 'Marca los que se ofrecen en la tarjeta «Preoperacional» del inicio. Vienen sin código: escribe el nombre y el código con que esta empresa los tiene en su listado maestro (si lo dejas vacío, sale el nombre de la izquierda y sin código).', preops(), en('preop'), bz.preop || {}) +
+      seccion('reportes', 'Tipos de reporte', 'Lo que se ofrece en «Reportar» del inicio. El accidente de trabajo viene apagado: lo registra SST.', reportes(), en('reportes')) +
+      seccion('ayuda', 'Ayuda', 'Las guías que ven en «Ayuda». Además, solo salen las de los módulos que la empresa tiene prendidos.', ayuda(), en('ayuda')) +
       seccion('inspecciones', 'Listas de inspección', 'Marca las que se pueden escoger en «Inspecciones planeadas». También puedes ponerles el nombre y el código de esta empresa.', inspecciones(), en('inspecciones'), bz.inspecciones || {}) +
       '</div>';
   }
@@ -76,7 +84,7 @@ const MenusEmpresa = (function () {
   }
   /** Lee lo marcado: { modulos: {k: bool}, ocultos: { preop: [ids], inspecciones: [ids] } }. */
   function leer(raiz, modulosAntes) {
-    const modulos = Object.assign({}, modulosAntes || {}), ocultos = { preop: [], inspecciones: [] };
+    const modulos = Object.assign({}, modulosAntes || {}), ocultos = { preop: [], inspecciones: [], reportes: [], ayuda: [] };
     raiz.querySelectorAll('input[data-me]').forEach((c) => {
       if (c.dataset.me === 'modulo') modulos[c.dataset.id] = c.checked;
       else if (!c.checked) ocultos[c.dataset.me].push(c.dataset.id);

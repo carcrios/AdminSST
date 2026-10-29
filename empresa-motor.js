@@ -209,7 +209,10 @@
       if (b.codigo) { o.codigo = b.codigo; o.codigoEmpresa = b.codigo; }
       return o;
     }
-    function visible(lista, id) { const o = E.ocultos && E.ocultos[lista]; return !(Array.isArray(o) && o.indexOf(id) !== -1); }
+    /* v129: si la empresa todavía no ha escogido qué tipos de reporte se ofrecen, el accidente de
+       trabajo no sale en «Reportar» (lo registra SST). Lo demás, todo visible. */
+    const OCULTOS_FABRICA = { reportes: ['Accidente de trabajo'] };
+    function visible(lista, id) { const o = E.ocultos && Array.isArray(E.ocultos[lista]) ? E.ocultos[lista] : (OCULTOS_FABRICA[lista] || []); return o.indexOf(id) === -1; }
     function moduloActivo(k) {
       if (!E.modulos) return true;
       // v123: el tablero es el de los permisos; sin ningún permiso contratado, tampoco sale.
