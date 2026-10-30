@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v129';
+const VERSION_PORTAL = 'v134';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5144,7 +5144,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: ▶ Ejecutar → instalarAvisosDiarios (una vez).
    ============================================================ */
 
-const VERSION_SGSST = 'v129';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v134';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5567,6 +5567,16 @@ function puedeEscribir_(tipo, accion, existe) {
   if (u.rol === 'admin' || u.rol === 'sst' || libre) return null;
   if ((ESCRIBE_ROL[u.rol] || []).indexOf(tipo) !== -1) return null;
   return errPermiso_('Tu usuario (' + (ROLES[u.rol] || u.rol) + ') no puede modificar este tipo de registro. Pídeselo al área SST.');
+}
+/* v134: contra spam en lo que se crea sin usuario (reportes, PQRS, preoperacional, buzón…):
+   envíos hechos en menos de 1,5 s desde que abrió la página (robot) y más de 40 por tipo cada 10 minutos. */
+function antiSpam_(tipo, body, existe) {
+  if (!CTX_.modo || CTX_.u || existe || body.action !== 'guardar' || LIBRE_SIN_SESION.indexOf(tipo) === -1) return null;
+  if (body._ms != null && Number(body._ms) < 1500) return { ok: false, codigoError: 'SPAM', error: 'Envío demasiado rápido. Revisa los datos y vuelve a enviar.' };
+  const c = cacheScript_(); if (!c) return null;
+  const k = 'anon:' + tipo + ':' + Math.floor(Date.now() / 600000), n = Number(c.get(k) || 0) + 1;
+  c.put(k, String(n), 900);
+  return n > 40 ? { ok: false, codigoError: 'SPAM', error: 'Llegaron demasiados envíos sin usuario en pocos minutos. Espera un rato o entra con tu usuario.' } : null;
 }
 function puedeLeer_(tipo) {
   if (!CTX_.modo) return true;
@@ -6124,6 +6134,8 @@ function guardar_(body) {
   if (prev && prev.borrado) return { ok: false, error: 'Ese registro fue borrado.', borrado: true };
   const sinPermiso = body._sistema ? null : puedeEscribir_(tipo, body.action, !!prev);
   if (sinPermiso) { registrarEvento_(id, body.action === 'parche' ? 'PARCHE' : 'GUARDAR', 'RECHAZADO', sinPermiso.error, body.opId, versionActual, tipo); return sinPermiso; }
+  const spam = body._sistema ? null : antiSpam_(tipo, body, !!prev);
+  if (spam) { registrarEvento_(id, 'GUARDAR', 'RECHAZADO', spam.error || 'spam', body.opId, versionActual, tipo); return spam; }
   // Lo que pone el servidor (quién y adjuntos) no se acepta del celular.
   let prevRes = {}, prevResFallo = false; try { prevRes = prev ? JSON.parse(prev.resumen || '{}') : {}; } catch (e) { prevResFallo = true; }
   let prevDocCache;
