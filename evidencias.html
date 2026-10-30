@@ -5,28 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#151b24">
 <title>Carpeta de evidencias · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Carpeta de evidencias · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="common.css">
 <link rel="stylesheet" href="sgsst.css">
-<style>
-.resumen-ev{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
-.resumen-ev .v{font-size:40px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;}
-.resumen-ev .n{font-size:13.5px;color:var(--muted);max-width:36ch;line-height:1.4;}
-.filtros{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px;}
-.filtros button{font:inherit;font-size:13.5px;font-weight:500;border:1px solid var(--line);background:#fff;border-radius:18px;padding:0 12px;min-height:36px;cursor:pointer;color:var(--ink);}
-.filtros button[aria-pressed="true"]{background:#18232e;border-color:#18232e;color:#fff;}
-.grupo-h{font-size:14px;font-weight:600;margin:18px 0 6px;color:var(--ink);}
-.est{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;}
-.est .cab{display:flex;gap:10px;align-items:flex-start;}
-.est .num{font-weight:600;font-variant-numeric:tabular-nums;flex:0 0 auto;min-width:44px;}
-.est .tx{flex:1;min-width:0;font-size:14px;line-height:1.4;}
-.est .pill{flex:0 0 auto;font-size:12px;font-weight:600;border-radius:6px;padding:2px 8px;white-space:nowrap;}
-.pill.ok{background:#e3f4ea;color:#1d6b45;} .pill.parcial{background:#fdf1d8;color:#8a5a00;} .pill.falta{background:#fbe9e6;color:#9c2a1f;} .pill.manual,.pill.reservado{background:#eef1f4;color:#4a5566;}
-.est ul{margin:6px 0 0 54px;padding:0 0 0 16px;font-size:13px;color:#334;line-height:1.45;}
-.est .que{margin:6px 0 0 54px;font-size:13px;color:var(--muted);line-height:1.4;}
-.est .que a{color:#2d5f8b;font-weight:600;text-decoration:none;margin-left:6px;white-space:nowrap;}
-@media (max-width:520px){ .est ul,.est .que{margin-left:0;} }
-</style>
+<style>.resumen-ev{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.resumen-ev .v{font-size:var(--fs-hero);font-weight:600;line-height:1;font-variant-numeric:tabular-nums}.resumen-ev .n{font-size:var(--fs-base);color:var(--muted);max-width:36ch;line-height:1.4}.filtros{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}.filtros button{font:inherit;font-size:var(--fs-base);font-weight:500;border:1px solid var(--line);background:#fff;border-radius:var(--r-l);padding:0 12px;min-height:36px;cursor:pointer;color:var(--ink)}.filtros button[aria-pressed=true]{background:var(--n-800);border-color:var(--n-800);color:#fff}.grupo-h{font-size:var(--fs-base);font-weight:600;margin:18px 0 6px;color:var(--ink)}.est{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:11px 13px;margin-bottom:8px}.est .cab{display:flex;gap:10px;align-items:flex-start}.est .num{font-weight:600;font-variant-numeric:tabular-nums;flex:0 0 auto;min-width:44px}.est .tx{flex:1;min-width:0;font-size:var(--fs-base);line-height:1.4}.est .pill{flex:0 0 auto;font-size:var(--fs-menor);font-weight:600;border-radius:var(--r-xs);padding:2px 8px;white-space:nowrap}.pill.ok{background:var(--verde-50);color:var(--verde-600)}.pill.parcial{background:var(--ambar-100);color:var(--ambar-700)}.pill.falta{background:var(--rojo-50);color:var(--rojo-800)}.pill.manual,.pill.reservado{background:var(--bg);color:var(--n-600)}.est ul{margin:6px 0 0 54px;padding:0 0 0 16px;font-size:var(--fs-base);color:#334;line-height:1.45}.est .que{margin:6px 0 0 54px;font-size:var(--fs-base);color:var(--muted);line-height:1.4}.est .que a{color:var(--azul-600);font-weight:600;text-decoration:none;margin-left:6px;white-space:nowrap}@media (max-width:520px){.est .que,.est ul{margin-left:0}}</style>
 </head>
 <body>
 <div class="wrap">
@@ -39,9 +31,10 @@
   </div>
   <div id="avisoSrv"></div><div id="avisoCopia"></div>
   <div id="contenido"><div class="empty">Revisando el portal…</div></div>
-  <div class="version-portal">Portal SSTA · versión v129</div>
+  <div class="version-portal">Portal SSTA · versión v134</div>
 </div>
 </div>
+<script src="dialogo.js"></script>
 <script src="empresa.js"></script>
 <script src="empresa-motor.js"></script>
 <script src="config.js"></script>
@@ -52,66 +45,6 @@
 <script src="registros.js"></script>
 <script src="auditorias-plantillas.js"></script>
 <script src="evidencias-reglas.js"></script>
-<script>
-OfflineBanner.init();
-OutboxBadge.init();
-if (typeof Outbox !== 'undefined') Outbox.flush();
-if (typeof UpdateManager !== 'undefined') UpdateManager.init();
-
-const $ = UI.$;
-const TIPOS = 'empresa,documento,comite,reunion,plananual,trabajador,induccion,politica,auditoria,rendicion,legal,reporte,proveedor,contratista,cambio,perfil,sve,cargo,examen,inspeccion,residuo,aspecto,mes,peligro,revmatriz,sustancia,medicion,programa,equipo,eppcargo,entrega,emergencia,simulacro,revision,accion';
-const ETIQUETA = { ok: 'Al día', parcial: 'Incompleto', falta: 'Falta', manual: 'Revisar a mano', reservado: 'Solo SST' };
-let lista = [], plantilla = '', grupo = 60, filtro = 'todos', perfil = null;
-const esSst = ()=> !Sesion.modo() || !Sesion.yo() || ['admin', 'sst'].indexOf(Sesion.rol()) !== -1;
-
-async function cargar(){
-  if (UI.avisoServidor($('avisoSrv'))) { $('contenido').innerHTML = ''; return; }
-  const r = await SGSST.listar(TIPOS);
-  UI.avisoCopia($('avisoCopia'), r);
-  if (r.sinSesion) { $('contenido').innerHTML = ''; return; }
-  const pf = r.rows.find((x)=> x.id === 'EMPRESA-PERFIL');
-  perfil = (pf && await SGSST.doc('EMPRESA-PERFIL')) || UI.perfilInstalacion() || {};   // v113: sin perfil en el SG-SST, el de la instalación
-  grupo = Number(perfil.grupo0312) || 60;
-  plantilla = grupo === 60 ? 'RES0312' : 'RES0312_' + grupo;
-  lista = await EVIDENCIAS.evaluar(PLANTILLAS_AUDITORIA[plantilla].items, { rows: r.rows, perfil, hoy: UI.hoy(), esSst: esSst(), docDe: (id)=> SGSST.doc(id) });
-  pintar();
-}
-function pintar(){
-  const s = EVIDENCIAS.resumen(lista), c = $('contenido');
-  const vis = lista.filter((x)=> filtro === 'todos' || x.e === filtro || (filtro === 'manual' && x.e === 'reservado'));
-  let grupoAnt = '';
-  c.innerHTML = (perfil.trabajadores ? '' : '<div class="aviso amar">Sin perfil de la empresa: se revisan los 60 estándares. Defínelo (trabajadores y clase de riesgo) en el Tablero de la gerencia.</div>') +
-    '<div class="card"><div class="resumen-ev"><div class="v">' + String(s.pct).replace('.', ',') + '%</div><div class="n">de los ' + s.total + ' estándares que le aplican, ponderado por su valor, con evidencia al día en el portal. No es la calificación oficial: es la guía para la autoevaluación.</div></div>' +
-      '<p class="ayuda" style="margin-top:8px;">Le aplican ' + esc(UI.textoGrupo(grupo)) + '.</p>' +
-      '<div class="filtros" role="group" aria-label="Filtrar">' + [['todos', 'Todos (' + s.total + ')'], ['falta', 'Falta (' + s.falta + ')'], ['parcial', 'Incompletos (' + s.parcial + ')'], ['ok', 'Al día (' + s.ok + ')'], ['manual', 'A mano (' + (s.manual + s.reservado) + ')']]
-        .map(([k, t])=> '<button type="button" data-f="' + k + '" aria-pressed="' + (filtro === k) + '">' + t + '</button>').join('') + '</div>' +
-      '<button type="button" class="btn ghost" id="btnPdf">🖨️ Índice de evidencias (PDF)</button><button type="button" class="btn amber" id="btnAuto">Llevar a una autoevaluación</button>' +
-      '<p class="ayuda">«Llevar a una autoevaluación» abre una autoevaluación nueva con la evidencia de cada estándar ya escrita y marcados como «cumple» los que están al día. Quien audita revisa y confirma cada uno.</p></div>' +
-    (vis.length ? vis.map((x)=> { const g = x.ciclo + ' · ' + x.grupo, h = g !== grupoAnt ? '<h2 class="grupo-h">' + esc(g) + '</h2>' : ''; grupoAnt = g;
-      return h + '<div class="est"><div class="cab"><span class="num">' + esc(x.id) + '</span><span class="tx">' + esc(x.texto) + '</span><span class="pill ' + x.e + '">' + ETIQUETA[x.e] + '</span></div>' +
-        (x.ev.length ? '<ul>' + x.ev.map((t)=> '<li>' + esc(t) + '</li>').join('') + '</ul>' : '') +
-        (x.e !== 'ok' && (x.que || x.href) ? '<div class="que">' + esc(x.e === 'reservado' ? 'Datos de salud: lo revisan Administrador o SST.' : x.que) + (x.href ? '<a href="' + esc(x.href) + '">Abrir</a>' : '') + '</div>' : x.href ? '<div class="que"><a href="' + esc(x.href) + '" style="margin-left:0;">Ver la evidencia</a></div>' : '') + '</div>'; }).join('')
-      : '<div class="empty">Nada en este filtro.</div>');
-  c.querySelectorAll('[data-f]').forEach((b)=> b.addEventListener('click', ()=> { filtro = b.dataset.f; pintar(); }));
-  $('btnPdf').addEventListener('click', pdf);
-  $('btnAuto').addEventListener('click', llevar);
-}
-function pdf(){
-  const s = EVIDENCIAS.resumen(lista);
-  UI.imprimir([UI.cabecera('SG-EVIDENCIAS', 'ÍNDICE DE EVIDENCIAS DEL SG-SST POR ESTÁNDAR', UI.textoGrupo(grupo) + ' · corte ' + UI.corta(UI.hoy())) +
-    UI.seccion('RESUMEN', UI.tablaDatos([['Con evidencia al día', s.ok + ' de ' + s.total + ' (' + String(s.pct).replace('.', ',') + ' % ponderado)'], ['Incompletos', String(s.parcial)], ['Sin evidencia', String(s.falta)], ['Para revisar a mano', String(s.manual + s.reservado)]])) +
-    UI.seccion('ESTÁNDARES Y EVIDENCIAS', '<table><tr><td class="l" style="width:7%;">Estándar</td><td class="l" style="width:30%;">Requisito</td><td class="l">Evidencia en el portal</td><td class="l" style="width:14%;">Dónde</td><td class="l" style="width:10%;">Estado</td></tr>' +
-      lista.map((x)=> '<tr><td>' + esc(x.id) + '</td><td>' + esc(x.texto) + '</td><td>' + (x.ev.length ? x.ev.map(esc).join('<br>') : esc(x.e === 'ok' ? '' : x.que)) + '</td><td>' + esc(x.href ? x.href.replace(/\.html.*$/, '') : '—') + '</td><td>' + ETIQUETA[x.e] + '</td></tr>').join('') + '</table>') +
-    '<p style="font-size:8pt;">«Dónde» es el módulo del portal con el registro y sus soportes. Este índice no reemplaza la autoevaluación ni la calificación oficial de la Res. 0312 de 2019.</p>'], true);
-}
-function llevar(){
-  const sug = { plantilla, en: new Date().toISOString(), items: {} };
-  lista.forEach((x)=> { sug.items[x.id] = { r: x.e === 'ok' ? 'C' : '', evid: x.ev.join('; ') }; });
-  try { sessionStorage.setItem('ssta-autoeval-sugerida', JSON.stringify(sug)); } catch (e) { UI.toast('No se pudo preparar en este equipo.', 'mal'); return; }
-  location.href = 'auditorias.html?sugerida=1';
-}
-window.addEventListener('outbox-enviado', ()=> cargar());
-cargar();
-</script>
+<script>OfflineBanner.init(),OutboxBadge.init(),"undefined"!=typeof Outbox&&Outbox.flush(),"undefined"!=typeof UpdateManager&&UpdateManager.init();const $=UI.$,TIPOS="empresa,documento,comite,reunion,plananual,trabajador,induccion,politica,auditoria,rendicion,legal,reporte,proveedor,contratista,cambio,perfil,sve,cargo,examen,inspeccion,residuo,aspecto,mes,peligro,revmatriz,sustancia,medicion,programa,equipo,eppcargo,entrega,emergencia,simulacro,revision,accion",ETIQUETA={ok:"Al día",parcial:"Incompleto",falta:"Falta",manual:"Revisar a mano",reservado:"Solo SST"};let lista=[],plantilla="",grupo=60,filtro="todos",perfil=null;const esSst=()=>!Sesion.modo()||!Sesion.yo()||-1!==["admin","sst"].indexOf(Sesion.rol());async function cargar(){if(UI.avisoServidor($("avisoSrv")))return void($("contenido").innerHTML="");const a=await SGSST.listar(TIPOS);if(UI.avisoCopia($("avisoCopia"),a),a.sinSesion)return void($("contenido").innerHTML="");const e=a.rows.find(a=>"EMPRESA-PERFIL"===a.id);perfil=e&&await SGSST.doc("EMPRESA-PERFIL")||UI.perfilInstalacion()||{},grupo=Number(perfil.grupo0312)||60,plantilla=60===grupo?"RES0312":"RES0312_"+grupo,lista=await EVIDENCIAS.evaluar(PLANTILLAS_AUDITORIA[plantilla].items,{rows:a.rows,perfil,hoy:UI.hoy(),esSst:esSst(),docDe:a=>SGSST.doc(a)}),pintar()}function pintar(){const a=EVIDENCIAS.resumen(lista),e=$("contenido"),t=lista.filter(a=>"todos"===filtro||a.e===filtro||"manual"===filtro&&"reservado"===a.e);let i="";e.innerHTML=(perfil.trabajadores?"":'<div class="aviso amar">Sin perfil de la empresa: se revisan los 60 estándares. Defínelo (trabajadores y clase de riesgo) en el Tablero de la gerencia.</div>')+'<div class="card"><div class="resumen-ev"><div class="v">'+String(a.pct).replace(".",",")+'%</div><div class="n">de los '+a.total+' estándares que le aplican, ponderado por su valor, con evidencia al día en el portal. No es la calificación oficial: es la guía para la autoevaluación.</div></div><p class="ayuda u-mt8">Le aplican '+esc(UI.textoGrupo(grupo))+'.</p><div class="filtros" role="group" aria-label="Filtrar">'+[["todos","Todos ("+a.total+")"],["falta","Falta ("+a.falta+")"],["parcial","Incompletos ("+a.parcial+")"],["ok","Al día ("+a.ok+")"],["manual","A mano ("+(a.manual+a.reservado)+")"]].map(([a,e])=>'<button type="button" data-f="'+a+'" aria-pressed="'+(filtro===a)+'">'+e+"</button>").join("")+'</div><button type="button" class="btn ghost" id="btnPdf">🖨️ Índice de evidencias (PDF)</button><button type="button" class="btn amber" id="btnAuto">Llevar a una autoevaluación</button><p class="ayuda">«Llevar a una autoevaluación» abre una autoevaluación nueva con la evidencia de cada estándar ya escrita y marcados como «cumple» los que están al día. Quien audita revisa y confirma cada uno.</p></div>'+(t.length?t.map(a=>{const e=a.ciclo+" · "+a.grupo,t=e!==i?'<h2 class="grupo-h">'+esc(e)+"</h2>":"";return i=e,t+'<div class="est"><div class="cab"><span class="num">'+esc(a.id)+'</span><span class="tx">'+esc(a.texto)+'</span><span class="pill '+a.e+'">'+ETIQUETA[a.e]+"</span></div>"+(a.ev.length?"<ul>"+a.ev.map(a=>"<li>"+esc(a)+"</li>").join("")+"</ul>":"")+("ok"!==a.e&&(a.que||a.href)?'<div class="que">'+esc("reservado"===a.e?"Datos de salud: lo revisan Administrador o SST.":a.que)+(a.href?'<a href="'+esc(a.href)+'">Abrir</a>':"")+"</div>":a.href?'<div class="que"><a href="'+esc(a.href)+'" style="margin-left:0;">Ver la evidencia</a></div>':"")+"</div>"}).join(""):'<div class="empty">Nada en este filtro.</div>'),e.querySelectorAll("[data-f]").forEach(a=>a.addEventListener("click",()=>{filtro=a.dataset.f,pintar()})),$("btnPdf").addEventListener("click",pdf),$("btnAuto").addEventListener("click",llevar)}function pdf(){const a=EVIDENCIAS.resumen(lista);UI.imprimir([UI.cabecera("SG-EVIDENCIAS","ÍNDICE DE EVIDENCIAS DEL SG-SST POR ESTÁNDAR",UI.textoGrupo(grupo)+" · corte "+UI.corta(UI.hoy()))+UI.seccion("RESUMEN",UI.tablaDatos([["Con evidencia al día",a.ok+" de "+a.total+" ("+String(a.pct).replace(".",",")+" % ponderado)"],["Incompletos",String(a.parcial)],["Sin evidencia",String(a.falta)],["Para revisar a mano",String(a.manual+a.reservado)]]))+UI.seccion("ESTÁNDARES Y EVIDENCIAS",'<table><tr><td class="l" style="width:7%;">Estándar</td><td class="l" style="width:30%;">Requisito</td><td class="l">Evidencia en el portal</td><td class="l" style="width:14%;">Dónde</td><td class="l" style="width:10%;">Estado</td></tr>'+lista.map(a=>"<tr><td>"+esc(a.id)+"</td><td>"+esc(a.texto)+"</td><td>"+(a.ev.length?a.ev.map(esc).join("<br>"):esc("ok"===a.e?"":a.que))+"</td><td>"+esc(a.href?a.href.replace(/\.html.*$/,""):"—")+"</td><td>"+ETIQUETA[a.e]+"</td></tr>").join("")+"</table>")+'<p style="font-size:8pt;">«Dónde» es el módulo del portal con el registro y sus soportes. Este índice no reemplaza la autoevaluación ni la calificación oficial de la Res. 0312 de 2019.</p>'],!0)}function llevar(){const a={plantilla,en:(new Date).toISOString(),items:{}};lista.forEach(e=>{a.items[e.id]={r:"ok"===e.e?"C":"",evid:e.ev.join("; ")}});try{sessionStorage.setItem("ssta-autoeval-sugerida",JSON.stringify(a))}catch(a){return void UI.toast("No se pudo preparar en este equipo.","mal")}location.href="auditorias.html?sugerida=1"}window.addEventListener("outbox-enviado",()=>cargar()),cargar();</script>
 </body>
 </html>

@@ -5,55 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#151b24">
 <title>Preoperacionales · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Preoperacionales · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="common.css">
 <link rel="stylesheet" href="sgsst.css">
-<style>
-.grupo-h{font-size:14px;font-weight:600;margin:16px 0 6px;}
-.forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
-.forms button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;cursor:pointer;color:inherit;min-height:60px;}
-.forms button:hover{border-color:#9aa5af;}
-.forms .t{font-weight:600;font-size:14.5px;}
-.forms .m{font-size:12.5px;color:var(--muted);}
-.pf-cab{margin-bottom:6px;}
-.pf-cab .cod{font-size:12.5px;color:var(--muted);}
-.pf-desc{white-space:pre-line;font-size:13.5px;color:#334;margin:6px 0 2px;}
-.pasos{font-size:12.5px;color:var(--muted);margin:6px 0 10px;}
-.pasos b{color:var(--ink);}
-.barra-av{height:5px;background:#e6eaee;border-radius:3px;overflow:hidden;margin-bottom:12px;}
-.barra-av i{display:block;height:100%;background:#2d5f8b;transition:width .2s;}
-.pg-tit{font-size:17px;font-weight:600;margin:4px 0 2px;}
-.pg-desc{white-space:pre-line;font-size:13.5px;color:var(--muted);margin-bottom:8px;}
-.q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;}
-.q.error{border-color:#c0392b;box-shadow:0 0 0 2px rgba(192,57,43,.12);}
-.q .qt{font-weight:600;font-size:14.5px;line-height:1.35;}
-.q .qt .ob{color:#c0392b;margin-left:3px;}
-.q .qa{font-size:12.5px;color:var(--muted);margin-top:2px;white-space:pre-line;}
-.q .qe{font-size:12.5px;color:#c0392b;margin-top:6px;display:none;}
-.q.error .qe{display:block;}
-.q input[type=text],.q input[type=date],.q input[type=time],.q input[type=datetime-local],.q textarea,.q select{width:100%;margin-top:8px;font:inherit;font-size:16px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;}
-.ops{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-.ops label{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;min-height:44px;cursor:pointer;font-size:14.5px;background:#fff;flex:1 1 auto;}
-.ops input{width:18px;height:18px;margin:0;flex:0 0 auto;}
-.ops label:has(input:checked){border-color:#2d5f8b;background:#eef4fa;}
-.ops label.mala:has(input:checked){border-color:#b3261e;background:#fbe9e6;}
-.ops .otra-t{flex:1;min-width:120px;margin:0;}
-.cuad{margin-top:8px;}
-.cuad .fila{border-top:1px solid #edf0f2;padding:8px 0;}
-.cuad .fila:first-child{border-top:0;}
-.cuad .fn{font-size:14px;margin-bottom:4px;}
-.hallazgo{margin-top:8px;border-left:3px solid #b3261e;padding-left:10px;}
-.hallazgo label{font-size:12.5px;font-weight:600;color:#9c2a1f;}
-.esc{display:flex;gap:4px;margin-top:8px;align-items:center;flex-wrap:wrap;}
-.esc .et{font-size:12px;color:var(--muted);}
-.nav-pf{display:flex;gap:8px;margin-top:6px;}
-.nav-pf .btn{flex:1;}
-.subt{font-size:15px;font-weight:600;margin:14px 0 6px;}
-.res-v{display:flex;gap:8px;padding:7px 0;border-bottom:1px dashed #e6eaee;font-size:13.5px;line-height:1.4;}
-.res-v .p{flex:1;color:#334;}
-.res-v .r{flex:0 0 40%;font-weight:600;text-align:right;white-space:pre-line;}
-.res-v.mala .r{color:#b3261e;}
-</style>
+<style>.grupo-h{font-size:var(--fs-base);font-weight:600;margin:16px 0 6px}.forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}.forms button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:11px 13px;font:inherit;cursor:pointer;color:inherit;min-height:60px}.forms button:hover{border-color:var(--n-400)}.forms .t{font-weight:600;font-size:var(--fs-titulo)}.forms .m{font-size:var(--fs-menor);color:var(--muted)}.pf-cab{margin-bottom:6px}.pf-cab .cod{font-size:var(--fs-menor);color:var(--muted)}.pf-desc{white-space:pre-line;font-size:var(--fs-base);color:#334;margin:6px 0 2px}.pasos{font-size:var(--fs-menor);color:var(--muted);margin:6px 0 10px}.pasos b{color:var(--ink)}.barra-av{height:5px;background:var(--n-150);border-radius:var(--r-xs);overflow:hidden;margin-bottom:12px}.barra-av i{display:block;height:100%;background:var(--azul-600);transition:width .2s}.pg-tit{font-size:var(--fs-display);font-weight:600;margin:4px 0 2px}.pg-desc{white-space:pre-line;font-size:var(--fs-base);color:var(--muted);margin-bottom:8px}.q{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:12px 13px;margin-bottom:9px}.q.error{border-color:var(--warn);box-shadow:0 0 0 2px rgba(192,57,43,.12)}.q .qt{font-weight:600;font-size:var(--fs-titulo);line-height:1.35}.q .qt .ob{color:var(--warn);margin-left:3px}.q .qa{font-size:var(--fs-menor);color:var(--muted);margin-top:2px;white-space:pre-line}.q .qe{font-size:var(--fs-menor);color:var(--warn);margin-top:6px;display:none}.q.error .qe{display:block}.q input[type=date],.q input[type=datetime-local],.q input[type=text],.q input[type=time],.q select,.q textarea{width:100%;margin-top:8px;font:inherit;font-size:var(--fs-campo);padding:10px 11px;border:1px solid var(--line);border-radius:var(--r-m);background:#fff}.ops{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ops label{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:var(--r-m);padding:0 12px;min-height:44px;cursor:pointer;font-size:var(--fs-titulo);background:#fff;flex:1 1 auto}.ops input{width:18px;height:18px;margin:0;flex:0 0 auto}.ops label:has(input:checked){border-color:var(--azul-600);background:var(--bg)}.ops label.mala:has(input:checked){border-color:var(--rojo-700);background:var(--rojo-50)}.ops .otra-t{flex:1;min-width:120px;margin:0}.cuad{margin-top:8px}.cuad .fila{border-top:1px solid var(--bg);padding:8px 0}.cuad .fila:first-child{border-top:0}.cuad .fn{font-size:var(--fs-base);margin-bottom:4px}.hallazgo{margin-top:8px;border-left:3px solid var(--rojo-700);padding-left:10px}.hallazgo label{font-size:var(--fs-menor);font-weight:600;color:var(--rojo-800)}.esc{display:flex;gap:4px;margin-top:8px;align-items:center;flex-wrap:wrap}.esc .et{font-size:var(--fs-menor);color:var(--muted)}.nav-pf{display:flex;gap:8px;margin-top:6px}.nav-pf .btn{flex:1}.subt{font-size:var(--fs-titulo);font-weight:600;margin:14px 0 6px}.res-v{display:flex;gap:8px;padding:7px 0;border-bottom:1px dashed var(--n-150);font-size:var(--fs-base);line-height:1.4}.res-v .p{flex:1;color:#334}.res-v .r{flex:0 0 40%;font-weight:600;text-align:right;white-space:pre-line}.res-v.mala .r{color:var(--rojo-700)}</style>
 </head>
 <body>
 <div class="wrap">
@@ -68,7 +33,7 @@
   <div class="tabs" id="tabs"><button type="button" data-tab="formularios" class="on">Formularios</button><button type="button" data-tab="registros">Registros</button></div>
   <div class="sel-barra" id="selBarra" hidden></div>
   <div id="panel"><div class="empty">Cargando…</div></div>
-  <div class="version-portal">Portal SSTA · versión v129</div>
+  <div class="version-portal">Portal SSTA · versión v134</div>
 </div>
 
 <div class="screen" id="scrForm">
@@ -89,6 +54,7 @@
   <div id="vCuerpo"></div>
 </div>
 </div>
+<script src="dialogo.js"></script>
 <script src="empresa.js"></script>
 <script src="empresa-motor.js"></script>
 <script src="config.js"></script>
@@ -99,282 +65,6 @@
 <script src="registros.js"></script>
 <script src="preop-formularios.js"></script>
 <script src="preop-base.js"></script>
-<script>
-OfflineBanner.init();
-OutboxBadge.init();
-if (typeof Outbox !== 'undefined') Outbox.flush();
-if (typeof UpdateManager !== 'undefined') UpdateManager.init();
-
-/* ── Preoperacionales ──
-   Los formularios de Google de la empresa, tal cual (preop-formularios.js, generado
-   con herramientas/importar-formularios.js), llenados aquí: funcionan sin señal, se
-   guardan en el SG-SST (tipo "preop"; el de condiciones de salud, "preopsalud", que
-   solo ven Administrador y SST), con fotos de lo que está mal, PDF y su hoja. */
-const $ = UI.$;
-// v123: los de la empresa (formularios de Google importados) y los base del portal (sus formatos SSTA-F-…).
-const FORMS = (function () { const propios = typeof PREOP_FORMULARIOS !== 'undefined' ? PREOP_FORMULARIOS : [], base = typeof PREOP_BASE !== 'undefined' ? PREOP_BASE : [];
-  const todos = propios.concat(base.filter((b)=> !propios.some((f)=> f.id === b.id || (f.codigo && f.codigo === b.codigo))));
-  // v125: con el nombre y el código que les puso la empresa.
-  return typeof Empresa !== 'undefined' && Empresa.bautizar ? todos.map((f)=> Empresa.bautizar('preop', f)) : todos; })();
-const formDe = (id)=> FORMS.find((f)=> f.id === id);
-// v124: los que el administrador apagó para esta empresa no se ofrecen (los registros viejos sí se ven).
-const OFRECER = FORMS.filter((f)=> typeof Empresa === 'undefined' || !Empresa.visible || Empresa.visible('preop', f.id));
-const esSst = ()=> !Sesion.modo() || !Sesion.yo() || ['admin', 'sst'].indexOf(Sesion.rol()) !== -1;
-let rows = [], equipos = [], tab = 'formularios', actual = null, resp = {}, hall = {}, pila = [0], pagina = 0, firmaPad = false;
-
-function show(id){ document.querySelectorAll('.screen').forEach((s)=> s.classList.toggle('active', s.id === id)); window.scrollTo(0, 0); }
-/** Código del formato: el que la empresa le puso en empresa.js. */
-function codigoDe(f){ if (f.codigoEmpresa) return f.codigoEmpresa; if (!f.codigo) return ''; const x = EMPRESA.formatos && EMPRESA.formatos[f.codigo]; return x && x.codigo && x.codigo !== f.codigo ? x.codigo : ''; }
-/** Los centros de trabajo salen de empresa.js (centrosCosto), no de la lista del formulario original. */
-function opcionesDe(q){
-  if (q.rol === 'centro') { const c = EMPRESA.centrosCosto || []; return c.length ? c.map((x)=> typeof x === 'string' ? x : (x.nombre || x.cliente || String(x))) : null; }
-  return q.opciones || [];
-}
-
-async function cargar(){
-  if (!OFRECER.length) { $('panel').innerHTML = '<div class="aviso info">Aún no hay preoperacionales cargados. Se generan con <code>herramientas/importar-formularios.js</code> a partir de los formularios de Google de la empresa.</div>'; return; }
-  if (UI.avisoServidor($('avisoSrv'))) { pintar(); return; }
-  // Sin usuario se llena el formulario igual; la lista de los ya hechos no le pide entrar (v123).
-  const r = await SGSST.listar(esSst() ? 'preop,preopsalud,equipo' : 'preop,equipo', { sinPedir: true });
-  UI.avisoCopia($('avisoCopia'), r);
-  rows = (r.rows || []).filter((x)=> x.tipo === 'preop' || x.tipo === 'preopsalud');
-  equipos = (r.rows || []).filter((x)=> x.tipo === 'equipo' && x.resumen.activo !== false);
-  pintar();
-}
-function pintar(){
-  document.querySelectorAll('#tabs button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === tab));
-  const p = $('panel');
-  $('selBarra').hidden = tab !== 'registros';
-  if (tab === 'formularios') {
-    const grupos = []; OFRECER.forEach((f)=> { if (grupos.indexOf(f.grupo) === -1) grupos.push(f.grupo); });
-    p.innerHTML = '<input type="search" class="buscar" id="bForm" placeholder="Buscar equipo (pulidora, andamio, taladro…)">' + grupos.map((g)=> '<div data-g><h2 class="grupo-h">' + esc(g) + '</h2><div class="forms">' +
-      OFRECER.filter((f)=> f.grupo === g).map((f)=> { const n = rows.filter((x)=> x.resumen.formulario === f.id && String(x.resumen.fecha) === UI.hoy()).length;
-        return '<button type="button" data-f="' + esc(f.id) + '" data-q="' + esc(UI.norm(f.nombre + ' ' + f.titulo + ' ' + f.grupo)) + '"><span class="t">' + esc(f.nombre) + '</span><span class="m">' + esc(codigoDe(f) || f.titulo) + (n ? ' · ' + n + ' hoy' : '') + '</span></button>'; }).join('') + '</div></div>').join('');
-    $('bForm').addEventListener('input', ()=> { const q = UI.norm($('bForm').value); p.querySelectorAll('[data-f]').forEach((b)=> { b.hidden = q && b.dataset.q.indexOf(q) === -1; }); p.querySelectorAll('[data-g]').forEach((g)=> { g.hidden = !g.querySelector('[data-f]:not([hidden])'); }); });
-  } else {
-    const l = rows.slice().sort((a, b)=> String(b.resumen.fecha).localeCompare(String(a.resumen.fecha)) || String(b.creado).localeCompare(String(a.creado)));
-    p.innerHTML = '<div class="grid2"><div class="field"><select id="rForm"><option value="">Todos los formularios</option>' + FORMS.filter((f)=> !f.salud || esSst()).map((f)=> '<option value="' + esc(f.id) + '">' + esc(f.nombre) + '</option>').join('') + '</select></div>' +
-      '<div class="field"><input type="search" class="buscar" id="rBus" placeholder="Equipo, responsable o fecha" style="margin:0;"></div></div>' +
-      '<button type="button" class="btn ghost" id="rCsv">⬇️ Descargar las respuestas (CSV para Excel)</button><div id="rLista"></div>';
-    const ver = ()=> { const f = $('rForm').value, q = UI.norm($('rBus').value);
-      const v = l.filter((x)=> (!f || x.resumen.formulario === f) && (!q || UI.norm([x.resumen.codigoEquipo, x.resumen.responsable, x.resumen.fecha, x.resumen.nombreFormulario, x.resumen.centro].join(' ')).indexOf(q) !== -1));
-      $('rLista').innerHTML = v.length ? v.slice(0, 300).map((x)=> { const s = x.resumen, mal = Number(s.malos) > 0;
-        return '<button type="button" class="item ' + (x.pendiente ? 'gris' : mal ? 'mal' : 'ok') + '" data-r="' + esc(x.id) + '"><div class="fila"><div><div class="t">' + esc(s.nombreFormulario || s.formulario) + (s.codigoEquipo ? ' · ' + esc(s.codigoEquipo) : '') + '</div>' +
-          '<div class="m">' + esc(UI.corta(s.fecha)) + (s.responsable ? ' · ' + esc(s.responsable) : '') + (s.centro ? ' · ' + esc(s.centro) : '') + '</div></div><span class="chip ' + (mal ? 'mal' : 'ok') + '">' + (x.pendiente ? '⏳ Pendiente' : mal ? s.malos + ' en mal estado' : 'Sin novedad') + '</span></div></button>'; }).join('') : '<div class="empty">Sin registros.</div>'; };
-    $('rForm').addEventListener('change', ver); $('rBus').addEventListener('input', ver); ver();
-    $('rCsv').addEventListener('click', ()=> csv($('rForm').value));
-  }
-}
-$('tabs').addEventListener('click', (e)=> { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; pintar(); });
-// v127: en «Registros», eliminar varios hechos por error (solo SST y Administrador).
-if (typeof Sesion !== 'undefined' && Sesion.yo && Sesion.yo()) UI.seleccionVarios({ lista: $('panel'), barra: $('selBarra'), atributo: 'r', que: 'este preoperacional', alTerminar: ()=> cargar() });
-document.addEventListener('click', (e)=> {
-  const f = e.target.closest('[data-f]'); if (f) { abrirForm(f.dataset.f); return; }
-  const r = e.target.closest('[data-r]'); if (r) { verRegistro(r.dataset.r); return; }
-  if (e.target.closest('.screen.active [data-volver]')) { e.preventDefault(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); show('scrLista'); cargar(); }
-});
-
-/* ── Llenar un formulario ── */
-function abrirForm(id){
-  const f = formDe(id); if (!f) { UI.toast('Ese formulario no existe en este portal.', 'mal'); return; }
-  if (f.salud && Sesion.modo() && !Sesion.yo()) { /* se puede llenar sin usuario; lo que se guarda solo lo ven Administrador y SST */ }
-  actual = f; resp = {}; hall = {}; pila = [0]; pagina = 0; firmaPad = false;
-  // Valores por defecto: la fecha de hoy y, con usuario, quien inspecciona.
-  f.paginas.forEach((pg)=> pg.items.forEach((q)=> { if (q.tipo === 'fecha' && q.rol === 'fecha') resp[q.k] = UI.hoy(); if (q.tipo === 'persona' && Sesion.yo()) resp[q.k] = { nombre: Sesion.nombre(), cedula: '' }; }));
-  $('fGrupo').textContent = f.grupo; $('fTitulo').textContent = f.titulo; $('fCodigo').textContent = codigoDe(f);
-  if (location.hash.slice(1) !== f.id) history.replaceState(null, '', '#' + f.id);
-  show('scrForm'); pintarPagina();
-}
-const valor = (q)=> resp[q.k];
-const esMala = (q, v)=> {
-  if (v == null || v === '') return false;
-  if (q.malas && (Array.isArray(v) ? v : [v]).some((x)=> q.malas.indexOf(x) !== -1)) return true;
-  if (q.malasCol && v && typeof v === 'object' && !Array.isArray(v)) return Object.keys(v).some((fi)=> [].concat(v[fi]).some((c)=> q.malasCol.indexOf(c) !== -1));
-  return false;
-};
-function qHTML(q){
-  const v = valor(q), ob = q.obligatoria ? '<span class="ob" aria-hidden="true">*</span>' : '', id = 'q_' + q.k;
-  if (q.tipo === 'titulo') return '<h3 class="subt">' + esc(q.titulo) + '</h3>' + (q.ayuda ? '<p class="pg-desc">' + esc(q.ayuda) + '</p>' : '');
-  let h = '<div class="q" data-k="' + q.k + '"><div class="qt" id="' + id + '_t">' + esc(q.titulo) + ob + '</div>' + (q.ayuda ? '<div class="qa">' + esc(q.ayuda) + '</div>' : '');
-  const ops = opcionesDe(q);
-  if (q.tipo === 'texto' || (q.tipo === 'lista' && !ops)) h += '<input type="text" data-in="' + q.k + '" value="' + esc(v || '') + '"' + (q.rol === 'equipo' ? ' list="dlEquipos" autocapitalize="characters"' : '') + ' aria-labelledby="' + id + '_t">';
-  else if (q.tipo === 'parrafo') h += '<textarea data-in="' + q.k + '" rows="3" aria-labelledby="' + id + '_t">' + esc(v || '') + '</textarea>';
-  else if (q.tipo === 'fecha') h += '<input type="date" data-in="' + q.k + '" value="' + esc(v || '') + '" aria-labelledby="' + id + '_t">';
-  else if (q.tipo === 'hora') h += '<input type="time" data-in="' + q.k + '" value="' + esc(v || '') + '" aria-labelledby="' + id + '_t">';
-  else if (q.tipo === 'fechahora') h += '<input type="datetime-local" data-in="' + q.k + '" value="' + esc(v || '') + '" aria-labelledby="' + id + '_t">';
-  else if (q.tipo === 'persona') h += '<div class="field" style="margin:0;"><input type="text" data-persona="' + q.k + '" value="' + esc(v && v.nombre ? v.nombre : '') + '" placeholder="Escribe el nombre o la cédula" aria-labelledby="' + id + '_t"></div><input type="text" data-cedula="' + q.k + '" inputmode="numeric" value="' + esc(v && v.cedula ? v.cedula : '') + '" placeholder="Cédula" aria-label="Cédula">';
-  else if (q.tipo === 'lista') h += '<select data-in="' + q.k + '" aria-labelledby="' + id + '_t"><option value="">Elegir</option>' + ops.map((o)=> '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select>';
-  else if (q.tipo === 'opcion' || q.tipo === 'casillas') {
-    const multi = q.tipo === 'casillas', sel = multi ? (v || []) : [v], otra = q.otra ? (multi ? (v || []).find((x)=> ops.indexOf(x) === -1) : (v && ops.indexOf(v) === -1 ? v : '')) : '';
-    h += '<div class="ops" role="' + (multi ? 'group' : 'radiogroup') + '" aria-labelledby="' + id + '_t">' + ops.map((o)=> '<label class="' + ((q.malas || []).indexOf(o) !== -1 ? 'mala' : '') + '"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + q.k + '" value="' + esc(o) + '"' + (sel.indexOf(o) !== -1 ? ' checked' : '') + '>' + esc(o) + '</label>').join('') +
-      (q.otra ? '<label><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + q.k + '" value="__otra"' + (otra ? ' checked' : '') + '>Otra: <input type="text" class="otra-t" data-otra="' + q.k + '" value="' + esc(otra || '') + '" aria-label="Otra respuesta"></label>' : '') + '</div>';
-  } else if (q.tipo === 'escala') {
-    h += '<div class="esc ops" role="radiogroup" aria-labelledby="' + id + '_t">' + (q.etiquetaDesde ? '<span class="et">' + esc(q.etiquetaDesde) + '</span>' : '');
-    for (let n = q.desde; n <= q.hasta; n++) h += '<label style="flex:0 0 auto;"><input type="radio" name="' + q.k + '" value="' + n + '"' + (String(v) === String(n) ? ' checked' : '') + '>' + n + '</label>';
-    h += (q.etiquetaHasta ? '<span class="et">' + esc(q.etiquetaHasta) + '</span>' : '') + '</div>';
-  } else if (q.tipo === 'cuadricula' || q.tipo === 'cuadricula-casillas') {
-    const multi = q.tipo === 'cuadricula-casillas', o = v || {};
-    h += '<div class="cuad">' + q.filas.map((fi, i)=> '<div class="fila"><div class="fn">' + esc(fi) + '</div><div class="ops" role="' + (multi ? 'group' : 'radiogroup') + '" aria-label="' + esc(fi) + '">' + q.columnas.map((c)=> '<label class="' + ((q.malasCol || []).indexOf(c) !== -1 ? 'mala' : '') + '"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + q.k + '_' + i + '" data-fila="' + i + '" value="' + esc(c) + '"' + ([].concat(o[fi] || []).indexOf(c) !== -1 ? ' checked' : '') + '>' + esc(c) + '</label>').join('') + '</div></div>').join('') + '</div>';
-  } else if (q.tipo === 'foto') h += '<div data-fotos="' + q.k + '" style="margin-top:8px;"></div>';
-  // Lo que está mal: qué se encontró y foto (como en las inspecciones del portal).
-  if (esMala(q, v)) { const x = hall[q.k] || {}; h += '<div class="hallazgo"><label for="h_' + q.k + '">¿Qué encontraste? (para corregirlo)</label><textarea id="h_' + q.k + '" data-hall="' + q.k + '" rows="2">' + esc(x.obs || '') + '</textarea><div data-hfotos="' + q.k + '"></div></div>'; }
-  return h + '<div class="qe">Esta pregunta es obligatoria.</div></div>';
-}
-/* v127: en el código del equipo solo se ofrecen los equipos de ESE preoperacional
-   (en el de soldar, solo los equipos de soldadura del inventario), no todas las herramientas. */
-const EQUIPO_DE = { montacargas: ['montacargas'], 'plataforma-tijera': ['plataforma'], camioneta: ['vehiculo'], escalera: ['escalera'], 'equipo-alturas': ['arnes'],
-  camilla: ['camilla'], 'herramientas-menores': ['herramientas_menores'], 'equipo-soldar': ['soldadura'], 'equipo-oxicorte': ['oxicorte'],
-  pulidora: ['pulidora', 'herramienta_electrica'], taladro: ['taladro', 'herramienta_electrica'], motortool: ['motortool', 'herramienta_electrica'], roladora: ['roladora'], 'diferencial-cadena': ['diferencial'] };
-function equiposDe(f){
-  const cats = (f && (f.equipos || EQUIPO_DE[f.id])) || null;
-  if (!cats) return equipos;   // formularios propios de la empresa: todos
-  const l = equipos.filter((e)=> cats.indexOf(e.resumen.categoria) !== -1);
-  // Equipos viejos de la lista combinada de herramienta eléctrica: solo si su nombre coincide.
-  const tipo = String(f.id).split('-')[0];
-  return l.filter((e)=> e.resumen.categoria !== 'herramienta_electrica' || UI.norm(e.resumen.nombre || '').includes(tipo));
-}
-function pintarPagina(){
-  const f = actual, pg = f.paginas[pagina], ult = siguiente() === 'fin', total = f.paginas.length;
-  $('fCuerpo').innerHTML = (pagina === 0 && f.descripcion ? '<div class="card"><div class="pf-desc">' + esc(f.descripcion) + '</div></div>' : '') +
-    '<div class="pasos">Página <b>' + (pila.length) + '</b>' + (total > 1 ? ' · ' + total + ' en el formulario' : '') + '</div><div class="barra-av"><i style="width:' + Math.round(pila.length * 100 / Math.max(total, 1)) + '%"></i></div>' +
-    (pg.titulo ? '<div class="pg-tit">' + esc(pg.titulo) + '</div>' : '') + (pg.descripcion ? '<div class="pg-desc">' + esc(pg.descripcion) + '</div>' : '') +
-    pg.items.map(qHTML).join('') +
-    (ult ? '<div class="card"><h2 style="font-size:15px;">Firma de quien inspecciona (opcional)</h2>' + UI.padHTML('pfFirma') + '</div>' : '') +
-    '<datalist id="dlEquipos">' + equiposDe(f).map((e)=> '<option value="' + esc(e.resumen.codigo || '') + '">' + esc(e.resumen.nombre || '') + '</option>').join('') + '</datalist>' +
-    '<div class="nav-pf">' + (pila.length > 1 ? '<button type="button" class="btn ghost" id="pfAtras">Atrás</button>' : '') + '<button type="button" class="btn amber" id="pfSig">' + (ult ? 'Enviar' : 'Siguiente') + '</button></div><div class="status-msg" id="pfMsg"></div>';
-  enlazar(pg);
-  if (ult) { UI.activarPad('pfFirma', resp.__firma || ''); firmaPad = true; } else firmaPad = false;
-  if ($('pfAtras')) $('pfAtras').addEventListener('click', ()=> { leer(pg); pila.pop(); pagina = pila[pila.length - 1]; pintarPagina(); window.scrollTo(0, 0); });
-  $('pfSig').addEventListener('click', ()=> { leer(pg); if (!validar(pg)) return; const s = siguiente(); if (s === 'fin') { enviar(); return; } pila.push(s); pagina = s; pintarPagina(); window.scrollTo(0, 0); });
-}
-function enlazar(pg){
-  const c = $('fCuerpo');
-  c.querySelectorAll('[data-persona]').forEach((inp)=> UI.autocompletar(inp, (p)=> { inp.value = p.nombre; const ce = c.querySelector('[data-cedula="' + inp.dataset.persona + '"]'); if (ce && p.cedula) ce.value = p.cedula; }));
-  pg.items.filter((q)=> q.tipo === 'foto').forEach((q)=> { const el = c.querySelector('[data-fotos="' + q.k + '"]'); if (el) q._f = UI.fotos(el, { inicial: resp[q.k] || [], max: 4 }); });
-  pg.items.forEach((q)=> { const el = c.querySelector('[data-hfotos="' + q.k + '"]'); if (el) q._h = UI.fotos(el, { inicial: (hall[q.k] || {}).fotos || [], max: 3 }); else q._h = null; });
-  // Al cambiar una respuesta se vuelve a pintar esa pregunta (aparece o se quita el «qué encontraste»).
-  c.querySelectorAll('.q input[type=radio], .q input[type=checkbox], .q select').forEach((i)=> i.addEventListener('change', ()=> {
-    const box = i.closest('.q'), q = pg.items.find((x)=> x.k === box.dataset.k); leer(pg);
-    const antes = !!box.querySelector('.hallazgo'), ahora = esMala(q, valor(q));
-    if (antes !== ahora) { const t = document.createElement('div'); t.innerHTML = qHTML(q); box.replaceWith(t.firstChild); enlazar(pg); }
-    if ($('pfSig')) $('pfSig').textContent = siguiente() === 'fin' ? 'Enviar' : 'Siguiente';
-  }));
-}
-function leer(pg){
-  const c = $('fCuerpo');
-  pg.items.forEach((q)=> {
-    const box = c.querySelector('.q[data-k="' + q.k + '"]'); if (!box) return;
-    if (q.tipo === 'persona') resp[q.k] = { nombre: (box.querySelector('[data-persona]').value || '').trim(), cedula: (box.querySelector('[data-cedula]').value || '').trim() };
-    else if (q.tipo === 'opcion' || q.tipo === 'escala') { const x = box.querySelector('input[name="' + q.k + '"]:checked'); resp[q.k] = !x ? '' : x.value === '__otra' ? (box.querySelector('[data-otra]').value || '').trim() : x.value; }
-    else if (q.tipo === 'casillas') resp[q.k] = [...box.querySelectorAll('input[name="' + q.k + '"]:checked')].map((x)=> x.value === '__otra' ? (box.querySelector('[data-otra]').value || '').trim() : x.value).filter(Boolean);
-    else if (q.tipo === 'cuadricula' || q.tipo === 'cuadricula-casillas') { const o = {}; q.filas.forEach((fi, i)=> { const l = [...box.querySelectorAll('input[data-fila="' + i + '"]:checked')].map((x)=> x.value); if (l.length) o[fi] = q.tipo === 'cuadricula' ? l[0] : l; }); resp[q.k] = o; }
-    else if (q.tipo === 'foto') resp[q.k] = q._f ? q._f.get() : [];
-    else { const x = box.querySelector('[data-in]'); if (x) resp[q.k] = x.value.trim ? x.value.trim() : x.value; }
-    const h = box.querySelector('[data-hall]');
-    if (h) hall[q.k] = { obs: h.value.trim(), fotos: q._h ? q._h.get() : [] }; else delete hall[q.k];
-  });
-  if (firmaPad) resp.__firma = UI.firma('pfFirma') || '';
-}
-const vacio = (q, v)=> v == null || v === '' || (Array.isArray(v) && !v.length) || (q.tipo === 'persona' && !(v && v.nombre)) || ((q.tipo === 'cuadricula' || q.tipo === 'cuadricula-casillas') && Object.keys(v || {}).length < q.filas.length);
-function validar(pg){
-  let primero = null;
-  pg.items.forEach((q)=> { const box = $('fCuerpo').querySelector('.q[data-k="' + q.k + '"]'); if (!box) return; const mal = q.obligatoria && vacio(q, valor(q)); box.classList.toggle('error', mal); if (mal && !primero) primero = box; });
-  if (primero) { primero.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('pfMsg').textContent = 'Faltan respuestas obligatorias.'; return false; }
-  return true;
-}
-/** A dónde va el formulario después de esta página: el salto de la última pregunta con saltos que se respondió, o el de la página. */
-function siguiente(){
-  const f = actual, pg = f.paginas[pagina];
-  let d;
-  pg.items.forEach((q)=> { if (!q.saltos) return; const v = valor(q), i = (opcionesDe(q) || []).indexOf(v); if (i !== -1 && q.saltos[i] != null) d = q.saltos[i]; });
-  if (d === undefined && pg.despues != null) d = pg.despues;
-  if (d === undefined || d === null) d = pagina + 1;
-  return d === 'fin' || d >= f.paginas.length ? 'fin' : d;
-}
-function texto(q, v){
-  if (v == null || v === '') return '';
-  if (q.tipo === 'persona') return [v.nombre, v.cedula].filter(Boolean).join(' - ');
-  if (q.tipo === 'fecha') return UI.corta(v);
-  if (Array.isArray(v)) return q.tipo === 'foto' ? v.length + ' foto(s)' : v.join(', ');
-  if (typeof v === 'object') return Object.keys(v).map((fi)=> fi + ': ' + [].concat(v[fi]).join(', ')).join('\n');
-  return String(v);
-}
-async function enviar(){
-  const f = actual, msg = $('pfMsg'), b = $('pfSig');
-  // Solo cuentan las páginas por las que se pasó (con saltos, otras quedan sin responder).
-  const qs = []; pila.forEach((i)=> f.paginas[i].items.forEach((q)=> { if (q.tipo !== 'titulo') qs.push(q); }));
-  const rolV = (rol)=> { const q = qs.find((x)=> x.rol === rol); return q ? texto(q, valor(q)) : ''; };
-  const pers = qs.find((x)=> x.rol === 'responsable' && x.tipo === 'persona'), persV = pers ? valor(pers) || {} : {};
-  const respuestas = qs.map((q)=> ({ k: q.k, p: q.titulo, t: q.tipo, v: texto(q, valor(q)), mala: esMala(q, valor(q)) || undefined }));
-  const malos = qs.filter((q)=> esMala(q, valor(q))).map((q)=> ({ k: q.k, p: q.titulo, v: texto(q, valor(q)), obs: (hall[q.k] || {}).obs || '', fotos: (hall[q.k] || {}).fotos || [] }));
-  const fotos = {}; qs.filter((q)=> q.tipo === 'foto').forEach((q)=> { fotos[q.k] = valor(q) || []; });
-  const codEq = rolV('equipo'), eq = equipos.find((e)=> codEq && UI.norm(e.resumen.codigo) === UI.norm(codEq));
-  const fecha = (()=> { const q = qs.find((x)=> x.rol === 'fecha'); return q && valor(q) ? valor(q) : UI.hoy(); })();
-  const doc = { formulario: f.id, nombreFormulario: f.nombre, titulo: f.titulo, codigo: codigoDe(f), fecha, responsable: persV.nombre || rolV('responsable'), cedula: persV.cedula || '', cargo: rolV('cargo'),
-    codigoEquipo: codEq, equipoId: eq ? eq.id : '', centro: rolV('centro'), respuestas, malos, fotos, firma: resp.__firma || '', resultado: malos.length ? 'CON NOVEDAD' : 'SIN NOVEDAD',
-    detalle: respuestas.filter((x)=> x.t !== 'foto').map((x)=> x.p + ': ' + String(x.v).replace(/\n/g, '; ')).join('\n'), paginas: pila.slice() };
-  doc.malos = malos.length;   // en la lista: cuántos; el detalle va en "hallazgos"
-  doc.hallazgos = malos;
-  b.disabled = true; msg.textContent = 'Guardando…';
-  const id = SGSST.nuevoId('PRE'), tipo = f.salud ? 'preopsalud' : 'preop';
-  const r = await SGSST.enviar({ action: 'guardar', tipo, id, doc }, { fecha, titulo: f.nombre, resumen: { formulario: f.id, nombreFormulario: f.nombre, fecha, responsable: doc.responsable, codigoEquipo: codEq, centro: doc.centro, malos: malos.length, resultado: doc.resultado } });
-  b.disabled = false;
-  if (!r.ok) { msg.textContent = 'No se guardó: ' + (r.error || ''); return; }
-  terminado(Object.assign({ id }, doc), !!r.enCola);
-}
-function terminado(d, enCola){
-  history.replaceState(null, '', location.pathname + location.search);
-  $('fCuerpo').innerHTML = '<div class="card"><h2 style="font-size:17px;">' + (enCola ? '⏳ Guardado en el equipo' : '✓ Enviado') + '</h2><p class="ayuda">' + (enCola ? 'Se envía solo cuando vuelva la señal.' : 'Quedó en el SG-SST de la empresa.') + '</p>' +
-    (d.malos ? '<div class="aviso">' + d.malos + ' punto(s) en mal estado: ' + esc(d.hallazgos.map((x)=> x.p).join('; ')) + '. Informa a tu jefe antes de usar el equipo.</div>' : '<div class="aviso info">Sin novedades.</div>') +
-    (d.malos ? '<button type="button" class="btn amber" id="tAcc">Crear una acción en el plan de acción</button>' : '') +
-    '<button type="button" class="btn ghost" id="tPdf">🖨️ PDF de este preoperacional</button><button type="button" class="btn ghost" id="tOtro">Llenar otro ' + esc(actual.nombre.toLowerCase()) + '</button><button type="button" class="btn ghost" data-volver>Volver a los preoperacionales</button></div>';
-  $('tPdf').addEventListener('click', ()=> pdf(d));
-  $('tOtro').addEventListener('click', ()=> abrirForm(actual.id));
-  if ($('tAcc')) $('tAcc').addEventListener('click', ()=> UI.nuevaAccion({ origen: 'Preoperacional', origenRef: d.id, hallazgo: d.nombreFormulario + (d.codigoEquipo ? ' ' + d.codigoEquipo : '') + ': ' + d.hallazgos.map((x)=> x.p + ' → ' + x.v + (x.obs ? ' (' + x.obs + ')' : '')).join('; '), fotos: [].concat(...d.hallazgos.map((x)=> x.fotos || [])).slice(0, 4), centro: d.centro }));
-}
-
-/* ── Ver un registro, PDF y CSV ── */
-async function verRegistro(id){
-  const d = await SGSST.doc(id); if (!d) { UI.toast('No se pudo abrir (¿sin señal o sin permiso?).', 'mal'); return; }
-  d.id = id; const f = formDe(d.formulario) || { nombre: d.nombreFormulario || d.formulario, grupo: '' };
-  $('vGrupo').textContent = f.grupo || 'Preoperacional'; $('vTitulo').textContent = d.titulo || f.nombre; $('vSub').textContent = [UI.corta(d.fecha), d.responsable, d.codigoEquipo].filter(Boolean).join(' · ');
-  $('vCuerpo').innerHTML = '<div class="card">' + (d.respuestas || []).filter((x)=> x.t !== 'foto').map((x)=> '<div class="res-v' + (x.mala ? ' mala' : '') + '"><span class="p">' + esc(x.p) + '</span><span class="r">' + esc(x.v || '—') + '</span></div>').join('') + '</div>' +
-    ((d.hallazgos || []).length ? '<div class="card"><h2 style="font-size:15px;">En mal estado</h2>' + d.hallazgos.map((x)=> '<div style="margin-bottom:8px;"><b>' + esc(x.p) + ':</b> ' + esc(x.v) + (x.obs ? '<div class="ayuda">' + esc(x.obs) + '</div>' : '') + '<div>' + UI.imgs(x.fotos, 'height:90px;margin:3px;border-radius:8px;') + '</div></div>').join('') + '</div>' : '') +
-    (UI.src(d.firma) ? '<div class="card"><div class="ayuda">Firma</div><img src="' + UI.src(d.firma) + '" alt="Firma" style="max-height:70px;"></div>' : '') +
-    '<button type="button" class="btn ghost" id="vPdf">🖨️ PDF</button>';
-  $('vPdf').addEventListener('click', ()=> pdf(d));
-  // v127: un preoperacional hecho por error (equipo equivocado, repetido…).
-  if (typeof Sesion !== 'undefined' && Sesion.yo && Sesion.yo()) $('vCuerpo').appendChild(UI.botonEliminar(id, 'este preoperacional', ()=> { show('scrLista'); cargar(); }));
-  show('scrVer');
-}
-function pdf(d){
-  const f = formDe(d.formulario) || {};
-  const filas = (d.respuestas || []).filter((x)=> x.t !== 'foto').map((x)=> '<tr><td style="width:55%;">' + esc(x.p) + '</td><td' + (x.mala ? ' style="color:#b3261e;font-weight:700;"' : '') + '>' + esc(x.v || '—').replace(/\n/g, '<br>') + '</td></tr>').join('');
-  UI.imprimir([UI.cabecera(f.codigo && codigoDe(f) ? f.codigo : 'SG-PREOPERACIONAL', (d.titulo || f.titulo || 'PREOPERACIONAL').toUpperCase(), [UI.corta(d.fecha), d.codigoEquipo].filter(Boolean).join(' · ')) +
-    UI.seccion('RESPUESTAS', '<table>' + filas + '</table>') +
-    ((d.hallazgos || []).length ? UI.seccion('EN MAL ESTADO', '<table>' + d.hallazgos.map((x)=> '<tr><td style="width:35%;"><b>' + esc(x.p) + '</b></td><td>' + esc(x.v) + (x.obs ? '<br>' + esc(x.obs) : '') + '</td></tr>').join('') + '</table>' + UI.fotosHoja([].concat(...d.hallazgos.map((x)=> x.fotos || [])))) : '') +
-    UI.seccion('QUIEN INSPECCIONA', UI.tablaDatos([['Nombre', d.responsable || ''], ['Cédula', d.cedula || ''], ['Cargo', d.cargo || ''], ['Firma', UI.firmaHoja(d.firma), true]]))]);
-}
-/** Respuestas de un formulario en CSV (como la hoja de respuestas de Google): una columna por pregunta. */
-async function csv(formId){
-  const f = formDe(formId); if (!f) { UI.toast('Elige primero el formulario.', 'mal'); return; }
-  const l = rows.filter((x)=> x.resumen.formulario === f.id && !x.pendiente).sort((a, b)=> String(a.resumen.fecha).localeCompare(String(b.resumen.fecha)));
-  if (!l.length) { UI.toast('Ese formulario no tiene registros.', 'mal'); return; }
-  UI.toast('Preparando ' + l.length + ' registro(s)…');
-  const qs = []; f.paginas.forEach((pg)=> pg.items.forEach((q)=> { if (q.tipo !== 'titulo' && q.tipo !== 'foto') qs.push(q); }));
-  const docs = []; for (let i = 0; i < l.length; i += 6) docs.push(...await Promise.all(l.slice(i, i + 6).map((x)=> SGSST.doc(x.id))));
-  const c = (t)=> { t = String(t == null ? '' : t); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
-  const filas = [['Marca temporal', 'Registro'].concat(qs.map((q)=> q.titulo)).concat(['En mal estado', 'Qué se encontró']).map(c).join(';')];
-  docs.forEach((d, i)=> { if (!d) return; const m = {}; (d.respuestas || []).forEach((x)=> { m[x.k] = x.v; });
-    filas.push([l[i].creado || d.fecha, l[i].id].concat(qs.map((q)=> m[q.k] || '')).concat([(d.hallazgos || []).map((x)=> x.p).join(' | '), (d.hallazgos || []).map((x)=> x.obs).filter(Boolean).join(' | ')]).map(c).join(';')); });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['﻿' + filas.join('\n')], { type: 'text/csv;charset=utf-8' }));
-  a.download = 'preoperacional-' + f.id + '-' + UI.hoy() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(()=> { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-}
-
-window.addEventListener('outbox-enviado', ()=> { if ($('scrLista').classList.contains('active')) cargar(); });
-// #<formulario> abre ese formulario (las tarjetas del inicio); #PRE-… abre un registro (desde el plan de acción).
-cargar().then(()=> { const id = decodeURIComponent(location.hash.slice(1) || ''); if (/^PRE-/.test(id)) verRegistro(id); else if (id && OFRECER.some((f)=> f.id === id)) abrirForm(id); });
-</script>
+<script>OfflineBanner.init(),OutboxBadge.init(),"undefined"!=typeof Outbox&&Outbox.flush(),"undefined"!=typeof UpdateManager&&UpdateManager.init();const $=UI.$,FORMS=function(){const e="undefined"!=typeof PREOP_FORMULARIOS?PREOP_FORMULARIOS:[],a="undefined"!=typeof PREOP_BASE?PREOP_BASE:[],o=e.concat(a.filter(a=>!e.some(e=>e.id===a.id||e.codigo&&e.codigo===a.codigo)));return"undefined"!=typeof Empresa&&Empresa.bautizar?o.map(e=>Empresa.bautizar("preop",e)):o}(),formDe=e=>FORMS.find(a=>a.id===e),OFRECER=FORMS.filter(e=>"undefined"==typeof Empresa||!Empresa.visible||Empresa.visible("preop",e.id)),esSst=()=>!Sesion.modo()||!Sesion.yo()||-1!==["admin","sst"].indexOf(Sesion.rol());let rows=[],equipos=[],tab="formularios",actual=null,resp={},hall={},pila=[0],pagina=0,firmaPad=!1;function show(e){document.querySelectorAll(".screen").forEach(a=>a.classList.toggle("active",a.id===e)),window.scrollTo(0,0)}function codigoDe(e){if(e.codigoEmpresa)return e.codigoEmpresa;if(!e.codigo)return"";const a=EMPRESA.formatos&&EMPRESA.formatos[e.codigo];return a&&a.codigo&&a.codigo!==e.codigo?a.codigo:""}function opcionesDe(e){if("centro"===e.rol){const e=EMPRESA.centrosCosto||[];return e.length?e.map(e=>"string"==typeof e?e:e.nombre||e.cliente||String(e)):null}return e.opciones||[]}async function cargar(){if(!OFRECER.length)return void($("panel").innerHTML='<div class="aviso info">Aún no hay preoperacionales cargados. Se generan con <code>herramientas/importar-formularios.js</code> a partir de los formularios de Google de la empresa.</div>');if(UI.avisoServidor($("avisoSrv")))return void pintar();const e=await SGSST.listar(esSst()?"preop,preopsalud,equipo":"preop,equipo",{sinPedir:!0});UI.avisoCopia($("avisoCopia"),e),rows=(e.rows||[]).filter(e=>"preop"===e.tipo||"preopsalud"===e.tipo),equipos=(e.rows||[]).filter(e=>"equipo"===e.tipo&&!1!==e.resumen.activo),pintar()}function pintar(){document.querySelectorAll("#tabs button").forEach(e=>e.classList.toggle("on",e.dataset.tab===tab));const e=$("panel");if($("selBarra").hidden="registros"!==tab,"formularios"===tab){const a=[];OFRECER.forEach(e=>{-1===a.indexOf(e.grupo)&&a.push(e.grupo)}),e.innerHTML='<input type="search" class="buscar" id="bForm" placeholder="Buscar equipo (pulidora, andamio, taladro…)">'+a.map(e=>'<div data-g><h2 class="grupo-h">'+esc(e)+'</h2><div class="forms">'+OFRECER.filter(a=>a.grupo===e).map(e=>{const a=rows.filter(a=>a.resumen.formulario===e.id&&String(a.resumen.fecha)===UI.hoy()).length;return'<button type="button" data-f="'+esc(e.id)+'" data-q="'+esc(UI.norm(e.nombre+" "+e.titulo+" "+e.grupo))+'"><span class="t">'+esc(e.nombre)+'</span><span class="m">'+esc(codigoDe(e)||e.titulo)+(a?" · "+a+" hoy":"")+"</span></button>"}).join("")+"</div></div>").join(""),$("bForm").addEventListener("input",()=>{const a=UI.norm($("bForm").value);e.querySelectorAll("[data-f]").forEach(e=>{e.hidden=a&&-1===e.dataset.q.indexOf(a)}),e.querySelectorAll("[data-g]").forEach(e=>{e.hidden=!e.querySelector("[data-f]:not([hidden])")})})}else{const a=rows.slice().sort((e,a)=>String(a.resumen.fecha).localeCompare(String(e.resumen.fecha))||String(a.creado).localeCompare(String(e.creado)));e.innerHTML='<div class="grid2"><div class="field"><select id="rForm"><option value="">Todos los formularios</option>'+FORMS.filter(e=>!e.salud||esSst()).map(e=>'<option value="'+esc(e.id)+'">'+esc(e.nombre)+"</option>").join("")+'</select></div><div class="field"><input type="search" class="buscar u-m0" id="rBus" placeholder="Equipo, responsable o fecha"></div></div><button type="button" class="btn ghost" id="rCsv">⬇️ Descargar las respuestas (CSV para Excel)</button><div id="rLista"></div>';const ver=()=>{const e=$("rForm").value,o=UI.norm($("rBus").value),t=a.filter(a=>!(e&&a.resumen.formulario!==e||o&&-1===UI.norm([a.resumen.codigoEquipo,a.resumen.responsable,a.resumen.fecha,a.resumen.nombreFormulario,a.resumen.centro].join(" ")).indexOf(o)));$("rLista").innerHTML=t.length?t.slice(0,300).map(e=>{const a=e.resumen,o=Number(a.malos)>0;return'<button type="button" class="item '+(e.pendiente?"gris":o?"mal":"ok")+'" data-r="'+esc(e.id)+'"><div class="fila"><div><div class="t">'+esc(a.nombreFormulario||a.formulario)+(a.codigoEquipo?" · "+esc(a.codigoEquipo):"")+'</div><div class="m">'+esc(UI.corta(a.fecha))+(a.responsable?" · "+esc(a.responsable):"")+(a.centro?" · "+esc(a.centro):"")+'</div></div><span class="chip '+(o?"mal":"ok")+'">'+(e.pendiente?"⏳ Pendiente":o?a.malos+" en mal estado":"Sin novedad")+"</span></div></button>"}).join(""):'<div class="empty">Sin registros.</div>'};$("rForm").addEventListener("change",ver),$("rBus").addEventListener("input",ver),ver(),$("rCsv").addEventListener("click",()=>csv($("rForm").value))}}function abrirForm(e){const a=formDe(e);a?(a.salud&&Sesion.modo()&&Sesion.yo(),actual=a,resp={},hall={},pila=[0],pagina=0,firmaPad=!1,a.paginas.forEach(e=>e.items.forEach(e=>{"fecha"===e.tipo&&"fecha"===e.rol&&(resp[e.k]=UI.hoy()),"persona"===e.tipo&&Sesion.yo()&&(resp[e.k]={nombre:Sesion.nombre(),cedula:""})})),$("fGrupo").textContent=a.grupo,$("fTitulo").textContent=a.titulo,$("fCodigo").textContent=codigoDe(a),location.hash.slice(1)!==a.id&&history.replaceState(null,"","#"+a.id),show("scrForm"),pintarPagina()):UI.toast("Ese formulario no existe en este portal.","mal")}$("tabs").addEventListener("click",e=>{const a=e.target.closest("[data-tab]");a&&(tab=a.dataset.tab,pintar())}),"undefined"!=typeof Sesion&&Sesion.yo&&Sesion.yo()&&UI.seleccionVarios({lista:$("panel"),barra:$("selBarra"),atributo:"r",que:"este preoperacional",alTerminar:()=>cargar()}),document.addEventListener("click",e=>{const a=e.target.closest("[data-f]");if(a)return void abrirForm(a.dataset.f);const o=e.target.closest("[data-r]");o?verRegistro(o.dataset.r):e.target.closest(".screen.active [data-volver]")&&(e.preventDefault(),location.hash&&history.replaceState(null,"",location.pathname+location.search),show("scrLista"),cargar())});const valor=e=>resp[e.k],esMala=(e,a)=>null!=a&&""!==a&&(!(!e.malas||!(Array.isArray(a)?a:[a]).some(a=>-1!==e.malas.indexOf(a)))||!(!e.malasCol||!a||"object"!=typeof a||Array.isArray(a))&&Object.keys(a).some(o=>[].concat(a[o]).some(a=>-1!==e.malasCol.indexOf(a))));function qHTML(e){const a=valor(e),o=e.obligatoria?'<span class="ob" aria-hidden="true">*</span>':"",t="q_"+e.k;if("titulo"===e.tipo)return'<h3 class="subt">'+esc(e.titulo)+"</h3>"+(e.ayuda?'<p class="pg-desc">'+esc(e.ayuda)+"</p>":"");let i='<div class="q" data-k="'+e.k+'"><div class="qt" id="'+t+'_t">'+esc(e.titulo)+o+"</div>"+(e.ayuda?'<div class="qa">'+esc(e.ayuda)+"</div>":"");const r=opcionesDe(e);if("texto"===e.tipo||"lista"===e.tipo&&!r)i+='<input type="text" data-in="'+e.k+'" value="'+esc(a||"")+'"'+("equipo"===e.rol?' list="dlEquipos" autocapitalize="characters"':"")+' aria-labelledby="'+t+'_t">';else if("parrafo"===e.tipo)i+='<textarea data-in="'+e.k+'" rows="3" aria-labelledby="'+t+'_t">'+esc(a||"")+"</textarea>";else if("fecha"===e.tipo)i+='<input type="date" data-in="'+e.k+'" value="'+esc(a||"")+'" aria-labelledby="'+t+'_t">';else if("hora"===e.tipo)i+='<input type="time" data-in="'+e.k+'" value="'+esc(a||"")+'" aria-labelledby="'+t+'_t">';else if("fechahora"===e.tipo)i+='<input type="datetime-local" data-in="'+e.k+'" value="'+esc(a||"")+'" aria-labelledby="'+t+'_t">';else if("persona"===e.tipo)i+='<div class="field u-m0"><input type="text" data-persona="'+e.k+'" value="'+esc(a&&a.nombre?a.nombre:"")+'" placeholder="Escribe el nombre o la cédula" aria-labelledby="'+t+'_t"></div><input type="text" data-cedula="'+e.k+'" inputmode="numeric" value="'+esc(a&&a.cedula?a.cedula:"")+'" placeholder="Cédula" aria-label="Cédula">';else if("lista"===e.tipo)i+='<select data-in="'+e.k+'" aria-labelledby="'+t+'_t"><option value="">Elegir</option>'+r.map(e=>"<option"+(e===a?" selected":"")+">"+esc(e)+"</option>").join("")+"</select>";else if("opcion"===e.tipo||"casillas"===e.tipo){const o="casillas"===e.tipo,s=o?a||[]:[a],n=e.otra?o?(a||[]).find(e=>-1===r.indexOf(e)):a&&-1===r.indexOf(a)?a:"":"";i+='<div class="ops" role="'+(o?"group":"radiogroup")+'" aria-labelledby="'+t+'_t">'+r.map(a=>'<label class="'+(-1!==(e.malas||[]).indexOf(a)?"mala":"")+'"><input type="'+(o?"checkbox":"radio")+'" name="'+e.k+'" value="'+esc(a)+'"'+(-1!==s.indexOf(a)?" checked":"")+">"+esc(a)+"</label>").join("")+(e.otra?'<label><input type="'+(o?"checkbox":"radio")+'" name="'+e.k+'" value="__otra"'+(n?" checked":"")+'>Otra: <input type="text" class="otra-t" data-otra="'+e.k+'" value="'+esc(n||"")+'" aria-label="Otra respuesta"></label>':"")+"</div>"}else if("escala"===e.tipo){i+='<div class="esc ops" role="radiogroup" aria-labelledby="'+t+'_t">'+(e.etiquetaDesde?'<span class="et">'+esc(e.etiquetaDesde)+"</span>":"");for(let o=e.desde;o<=e.hasta;o++)i+='<label style="flex:0 0 auto;"><input type="radio" name="'+e.k+'" value="'+o+'"'+(String(a)===String(o)?" checked":"")+">"+o+"</label>";i+=(e.etiquetaHasta?'<span class="et">'+esc(e.etiquetaHasta)+"</span>":"")+"</div>"}else if("cuadricula"===e.tipo||"cuadricula-casillas"===e.tipo){const o="cuadricula-casillas"===e.tipo,t=a||{};i+='<div class="cuad">'+e.filas.map((a,i)=>'<div class="fila"><div class="fn">'+esc(a)+'</div><div class="ops" role="'+(o?"group":"radiogroup")+'" aria-label="'+esc(a)+'">'+e.columnas.map(r=>'<label class="'+(-1!==(e.malasCol||[]).indexOf(r)?"mala":"")+'"><input type="'+(o?"checkbox":"radio")+'" name="'+e.k+"_"+i+'" data-fila="'+i+'" value="'+esc(r)+'"'+(-1!==[].concat(t[a]||[]).indexOf(r)?" checked":"")+">"+esc(r)+"</label>").join("")+"</div></div>").join("")+"</div>"}else"foto"===e.tipo&&(i+='<div data-fotos="'+e.k+'" class="u-mt8"></div>');if(esMala(e,a)){const a=hall[e.k]||{};i+='<div class="hallazgo"><label for="h_'+e.k+'">¿Qué encontraste? (para corregirlo)</label><textarea id="h_'+e.k+'" data-hall="'+e.k+'" rows="2">'+esc(a.obs||"")+'</textarea><div data-hfotos="'+e.k+'"></div></div>'}return i+'<div class="qe">Esta pregunta es obligatoria.</div></div>'}const EQUIPO_DE={montacargas:["montacargas"],"plataforma-tijera":["plataforma"],camioneta:["vehiculo"],escalera:["escalera"],"equipo-alturas":["arnes"],camilla:["camilla"],"herramientas-menores":["herramientas_menores"],"equipo-soldar":["soldadura"],"equipo-oxicorte":["oxicorte"],pulidora:["pulidora","herramienta_electrica"],taladro:["taladro","herramienta_electrica"],motortool:["motortool","herramienta_electrica"],roladora:["roladora"],"diferencial-cadena":["diferencial"]};function equiposDe(e){const a=e&&(e.equipos||EQUIPO_DE[e.id])||null;if(!a)return equipos;const o=equipos.filter(e=>-1!==a.indexOf(e.resumen.categoria)),t=String(e.id).split("-")[0];return o.filter(e=>"herramienta_electrica"!==e.resumen.categoria||UI.norm(e.resumen.nombre||"").includes(t))}function pintarPagina(){const e=actual,a=e.paginas[pagina],o="fin"===siguiente(),t=e.paginas.length;$("fCuerpo").innerHTML=(0===pagina&&e.descripcion?'<div class="card"><div class="pf-desc">'+esc(e.descripcion)+"</div></div>":"")+'<div class="pasos">Página <b>'+pila.length+"</b>"+(t>1?" · "+t+" en el formulario":"")+'</div><div class="barra-av"><i style="width:'+Math.round(100*pila.length/Math.max(t,1))+'%"></i></div>'+(a.titulo?'<div class="pg-tit">'+esc(a.titulo)+"</div>":"")+(a.descripcion?'<div class="pg-desc">'+esc(a.descripcion)+"</div>":"")+a.items.map(qHTML).join("")+(o?'<div class="card"><h2 style="font-size:var(--fs-titulo);">Firma de quien inspecciona (opcional)</h2>'+UI.padHTML("pfFirma")+"</div>":"")+'<datalist id="dlEquipos">'+equiposDe(e).map(e=>'<option value="'+esc(e.resumen.codigo||"")+'">'+esc(e.resumen.nombre||"")+"</option>").join("")+'</datalist><div class="nav-pf">'+(pila.length>1?'<button type="button" class="btn ghost" id="pfAtras">Atrás</button>':"")+'<button type="button" class="btn amber" id="pfSig">'+(o?"Enviar":"Siguiente")+'</button></div><div class="status-msg" id="pfMsg"></div>',enlazar(a),o?(UI.activarPad("pfFirma",resp.__firma||""),firmaPad=!0):firmaPad=!1,$("pfAtras")&&$("pfAtras").addEventListener("click",()=>{leer(a),pila.pop(),pagina=pila[pila.length-1],pintarPagina(),window.scrollTo(0,0)}),$("pfSig").addEventListener("click",()=>{if(leer(a),!validar(a))return;const e=siguiente();"fin"!==e?(pila.push(e),pagina=e,pintarPagina(),window.scrollTo(0,0)):enviar()})}function enlazar(e){const a=$("fCuerpo");a.querySelectorAll("[data-persona]").forEach(e=>UI.autocompletar(e,o=>{e.value=o.nombre;const t=a.querySelector('[data-cedula="'+e.dataset.persona+'"]');t&&o.cedula&&(t.value=o.cedula)})),e.items.filter(e=>"foto"===e.tipo).forEach(e=>{const o=a.querySelector('[data-fotos="'+e.k+'"]');o&&(e._f=UI.fotos(o,{inicial:resp[e.k]||[],max:4}))}),e.items.forEach(e=>{const o=a.querySelector('[data-hfotos="'+e.k+'"]');e._h=o?UI.fotos(o,{inicial:(hall[e.k]||{}).fotos||[],max:3}):null}),a.querySelectorAll(".q input[type=radio], .q input[type=checkbox], .q select").forEach(a=>a.addEventListener("change",()=>{const o=a.closest(".q"),t=e.items.find(e=>e.k===o.dataset.k);leer(e);if(!!o.querySelector(".hallazgo")!==esMala(t,valor(t))){const a=document.createElement("div");a.innerHTML=qHTML(t),o.replaceWith(a.firstChild),enlazar(e)}$("pfSig")&&($("pfSig").textContent="fin"===siguiente()?"Enviar":"Siguiente")}))}function leer(e){const a=$("fCuerpo");e.items.forEach(e=>{const o=a.querySelector('.q[data-k="'+e.k+'"]');if(!o)return;if("persona"===e.tipo)resp[e.k]={nombre:(o.querySelector("[data-persona]").value||"").trim(),cedula:(o.querySelector("[data-cedula]").value||"").trim()};else if("opcion"===e.tipo||"escala"===e.tipo){const a=o.querySelector('input[name="'+e.k+'"]:checked');resp[e.k]=a?"__otra"===a.value?(o.querySelector("[data-otra]").value||"").trim():a.value:""}else if("casillas"===e.tipo)resp[e.k]=[...o.querySelectorAll('input[name="'+e.k+'"]:checked')].map(e=>"__otra"===e.value?(o.querySelector("[data-otra]").value||"").trim():e.value).filter(Boolean);else if("cuadricula"===e.tipo||"cuadricula-casillas"===e.tipo){const a={};e.filas.forEach((t,i)=>{const r=[...o.querySelectorAll('input[data-fila="'+i+'"]:checked')].map(e=>e.value);r.length&&(a[t]="cuadricula"===e.tipo?r[0]:r)}),resp[e.k]=a}else if("foto"===e.tipo)resp[e.k]=e._f?e._f.get():[];else{const a=o.querySelector("[data-in]");a&&(resp[e.k]=a.value.trim?a.value.trim():a.value)}const t=o.querySelector("[data-hall]");t?hall[e.k]={obs:t.value.trim(),fotos:e._h?e._h.get():[]}:delete hall[e.k]}),firmaPad&&(resp.__firma=UI.firma("pfFirma")||"")}const vacio=(e,a)=>null==a||""===a||Array.isArray(a)&&!a.length||"persona"===e.tipo&&!(a&&a.nombre)||("cuadricula"===e.tipo||"cuadricula-casillas"===e.tipo)&&Object.keys(a||{}).length<e.filas.length;function validar(e){let a=null;return e.items.forEach(e=>{const o=$("fCuerpo").querySelector('.q[data-k="'+e.k+'"]');if(!o)return;const t=e.obligatoria&&vacio(e,valor(e));o.classList.toggle("error",t),t&&!a&&(a=o)}),!a||(a.scrollIntoView({behavior:"smooth",block:"center"}),$("pfMsg").textContent="Faltan respuestas obligatorias.",!1)}function siguiente(){const e=actual,a=e.paginas[pagina];let o;return a.items.forEach(e=>{if(!e.saltos)return;const a=valor(e),t=(opcionesDe(e)||[]).indexOf(a);-1!==t&&null!=e.saltos[t]&&(o=e.saltos[t])}),void 0===o&&null!=a.despues&&(o=a.despues),null==o&&(o=pagina+1),"fin"===o||o>=e.paginas.length?"fin":o}function texto(e,a){return null==a||""===a?"":"persona"===e.tipo?[a.nombre,a.cedula].filter(Boolean).join(" - "):"fecha"===e.tipo?UI.corta(a):Array.isArray(a)?"foto"===e.tipo?a.length+" foto(s)":a.join(", "):"object"==typeof a?Object.keys(a).map(e=>e+": "+[].concat(a[e]).join(", ")).join("\n"):String(a)}async function enviar(){const e=actual,a=$("pfMsg"),o=$("pfSig"),t=[];pila.forEach(a=>e.paginas[a].items.forEach(e=>{"titulo"!==e.tipo&&t.push(e)}));const rolV=e=>{const a=t.find(a=>a.rol===e);return a?texto(a,valor(a)):""},i=t.find(e=>"responsable"===e.rol&&"persona"===e.tipo),r=i&&valor(i)||{},s=t.map(e=>({k:e.k,p:e.titulo,t:e.tipo,v:texto(e,valor(e)),mala:esMala(e,valor(e))||void 0})),n=t.filter(e=>esMala(e,valor(e))).map(e=>({k:e.k,p:e.titulo,v:texto(e,valor(e)),obs:(hall[e.k]||{}).obs||"",fotos:(hall[e.k]||{}).fotos||[]})),l={};t.filter(e=>"foto"===e.tipo).forEach(e=>{l[e.k]=valor(e)||[]});const d=rolV("equipo"),p=equipos.find(e=>d&&UI.norm(e.resumen.codigo)===UI.norm(d)),u=(()=>{const e=t.find(e=>"fecha"===e.rol);return e&&valor(e)?valor(e):UI.hoy()})(),f={formulario:e.id,nombreFormulario:e.nombre,titulo:e.titulo,codigo:codigoDe(e),fecha:u,responsable:r.nombre||rolV("responsable"),cedula:r.cedula||"",cargo:rolV("cargo"),codigoEquipo:d,equipoId:p?p.id:"",centro:rolV("centro"),respuestas:s,malos:n,fotos:l,firma:resp.__firma||"",resultado:n.length?"CON NOVEDAD":"SIN NOVEDAD",detalle:s.filter(e=>"foto"!==e.t).map(e=>e.p+": "+String(e.v).replace(/\n/g,"; ")).join("\n"),paginas:pila.slice()};f.malos=n.length,f.hallazgos=n,o.disabled=!0,a.textContent="Guardando…";const m=SGSST.nuevoId("PRE"),v=e.salud?"preopsalud":"preop",g=await SGSST.enviar({action:"guardar",tipo:v,id:m,doc:f},{fecha:u,titulo:e.nombre,resumen:{formulario:e.id,nombreFormulario:e.nombre,fecha:u,responsable:f.responsable,codigoEquipo:d,centro:f.centro,malos:n.length,resultado:f.resultado}});o.disabled=!1,g.ok?terminado(Object.assign({id:m},f),!!g.enCola):a.textContent=Errores.texto("guardó",g)}function terminado(e,a){history.replaceState(null,"",location.pathname+location.search),$("fCuerpo").innerHTML='<div class="card"><h2 style="font-size:var(--fs-display);">'+(a?"⏳ Guardado en el equipo":"✓ Enviado")+'</h2><p class="ayuda">'+(a?"Se envía solo cuando vuelva la señal.":"Quedó en el SG-SST de la empresa.")+"</p>"+(e.malos?'<div class="aviso">'+e.malos+" punto(s) en mal estado: "+esc(e.hallazgos.map(e=>e.p).join("; "))+". Informa a tu jefe antes de usar el equipo.</div>":'<div class="aviso info">Sin novedades.</div>')+(e.malos?'<button type="button" class="btn amber" id="tAcc">Crear una acción en el plan de acción</button>':"")+'<button type="button" class="btn ghost" id="tPdf">🖨️ PDF de este preoperacional</button><button type="button" class="btn ghost" id="tOtro">Llenar otro '+esc(actual.nombre.toLowerCase())+'</button><button type="button" class="btn ghost" data-volver>Volver a los preoperacionales</button></div>',$("tPdf").addEventListener("click",()=>pdf(e)),$("tOtro").addEventListener("click",()=>abrirForm(actual.id)),$("tAcc")&&$("tAcc").addEventListener("click",()=>UI.nuevaAccion({origen:"Preoperacional",origenRef:e.id,hallazgo:e.nombreFormulario+(e.codigoEquipo?" "+e.codigoEquipo:"")+": "+e.hallazgos.map(e=>e.p+" → "+e.v+(e.obs?" ("+e.obs+")":"")).join("; "),fotos:[].concat(...e.hallazgos.map(e=>e.fotos||[])).slice(0,4),centro:e.centro}))}async function verRegistro(e){const a=await SGSST.doc(e);if(!a)return void UI.toast("No se pudo abrir (¿sin señal o sin permiso?).","mal");a.id=e;const o=formDe(a.formulario)||{nombre:a.nombreFormulario||a.formulario,grupo:""};$("vGrupo").textContent=o.grupo||"Preoperacional",$("vTitulo").textContent=a.titulo||o.nombre,$("vSub").textContent=[UI.corta(a.fecha),a.responsable,a.codigoEquipo].filter(Boolean).join(" · "),$("vCuerpo").innerHTML='<div class="card">'+(a.respuestas||[]).filter(e=>"foto"!==e.t).map(e=>'<div class="res-v'+(e.mala?" mala":"")+'"><span class="p">'+esc(e.p)+'</span><span class="r">'+esc(e.v||"—")+"</span></div>").join("")+"</div>"+((a.hallazgos||[]).length?'<div class="card"><h2 style="font-size:var(--fs-titulo);">En mal estado</h2>'+a.hallazgos.map(e=>'<div class="u-mb8"><b>'+esc(e.p)+":</b> "+esc(e.v)+(e.obs?'<div class="ayuda">'+esc(e.obs)+"</div>":"")+"<div>"+UI.imgs(e.fotos,"height:90px;margin:3px;border-radius:var(--r-s);")+"</div></div>").join("")+"</div>":"")+(UI.src(a.firma)?'<div class="card"><div class="ayuda">Firma</div><img src="'+UI.src(a.firma)+'" alt="Firma" style="max-height:70px;"></div>':"")+'<button type="button" class="btn ghost" id="vPdf">🖨️ PDF</button>',$("vPdf").addEventListener("click",()=>pdf(a)),"undefined"!=typeof Sesion&&Sesion.yo&&Sesion.yo()&&$("vCuerpo").appendChild(UI.botonEliminar(e,"este preoperacional",()=>{show("scrLista"),cargar()})),show("scrVer")}function pdf(e){const a=formDe(e.formulario)||{},o=(e.respuestas||[]).filter(e=>"foto"!==e.t).map(e=>'<tr><td style="width:55%;">'+esc(e.p)+"</td><td"+(e.mala?' style="color:var(--rojo-700);font-weight:700;"':"")+">"+esc(e.v||"—").replace(/\n/g,"<br>")+"</td></tr>").join("");UI.imprimir([UI.cabecera(a.codigo&&codigoDe(a)?a.codigo:"SG-PREOPERACIONAL",(e.titulo||a.titulo||"PREOPERACIONAL").toUpperCase(),[UI.corta(e.fecha),e.codigoEquipo].filter(Boolean).join(" · "))+UI.seccion("RESPUESTAS","<table>"+o+"</table>")+((e.hallazgos||[]).length?UI.seccion("EN MAL ESTADO","<table>"+e.hallazgos.map(e=>'<tr><td style="width:35%;"><b>'+esc(e.p)+"</b></td><td>"+esc(e.v)+(e.obs?"<br>"+esc(e.obs):"")+"</td></tr>").join("")+"</table>"+UI.fotosHoja([].concat(...e.hallazgos.map(e=>e.fotos||[])))):"")+UI.seccion("QUIEN INSPECCIONA",UI.tablaDatos([["Nombre",e.responsable||""],["Cédula",e.cedula||""],["Cargo",e.cargo||""],["Firma",UI.firmaHoja(e.firma),!0]]))])}async function csv(e){const a=formDe(e);if(!a)return void UI.toast("Elige primero el formulario.","mal");const o=rows.filter(e=>e.resumen.formulario===a.id&&!e.pendiente).sort((e,a)=>String(e.resumen.fecha).localeCompare(String(a.resumen.fecha)));if(!o.length)return void UI.toast("Ese formulario no tiene registros.","mal");UI.toast("Preparando "+o.length+" registro(s)…");const t=[];a.paginas.forEach(e=>e.items.forEach(e=>{"titulo"!==e.tipo&&"foto"!==e.tipo&&t.push(e)}));const i=[];for(let e=0;e<o.length;e+=6)i.push(...await Promise.all(o.slice(e,e+6).map(e=>SGSST.doc(e.id))));const c=e=>(e=String(e??""),/[";\n]/.test(e)?'"'+e.replace(/"/g,'""')+'"':e),r=[["Marca temporal","Registro"].concat(t.map(e=>e.titulo)).concat(["En mal estado","Qué se encontró"]).map(c).join(";")];i.forEach((e,a)=>{if(!e)return;const i={};(e.respuestas||[]).forEach(e=>{i[e.k]=e.v}),r.push([o[a].creado||e.fecha,o[a].id].concat(t.map(e=>i[e.k]||"")).concat([(e.hallazgos||[]).map(e=>e.p).join(" | "),(e.hallazgos||[]).map(e=>e.obs).filter(Boolean).join(" | ")]).map(c).join(";"))});const s=document.createElement("a");s.href=URL.createObjectURL(new Blob(["\ufeff"+r.join("\n")],{type:"text/csv;charset=utf-8"})),s.download="preoperacional-"+a.id+"-"+UI.hoy()+".csv",document.body.appendChild(s),s.click(),setTimeout(()=>{URL.revokeObjectURL(s.href),s.remove()},1e3)}window.addEventListener("outbox-enviado",()=>{$("scrLista").classList.contains("active")&&cargar()}),cargar().then(()=>{const e=decodeURIComponent(location.hash.slice(1)||"");/^PRE-/.test(e)?verRegistro(e):e&&OFRECER.some(a=>a.id===e)&&abrirForm(e)});</script>
 </body>
 </html>

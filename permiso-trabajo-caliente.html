@@ -4,143 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SSTA-F-119 · Permiso de Trabajo en Caliente</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SSTA-F-119 · Permiso de Trabajo en Caliente">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="common.css">
-<style>
-:root{
-  --ember:#c8461a;--ember-dark:#9c3413;--steel:#1f2a33;--steel-mid:#3a4753;
-  --paper:#f6f3ec;--paper-panel:#ffffff;--line:#d8d2c4;--ok:#2f6b45;--warn:#b8860b;
-  --ink:#20242a;--muted:#6b6459;font-family:var(--font-family, 'Segoe UI', system-ui, sans-serif);
-}
-
-body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035) 0 2px, transparent 2px 14px),var(--paper);color:var(--ink);padding:24px 16px 80px;}
-
-/* Modo "agregar personal": solo se ve la sección de ejecutantes y un pie propio con Guardar. */
-
-@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr;}}
-
-@media(max-width:600px){
-  body{padding:20px 14px 100px;}
-  .hdr{padding:20px 18px;flex-direction:column;align-items:flex-start;gap:10px;}
-  .hdr .meta{text-align:left;}
-  .hdr h1{font-size:19px;line-height:1.35;}
-  .section{margin-top:20px;}
-  .section-body{padding:20px 16px;}
-  .section-title{padding:12px 16px;font-size:12.5px;}
-  .check-item{flex-direction:column;align-items:stretch;gap:10px;padding:14px 4px;}
-  .toggle{align-self:flex-start;}
-  .close-q{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 0;}
-  .grid2, .grid3{gap:16px;}
-  .field{margin-bottom:2px;}
-  .footer-actions{padding:10px 14px;}
-  .footer-actions .status{font-size:10px;}
-
-  /* Tabla de ejecutantes: de tabla ancha a tarjetas apiladas */
-  .exec-table thead{display:none;}
-  .exec-table, .exec-table tbody, .exec-table tr, .exec-table td{display:block;width:100%;}
-  .exec-table{border:none;}
-  .exec-table tr{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;background:#fcfbf8;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-  .exec-table td{border:none;padding:9px 0;}
-  .exec-table td[data-label]::before{
-    content: attr(data-label);
-    display:block;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    color:var(--muted);
-    letter-spacing:.04em;
-    margin-bottom:6px;
-  }
-  .exec-table td.idx{display:none;}
-  .exec-table td.helper{display:flex;align-items:center;gap:10px;}
-  .exec-table td.helper::before{margin-bottom:0;}
-
-  /* Evita que iOS Safari haga zoom automático al enfocar un campo (ocurre cuando
-     el font-size es menor a 16px) y se quede la página "zoomeada" cortando el contenido */
-  input,select,textarea{font-size:16px !important;}
-}
-
-/* La tabla de ejecutantes también debe apilarse en tarjetas al girar el celular
-   a horizontal — de lo contrario, el ancho de pantalla supera los 600px y la
-   tabla vuelve a columnas angostas justo cuando se buscaba más espacio para
-   firmar. Se repiten aquí solo las reglas de la tabla (no todo el bloque móvil,
-   para no apilar innecesariamente el resto de secciones que sí caben side-by-side
-   en horizontal). */
-@media (orientation:landscape) and (max-width:960px){
-  .exec-table thead{display:none;}
-  .exec-table, .exec-table tbody, .exec-table tr, .exec-table td{display:block;width:100%;}
-  .exec-table{border:none;}
-  .exec-table tr{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;background:#fcfbf8;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-  .exec-table td{border:none;padding:9px 0;}
-  .exec-table td[data-label]::before{
-    content: attr(data-label);
-    display:block;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    color:var(--muted);
-    letter-spacing:.04em;
-    margin-bottom:6px;
-  }
-  .exec-table td.idx{display:none;}
-  canvas.mini-pad{height:170px !important;}
-}
-.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;}
-
-.field input[type=date],.field input[type=time]{overflow:hidden;-webkit-appearance:none;appearance:none;min-height:40px;line-height:1.3;}
-.field input[type=date]::-webkit-calendar-picker-indicator,.field input[type=time]::-webkit-calendar-picker-indicator{border-radius:4px;padding:2px;cursor:pointer;}
-.field input[type=date]::-webkit-datetime-edit,.field input[type=time]::-webkit-datetime-edit{border-radius:6px;}
-.field textarea{min-height:110px;resize:vertical;line-height:1.5;}
-
-.radio-row label{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;padding:4px 0;}
-
-.toggle button{border:1.5px solid var(--line);background:transparent;padding:6px 12px;font-size:11.5px;font-weight:600;border-radius:var(--radius-sm, 7px);cursor:pointer;color:#aab3ba;min-width:44px;transition:.14s;}
-.toggle button.active-c{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700;box-shadow:0 2px 6px rgba(29,122,76,.3);}
-.toggle button.active-na{background:var(--warn);border-color:var(--warn);color:#fff;font-weight:700;}
-
-.sig-actions{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
-.sig-actions button{background:none;border:none;color:var(--ember-dark);font-size:11.5px;font-weight:700;cursor:pointer;text-decoration:underline;}
-
-.sig-status{font-size:11px;color:var(--muted);}
-
-.footer-actions{margin-top:24px;max-width:980px;margin-left:auto;margin-right:auto;background:var(--steel);border-radius:var(--radius-lg, 14px);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shadow-card);}
-
-.btn-secondary{background:transparent;color:#c7cdd2;border:1px solid #4a5762;padding:9px 16px;border-radius:var(--radius-sm, 7px);font-size:12px;font-weight:600;cursor:pointer;}
-.btn-secondary:hover{border-color:#c7cdd2;color:#fff;}
-/* LANDING */
-
-.landing-choices{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-@media(max-width:560px){.landing-choices{grid-template-columns:1fr;}}
-.choice-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 18px;cursor:pointer;transition:.15s;}
-.choice-card:hover{border-color:var(--ember);box-shadow:0 4px 14px rgba(200,70,26,.15);}
-.choice-card .icon{font-size:30px;margin-bottom:10px;}
-.choice-card h3{margin:0 0 6px;font-size:14.5px;color:var(--steel);}
-.choice-card p{margin:0;font-size:12.5px;color:var(--muted);}
-.file-input-wrap{margin-top:10px;}
-.file-input-wrap input{font-size:12px;}
-
-.validation-banner{display:none;background:#fdecea;border:1px solid #e08a80;color:#7a1f14;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:12px;line-height:1.5;}
-.validation-banner.show{display:block;}
-.validation-banner strong{display:block;margin-bottom:4px;font-size:12.5px;}
-.validation-banner ul{margin:0;padding-left:18px;}
-.draft-banner{display:none;background:#eaf3ff;border:1px solid #a9c9ef;color:#1a4a7a;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:12px;line-height:1.5;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.1);}
-.draft-banner.show{display:flex;}
-
-@media print{
-  .footer-actions,.add-row-btn,.sig-actions,#landing,.validation-banner,.draft-banner{display:none !important;}
-  body{background:#fff;padding:0;}
-  .wrap{max-width:100%;}
-  .hdr{background:#fff !important;color:#1a1a1a !important;border:2px solid var(--steel);box-shadow:none;}
-  .hdr::before{display:none;}
-  .hdr .brand{color:var(--ember);}
-  .hdr .meta{color:#444;}
-  .hdr-logo{background:var(--ember) !important;color:#fff !important;}
-  .section{box-shadow:none;border:1px solid #999;break-inside:avoid;}
-  .section-title{background:#eee !important;color:#1a1a1a !important;}
-  .toggle button.on{background:var(--ember) !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  canvas.pad,canvas.mini-pad{border:1px solid #999 !important;}
-  @page{margin:14mm 10mm;}
-}
-</style>
+<style>:root{--ember:#c8461a;--ember-dark:#9c3413;--steel:#1f2a33;--steel-mid:#3a4753;--paper:#f6f3ec;--paper-panel:#ffffff;--line:#d8d2c4;--ok:#2f6b45;--warn:#b8860b;--ink:#20242a;--muted:#6b6459;font-family:var(--font-family, 'Segoe UI', system-ui, sans-serif)}body{margin:0;background:repeating-linear-gradient(135deg,rgba(200,70,26,.035) 0 2px,transparent 2px 14px),var(--paper);color:var(--ink);padding:24px 16px 80px}@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}@media(max-width:600px){body{padding:20px 14px 100px}.hdr{padding:20px 18px;flex-direction:column;align-items:flex-start;gap:10px}.hdr .meta{text-align:left}.hdr h1{font-size:var(--fs-display);line-height:1.35}.section{margin-top:20px}.section-body{padding:20px 16px}.section-title{padding:12px 16px;font-size:var(--fs-menor)}.check-item{flex-direction:column;align-items:stretch;gap:10px;padding:14px 4px}.toggle{align-self:flex-start}.close-q{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 0}.grid2,.grid3{gap:16px}.field{margin-bottom:2px}.footer-actions{padding:10px 14px}.footer-actions .status{font-size:10px}.exec-table thead{display:none}.exec-table,.exec-table tbody,.exec-table td,.exec-table tr{display:block;width:100%}.exec-table{border:none}.exec-table tr{border:1px solid var(--line);border-radius:var(--r-m);padding:16px;margin-bottom:16px;background:var(--n-0);box-shadow:0 1px 3px rgba(0,0,0,.04)}.exec-table td{border:none;padding:9px 0}.exec-table td[data-label]::before{content:attr(data-label);display:block;font-size:var(--fs-etiqueta);font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}.exec-table td.idx{display:none}.exec-table td.helper{display:flex;align-items:center;gap:10px}.exec-table td.helper::before{margin-bottom:0}input,select,textarea{font-size:var(--fs-campo)!important}}@media (orientation:landscape) and (max-width:960px){.exec-table thead{display:none}.exec-table,.exec-table tbody,.exec-table td,.exec-table tr{display:block;width:100%}.exec-table{border:none}.exec-table tr{border:1px solid var(--line);border-radius:var(--r-m);padding:16px;margin-bottom:16px;background:var(--n-0);box-shadow:0 1px 3px rgba(0,0,0,.04)}.exec-table td{border:none;padding:9px 0}.exec-table td[data-label]::before{content:attr(data-label);display:block;font-size:var(--fs-etiqueta);font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}.exec-table td.idx{display:none}canvas.mini-pad{height:170px!important}}.field label{display:block;font-size:var(--fs-menor);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}.field input[type=date],.field input[type=time]{overflow:hidden;-webkit-appearance:none;appearance:none;min-height:40px;line-height:1.3}.field input[type=date]::-webkit-calendar-picker-indicator,.field input[type=time]::-webkit-calendar-picker-indicator{border-radius:var(--r-xs);padding:2px;cursor:pointer}.field input[type=date]::-webkit-datetime-edit,.field input[type=time]::-webkit-datetime-edit{border-radius:var(--r-xs)}.field textarea{min-height:110px;resize:vertical;line-height:1.5}.radio-row label{display:flex;align-items:center;gap:8px;font-size:var(--fs-titulo);font-weight:500;padding:4px 0}.toggle button{border:1.5px solid var(--line);background:0 0;padding:6px 12px;font-size:var(--fs-menor);font-weight:600;border-radius:var(--radius-sm,7px);cursor:pointer;color:var(--n-400);min-width:44px;transition:.14s}.toggle button.active-c{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700;box-shadow:0 2px 6px rgba(29,122,76,.3)}.toggle button.active-na{background:var(--warn);border-color:var(--warn);color:#fff;font-weight:700}.sig-actions{display:flex;justify-content:space-between;align-items:center;margin-top:6px}.sig-actions button{background:0 0;border:none;color:var(--ember-dark);font-size:var(--fs-menor);font-weight:700;cursor:pointer;text-decoration:underline}.sig-status{font-size:var(--fs-etiqueta);color:var(--muted)}.footer-actions{margin-top:24px;max-width:980px;margin-left:auto;margin-right:auto;background:var(--steel);border-radius:var(--radius-lg,14px);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shadow-card)}.btn-secondary{background:0 0;color:var(--n-300);border:1px solid var(--n-600);padding:9px 16px;border-radius:var(--radius-sm,7px);font-size:var(--fs-menor);font-weight:600;cursor:pointer}.btn-secondary:hover{border-color:var(--n-300);color:#fff}.landing-choices{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:560px){.landing-choices{grid-template-columns:1fr}}.choice-card{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:24px 18px;cursor:pointer;transition:.15s}.choice-card:hover{border-color:var(--ember);box-shadow:0 4px 14px rgba(200,70,26,.15)}.choice-card .icon{font-size:var(--fs-h1);margin-bottom:10px}.choice-card h3{margin:0 0 6px;font-size:var(--fs-titulo);color:var(--steel)}.choice-card p{margin:0;font-size:var(--fs-menor);color:var(--muted)}.file-input-wrap{margin-top:10px}.file-input-wrap input{font-size:var(--fs-menor)}.validation-banner{display:none;background:var(--rojo-50);border:1px solid var(--rojo-300);color:var(--rojo-900);padding:10px 14px;border-radius:var(--r-s);margin-bottom:14px;font-size:var(--fs-menor);line-height:1.5}.validation-banner.show{display:block}.validation-banner strong{display:block;margin-bottom:4px;font-size:var(--fs-menor)}.validation-banner ul{margin:0;padding-left:18px}.draft-banner{display:none;background:var(--azul-50);border:1px solid var(--azul-200);color:var(--azul-700);padding:10px 14px;border-radius:var(--r-s);margin-bottom:14px;font-size:var(--fs-menor);line-height:1.5;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.1)}.draft-banner.show{display:flex}@media print{#landing,.add-row-btn,.draft-banner,.footer-actions,.sig-actions,.validation-banner{display:none!important}body{background:#fff;padding:0}.wrap{max-width:100%}.hdr{background:#fff!important;color:var(--ink)!important;border:2px solid var(--steel);box-shadow:none}.hdr::before{display:none}.hdr .brand{color:var(--ember)}.hdr .meta{color:var(--n-650)}.hdr-logo{background:var(--ember)!important;color:#fff!important}.section{box-shadow:none;border:1px solid var(--n-450);break-inside:avoid}.section-title{background:var(--bg)!important;color:var(--ink)!important}.toggle button.on{background:var(--ember)!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}canvas.mini-pad,canvas.pad{border:1px solid var(--n-450)!important}@page{margin:14mm 10mm}}</style>
 </head>
 <body>
 <div class="wrap">
@@ -189,7 +64,7 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
         </div>
       </div>
     </div>
-    <a href="index.html" style="display:block;margin-top:18px;font-size:12.5px;color:#888;text-decoration:none;">← Volver al portal SSTA</a>
+    <a href="index.html" style="display:block;margin-top:18px;font-size:var(--fs-menor);color:var(--n-450);text-decoration:none;">← Volver al portal SSTA</a>
   </div>
 
   <!-- APP -->
@@ -218,10 +93,10 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
     <div class="section">
       <div class="section-title" id="titleSec1">1. Descripción específica del trabajo a realizar</div>
       <div class="section-body">
-        <div class="field"><textarea id="descripcion" placeholder="Describa el trabajo a realizar..."></textarea></div>
+        <div class="field"><textarea id="descripcion" placeholder="Describe el trabajo a realizar"></textarea></div>
         <div class="field mt-12"><label>Herramientas y/o equipos a utilizar</label><div id="herramientasSel"></div><input type="hidden" id="herramientas"></div>
         <div class="mt-14">
-          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">¿Requiere un permiso adicional?</label>
+          <label style="display:block;font-size:var(--fs-etiqueta);font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">¿Requiere un permiso adicional?</label>
           <div class="radio-row">
             <label><input type="radio" name="permAdicional" value="No" checked> No</label>
             <label><input type="radio" name="permAdicional" value="Si"> Sí</label>
@@ -298,7 +173,7 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
             <div class="field"><label>Fecha real del cierre</label><input type="date" id="cierreFecha"></div>
             <div class="field"><label>Hora de cierre</label><input type="time" id="cierreHora"></div>
             <div class="field"><label>Motivo del cierre</label>
-              <select id="motivoCierre"><option value="">Seleccione…</option><option>Actividad Finalizada</option><option>Actividad Cancelada</option><option>Evento no deseado</option><option>Lluvia / Tormenta</option><option>Condiciones y/o actos inseguros</option></select>
+              <select id="motivoCierre"><option value="">Elige…</option><option>Actividad Finalizada</option><option>Actividad Cancelada</option><option>Evento no deseado</option><option>Lluvia / Tormenta</option><option>Condiciones y/o actos inseguros</option></select>
             </div>
           </div>
           <div class="mt-14">
@@ -327,9 +202,9 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
 
 </div>
 
-<div class="footer-actions" id="footerActions" style="display:none;">
+<div class="footer-actions" style="display:none" id="footerActions">
   <span class="status" id="footerStatus">—</span>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <div class="u-fila">
     <button class="btn-secondary" id="printBtn" type="button">Imprimir / PDF</button>
     <button class="btn-secondary no-print" id="historyBtn" type="button">Ver historial</button>
     <div class="historial-permiso" id="historialPermiso"></div>
@@ -340,7 +215,7 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
 
 <div id="footerAddPeople">
   <span class="status" id="addPeopleStatus">—</span>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <div class="u-fila">
     <button class="btn-secondary" id="backFromAddPeopleBtn" type="button">Volver al inicio</button>
     <button class="btn-main" id="saveAddPeopleBtn" type="button">Guardar personal agregado</button>
   </div>
@@ -348,6 +223,7 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
 
 </div><!-- /wrap -->
 
+<script src="dialogo.js"></script>
 <script src="empresa.js"></script>
 <script src="empresa-motor.js"></script>
 <script src="config.js"></script>
@@ -356,162 +232,6 @@ body{margin:0;background:repeating-linear-gradient(135deg, rgba(200,70,26,0.035)
 <script src="valida.js"></script>
 <script src="qr.js"></script>
 <script src="permiso-core.js"></script>
-<script>
-/* ================= DATA DEFINITIONS ================= */
-const checklistData = [
-  {cat:"Personas ejecutantes de la tarea", items:[
-    "Están capacitados, entrenados y certificados por competencia laboral o por una entidad autorizada.",
-    "Se ha verificado que el personal está con afiliación activa en el sistema de seguridad social integral (ARL-EPS-AFP).",
-    "Tienen exámenes de pre ingreso o periódicos practicados por médico especialista en Seguridad y Salud en el Trabajo, conforme a la Resolución 2346 de 2007."
-  ]},
-  {cat:"Elementos de protección personal", items:[
-    "Casco de seguridad certificado.","Protección auditiva.","Protección visual en buenas condiciones.",
-    "Protección respiratoria con filtros para humos metálicos.","Guantes antideslizantes y resistentes a la abrasión.",
-    "Peto de carnaza y/o vaqueta.","Mangas de carnaza y/o vaqueta.","Botas de seguridad con suela antideslizante.",
-    "Careta para soldar en buenas condiciones.","Careta para pulir en buenas condiciones.","Indumentaria de trabajo acorde a las condiciones de seguridad."
-  ]},
-  {cat:"Equipos", items:[
-    "Cables y conexiones libres de desgastes, roturas, cortes o deterioro.","Clavijas con polo a tierra en buenas condiciones.",
-    "Herramientas con guarda de seguridad.","Pinza porta electrodos y masa en buen estado.",
-    "Antorcha, mezclador, soplete, reguladores libres de grasa o sustancias inflamables.","Mangueras libres de porosidades o fugas; manómetros calibrados.",
-    "Cilindros debidamente rotulados y demarcados.","Cilindros en posición vertical, con carretillas, cadenas y válvulas en buen estado.",
-    "Cilindros libres de golpes, abolladuras o deterioro.","Equipos alejados de llamas abiertas, chispas u otros focos de calor.",
-    "Cilindros sin uso desconectados y almacenados en zona designada."
-  ]},
-  {cat:"Área de trabajo", items:[
-    "Sitio libre de sustancias peligrosas, combustibles o inflamables.","Mamparas instaladas para aislar personas y equipos.",
-    "Área debidamente delimitada y señalizada.","Distancia de seguridad mínima de 3 metros de cables eléctricos.",
-    "Equipos y materiales cubiertos con lonas resistentes al fuego.","Extintores de la clase adecuada ubicados en el sitio.",
-    "Ubicación verificada de sistemas de atención y puntos de alarma.","Zona mojada o cubierta si el suelo es combustible.",
-    "Ventilación suficiente natural o artificial.","Iluminación suficiente."
-  ]},
-  {cat:"Información al personal", items:[
-    "Instrucciones y recomendaciones comunicadas a los ejecutantes.","Ejecutantes conocen equipos, herramientas y tareas.",
-    "Ejecutantes conocen el manejo de sistemas contra incendios.","Personal recordado de peligros y protocolo de emergencia.",
-    "Prohibido fumar / portar cigarrillos, encendedores o fósforos."
-  ]},
-  {cat:"Aspectos especiales", items:[
-    "Verificado el cumplimiento en relación con otros permisos de trabajo.","EPP acordes al tipo de riesgo (ej. dieléctricos si hay riesgo eléctrico)."
-  ]}
-];
-const equiposData = [
-  {cat:"Equipo de soldadura por arco eléctrico", items:[
-    "Clavija del cable alimentador libre de emendaduras.","Cable alimentador maleable, sin porosidades ni desgastes.",
-    "Terminales de pinzas porta electrodos y masa protegidas.","Controles de encendido y amperaje visibles, perilla sin rupturas.",
-    "Pinza porta electrodos recubierta con material aislante.","Ruedas de la base niveladas y en buen estado.","Estado general del equipo de soldadura."
-  ]},
-  {cat:"Equipo de corte por gas combustible (acetileno-propano)", items:[
-    "Buen estado de galleta/pomo de válvulas de cilindros.","Carretilla en buen estado con cadenas para amarrar cilindros.",
-    "Extintor de la carreta en buen estado (vencimiento, cilindro, válvula).","Regulador de oxígeno en buen estado, color verde.",
-    "Regulador de acetileno/propano en buen estado, color rojo.","Manómetros con información veraz y carátula legible.",
-    "Mangueras libres de fisuras o fugas.","Válvulas del mezclador correctamente ajustadas.","Mezclador sin coloración de humo en las uniones.",
-    "Boquillas limpias y sin obstrucciones."
-  ]},
-  {cat:"Herramienta de corte por fricción (pulidora)", items:[
-    "Clavija libre de emendaduras, terminales bien sujetos.","Cableado sin emendaduras ni empalmes.",
-    "Mango de sujeción y guarda de seguridad instalados.","Disco de pulir sin fracturas ni rajaduras.","Compatibilidad del disco con la pulidora verificada."
-  ]}
-];
-
-/* ================= CONFIGURACIÓN DE ESTE TIPO DE PERMISO ================= */
-const cfg = {
-  key: 'caliente',
-  codePrefix: 'PTC',
-  draftSlug: 'caliente',
-  themeColor: '#c8461a',
-  toggleStates: PermisoCore.TOGGLE_2STATE,
-
-  checklistGroups: [
-    { data: checklistData, statePrefix:'chk', stateKey:'checklist', containerId:'checklistContainer',
-      progressId:'checklistProgress', label:'la Lista de verificación', sectionLabel:'sección 3' },
-    { data: equiposData, statePrefix:'eq', stateKey:'equipos', containerId:'equiposContainer',
-      progressId:'equiposProgress', label:'Verificación de equipos', sectionLabel:'sección 4' }
-  ],
-
-  responsables: ["Encargado del área turno 1","Encargado del área turno 2","Supervisor SSTA","Supervisor de obra"],
-  responsablesOpcionales: ["Encargado del área turno 1","Encargado del área turno 2"],
-  responsableDashboardIndex: 2,
-  responsablesSectionLabel: 'sección 6',
-
-  lockSectionIds: ['titleSec1','titleSec2','titleSec3','titleSec4','titleSec5','titleSec6','titleSecExec'],
-  closeSectionTitleId: 'titleSec7',
-
-  requiredOpenFields: [
-    { id:'descripcion', label:'Descripción del trabajo (sección 1)' },
-    { id:'sitio',        label:'Sitio exacto del trabajo (sección 2)' },
-    { id:'responsable',  label:'Responsable del trabajo (sección 2)' }
-  ],
-  cualPermisoLabel: '¿Cuál permiso adicional? (sección 1)',
-  dateRange: { desdeFecha:'desdeFecha', desdeHora:'desdeHora', hastaFecha:'hastaFecha', hastaHora:'hastaHora', sectionLabel:'sección 2' },
-
-  extraOnInitRender(){
-    initSel_herramientas();
-    initSelCualPermiso();
-  },
-  extraSetFieldValues(vals){
-    initSel_herramientas();
-    if (sel_herramientas) {
-      sel_herramientas.set(vals.herramientas || '');
-      document.getElementById('herramientas').value = sel_herramientas.get();
-    }
-    // Fichas de permisos adicionales (ver initSelCualPermiso más abajo)
-    initSelCualPermiso();
-    if (selCualPermiso) {
-      selCualPermiso.set(vals.cualPermiso || '');
-      document.getElementById('cualPermiso').value = selCualPermiso.get();
-    }
-    document.getElementById('mantDia').value=vals.mantDia||'';
-    document.getElementById('mantMes').value=vals.mantMes||'';
-    document.getElementById('mantAnio').value=vals.mantAnio||'';
-    document.getElementById('extDia').value=vals.extDia||'';
-    document.getElementById('extMes').value=vals.extMes||'';
-    document.getElementById('extAnio').value=vals.extAnio||'';
-  },
-  extraCollectOpenData(){
-    return {
-      herramientas: document.getElementById('herramientas').value,
-      mantDia: document.getElementById('mantDia').value,
-      mantMes: document.getElementById('mantMes').value,
-      mantAnio: document.getElementById('mantAnio').value,
-      extDia: document.getElementById('extDia').value,
-      extMes: document.getElementById('extMes').value,
-      extAnio: document.getElementById('extAnio').value
-    };
-  }
-};
-
-PermisoCore.init(cfg);
-
-/* ── Permisos adicionales: fichas en vez de escribir a mano ──
-   El campo #cualPermiso sigue existiendo (oculto) con el texto combinado, así
-   que permiso-core.js lo lee y lo valida igual que antes, sin cambios, y lo ya
-   guardado en la hoja se sigue leyendo tal cual. */
-let selCualPermiso = null;
-function initSelCualPermiso(){
-  const cont = document.getElementById('cualPermisoSel');
-  if(!cont || selCualPermiso) return;
-  const oculto = document.getElementById('cualPermiso');
-  selCualPermiso = SeleccionMultiple.crear(cont, {
-    opciones: ['Trabajo en alturas', 'Espacios confinados', 'Izaje de cargas', 'Trabajo eléctrico', 'Bloqueo y etiquetado (LOTO)'],
-    placeholderLibre: 'Otro permiso (escribe aquí)…',
-    onChange: ()=>{ oculto.value = selCualPermiso.get(); }
-  });
-}
-
-/* ── Herramientas y/o equipos a utilizar: fichas + campo libre ──
-   Se conserva #herramientas oculto con el texto combinado, para que lo que ya está
-   guardado en la hoja se siga leyendo igual y el resto del código no cambie. */
-let sel_herramientas = null;
-function initSel_herramientas(){
-  const cont = document.getElementById('herramientasSel');
-  if(!cont || sel_herramientas) return;
-  const oculto = document.getElementById('herramientas');
-  sel_herramientas = SeleccionMultiple.crear(cont, {
-    opciones: ['Equipo de soldadura', 'Pulidora', 'Oxicorte', 'Plasma', 'Esmeril', 'Extintor', 'Biombo/cortina', 'Manta ignífuga', 'Extensión eléctrica', 'Andamio', 'Escalera', 'Llaves', 'Martillo', 'Flexómetro'],
-    placeholderLibre: 'Otras herramientas o equipos…',
-    onChange: ()=>{ oculto.value = sel_herramientas.get(); }
-  });
-}
-</script>
+<script>const checklistData=[{cat:"Personas ejecutantes de la tarea",items:["Están capacitados, entrenados y certificados por competencia laboral o por una entidad autorizada.","Se ha verificado que el personal está con afiliación activa en el sistema de seguridad social integral (ARL-EPS-AFP).","Tienen exámenes de pre ingreso o periódicos practicados por médico especialista en Seguridad y Salud en el Trabajo, conforme a la Resolución 2346 de 2007."]},{cat:"Elementos de protección personal",items:["Casco de seguridad certificado.","Protección auditiva.","Protección visual en buenas condiciones.","Protección respiratoria con filtros para humos metálicos.","Guantes antideslizantes y resistentes a la abrasión.","Peto de carnaza y/o vaqueta.","Mangas de carnaza y/o vaqueta.","Botas de seguridad con suela antideslizante.","Careta para soldar en buenas condiciones.","Careta para pulir en buenas condiciones.","Indumentaria de trabajo acorde a las condiciones de seguridad."]},{cat:"Equipos",items:["Cables y conexiones libres de desgastes, roturas, cortes o deterioro.","Clavijas con polo a tierra en buenas condiciones.","Herramientas con guarda de seguridad.","Pinza porta electrodos y masa en buen estado.","Antorcha, mezclador, soplete, reguladores libres de grasa o sustancias inflamables.","Mangueras libres de porosidades o fugas; manómetros calibrados.","Cilindros debidamente rotulados y demarcados.","Cilindros en posición vertical, con carretillas, cadenas y válvulas en buen estado.","Cilindros libres de golpes, abolladuras o deterioro.","Equipos alejados de llamas abiertas, chispas u otros focos de calor.","Cilindros sin uso desconectados y almacenados en zona designada."]},{cat:"Área de trabajo",items:["Sitio libre de sustancias peligrosas, combustibles o inflamables.","Mamparas instaladas para aislar personas y equipos.","Área debidamente delimitada y señalizada.","Distancia de seguridad mínima de 3 metros de cables eléctricos.","Equipos y materiales cubiertos con lonas resistentes al fuego.","Extintores de la clase adecuada ubicados en el sitio.","Ubicación verificada de sistemas de atención y puntos de alarma.","Zona mojada o cubierta si el suelo es combustible.","Ventilación suficiente natural o artificial.","Iluminación suficiente."]},{cat:"Información al personal",items:["Instrucciones y recomendaciones comunicadas a los ejecutantes.","Ejecutantes conocen equipos, herramientas y tareas.","Ejecutantes conocen el manejo de sistemas contra incendios.","Personal recordado de peligros y protocolo de emergencia.","Prohibido fumar / portar cigarrillos, encendedores o fósforos."]},{cat:"Aspectos especiales",items:["Verificado el cumplimiento en relación con otros permisos de trabajo.","EPP acordes al tipo de riesgo (ej. dieléctricos si hay riesgo eléctrico)."]}],equiposData=[{cat:"Equipo de soldadura por arco eléctrico",items:["Clavija del cable alimentador libre de emendaduras.","Cable alimentador maleable, sin porosidades ni desgastes.","Terminales de pinzas porta electrodos y masa protegidas.","Controles de encendido y amperaje visibles, perilla sin rupturas.","Pinza porta electrodos recubierta con material aislante.","Ruedas de la base niveladas y en buen estado.","Estado general del equipo de soldadura."]},{cat:"Equipo de corte por gas combustible (acetileno-propano)",items:["Buen estado de galleta/pomo de válvulas de cilindros.","Carretilla en buen estado con cadenas para amarrar cilindros.","Extintor de la carreta en buen estado (vencimiento, cilindro, válvula).","Regulador de oxígeno en buen estado, color verde.","Regulador de acetileno/propano en buen estado, color rojo.","Manómetros con información veraz y carátula legible.","Mangueras libres de fisuras o fugas.","Válvulas del mezclador correctamente ajustadas.","Mezclador sin coloración de humo en las uniones.","Boquillas limpias y sin obstrucciones."]},{cat:"Herramienta de corte por fricción (pulidora)",items:["Clavija libre de emendaduras, terminales bien sujetos.","Cableado sin emendaduras ni empalmes.","Mango de sujeción y guarda de seguridad instalados.","Disco de pulir sin fracturas ni rajaduras.","Compatibilidad del disco con la pulidora verificada."]}],cfg={key:"caliente",codePrefix:"PTC",draftSlug:"caliente",themeColor:"#c8461a",toggleStates:PermisoCore.TOGGLE_2STATE,checklistGroups:[{data:checklistData,statePrefix:"chk",stateKey:"checklist",containerId:"checklistContainer",progressId:"checklistProgress",label:"la Lista de verificación",sectionLabel:"sección 3"},{data:equiposData,statePrefix:"eq",stateKey:"equipos",containerId:"equiposContainer",progressId:"equiposProgress",label:"Verificación de equipos",sectionLabel:"sección 4"}],responsables:["Encargado del área turno 1","Encargado del área turno 2","Supervisor SSTA","Supervisor de obra"],responsablesOpcionales:["Encargado del área turno 1","Encargado del área turno 2"],responsableDashboardIndex:2,responsablesSectionLabel:"sección 6",lockSectionIds:["titleSec1","titleSec2","titleSec3","titleSec4","titleSec5","titleSec6","titleSecExec"],closeSectionTitleId:"titleSec7",requiredOpenFields:[{id:"descripcion",label:"Descripción del trabajo (sección 1)"},{id:"sitio",label:"Sitio exacto del trabajo (sección 2)"},{id:"responsable",label:"Responsable del trabajo (sección 2)"}],cualPermisoLabel:"¿Cuál permiso adicional? (sección 1)",dateRange:{desdeFecha:"desdeFecha",desdeHora:"desdeHora",hastaFecha:"hastaFecha",hastaHora:"hastaHora",sectionLabel:"sección 2"},extraOnInitRender(){initSel_herramientas(),initSelCualPermiso()},extraSetFieldValues(e){initSel_herramientas(),sel_herramientas&&(sel_herramientas.set(e.herramientas||""),document.getElementById("herramientas").value=sel_herramientas.get()),initSelCualPermiso(),selCualPermiso&&(selCualPermiso.set(e.cualPermiso||""),document.getElementById("cualPermiso").value=selCualPermiso.get()),document.getElementById("mantDia").value=e.mantDia||"",document.getElementById("mantMes").value=e.mantMes||"",document.getElementById("mantAnio").value=e.mantAnio||"",document.getElementById("extDia").value=e.extDia||"",document.getElementById("extMes").value=e.extMes||"",document.getElementById("extAnio").value=e.extAnio||""},extraCollectOpenData:()=>({herramientas:document.getElementById("herramientas").value,mantDia:document.getElementById("mantDia").value,mantMes:document.getElementById("mantMes").value,mantAnio:document.getElementById("mantAnio").value,extDia:document.getElementById("extDia").value,extMes:document.getElementById("extMes").value,extAnio:document.getElementById("extAnio").value})};PermisoCore.init(cfg);let selCualPermiso=null;function initSelCualPermiso(){const e=document.getElementById("cualPermisoSel");if(!e||selCualPermiso)return;const a=document.getElementById("cualPermiso");selCualPermiso=SeleccionMultiple.crear(e,{opciones:["Trabajo en alturas","Espacios confinados","Izaje de cargas","Trabajo eléctrico","Bloqueo y etiquetado (LOTO)"],placeholderLibre:"Otro permiso (escribe aquí)…",onChange:()=>{a.value=selCualPermiso.get()}})}let sel_herramientas=null;function initSel_herramientas(){const e=document.getElementById("herramientasSel");if(!e||sel_herramientas)return;const a=document.getElementById("herramientas");sel_herramientas=SeleccionMultiple.crear(e,{opciones:["Equipo de soldadura","Pulidora","Oxicorte","Plasma","Esmeril","Extintor","Biombo/cortina","Manta ignífuga","Extensión eléctrica","Andamio","Escalera","Llaves","Martillo","Flexómetro"],placeholderLibre:"Otras herramientas o equipos…",onChange:()=>{a.value=sel_herramientas.get()}})}</script>
 </body>
 </html>

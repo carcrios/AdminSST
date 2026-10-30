@@ -4,115 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Configurar empresa · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Configurar empresa · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="common.css">
-<style>
-:root{ --ink:#151b24; --line:#dde3e8; --muted:#5c6a76; --ok:#1d7a4c; --mal:#c0392b; --amber:#c9a227; }
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg,#eef1f4);color:var(--ink);font-family:var(--font-family,-apple-system,sans-serif);padding-bottom:60px;}
-.wrap{max-width:760px;margin:0 auto;padding:0 14px;}
-.hdr{display:block;background:var(--ink);padding:1.3rem 1.2rem 1.05rem;margin:0 -14px 14px;border-radius:0 0 16px 16px;}
-.hdr .eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8b97a3;margin-bottom:6px;}
-.hdr h1{font-family:var(--font-display);font-size:19px;color:#fff;margin:0 0 3px;}
-.hdr p{font-size:12px;color:#aab4be;margin:0;line-height:1.45;}
-.hdr a.back{display:inline-block;margin-bottom:10px;font-size:11.5px;color:#c9a227;text-decoration:none;font-weight:600;}
-.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:12px;}
-.card h2{font-family:var(--font-display);font-size:15px;margin:0 0 4px;}
-.card .ayuda{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.45;}
-.paso{display:inline-block;background:var(--ink);color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:2px 9px;margin-right:6px;vertical-align:2px;}
-label{display:block;font-size:12px;font-weight:700;color:#3c4752;margin:10px 0 4px;}
-input[type=text],input[type=email],textarea{width:100%;min-width:0;border:1.5px solid var(--line);border-radius:9px;padding:10px 11px;font:inherit;font-size:15px;background:#fff;color:var(--ink);}
-textarea{min-height:84px;resize:vertical;font-size:13.5px;}
-input:focus,textarea:focus{outline:2px solid #c9a22766;border-color:#c9a227;}
-.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;}
-@media (max-width:520px){.g2{grid-template-columns:minmax(0,1fr);}}
-.logo-fila{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.logo-prev{width:150px;height:84px;border:1.5px dashed var(--line);border-radius:11px;background:#fff center/88% auto no-repeat;flex:0 0 auto;}
-.color{display:flex;align-items:center;gap:10px;}
-.color input[type=color]{width:52px;height:40px;border:1.5px solid var(--line);border-radius:9px;padding:2px;background:#fff;}
-table.fmt{width:100%;border-collapse:collapse;font-size:12.5px;}
-table.fmt th{text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:4px 4px 6px;}
-table.fmt td{padding:4px;vertical-align:top;}
-table.fmt td input{font-size:13px;padding:8px 8px;}
-table.fmt .tit{font-weight:600;font-size:12px;line-height:1.3;padding-top:9px;}
-@media (max-width:620px){
-  table.fmt thead{display:none;}
-  table.fmt tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 8px;border-bottom:1px dashed var(--line);padding:6px 0 10px;}
-  table.fmt td.tit{grid-column:1/-1;}
-  table.fmt td[data-l]::before{content:attr(data-l);display:block;font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:2px;}
-}
-.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;}
-.mods label{display:flex;align-items:center;gap:9px;margin:0;font-weight:600;font-size:13px;border:1.5px solid var(--line);border-radius:10px;padding:10px 11px;cursor:pointer;}
-.mods input{width:20px;height:20px;}
-.btn{display:block;width:100%;text-align:center;background:var(--ink);color:#fff;font-weight:700;font-size:15px;border:none;border-radius:11px;padding:14px;margin-top:10px;cursor:pointer;font-family:inherit;}
-.btn.amber{background:var(--amber);color:#151b24;}
-.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink);}
-.btn.peq{display:inline-block;width:auto;padding:9px 13px;font-size:13px;margin:0;}
-.msg{font-size:12.5px;line-height:1.45;border-radius:10px;padding:10px 12px;margin-top:10px;}
-.msg.ok{background:#eef8f2;border:1px solid #bfe3cd;color:#1d5c3a;}
-.msg.mal{background:#fdf1ef;border:1px solid #f0c8c1;color:#8a2a1c;}
-.msg.aviso{background:#fff8e6;border:1px solid #f1dca4;color:#6b4e00;}
-.vista{display:flex;align-items:center;gap:12px;background:var(--ink);border-radius:14px;padding:14px;color:#fff;}
-.vista .lg{width:84px;height:48px;border-radius:11px;background:#fff center/88% auto no-repeat;flex:0 0 auto;}
-.vista b{display:block;font-family:var(--font-display);font-size:17px;}
-.vista span{font-size:12px;color:#aab4be;}
-pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;border-radius:10px;padding:12px;font-size:11px;max-height:260px;overflow:auto;}
-/* v113: estándares mínimos (Res. 0312) */
-.e0312-res{display:flex;align-items:center;gap:14px;border-radius:16px;padding:14px;margin-top:12px;color:#fff;background:linear-gradient(135deg,#08b3c6,#2f6bff);}
-.e0312-res .n{font-size:44px;font-weight:800;letter-spacing:-.05em;line-height:1;flex:0 0 auto;min-width:64px;text-align:center;}
-.e0312-res b{display:block;font-size:15px;}
-.e0312-res span{display:block;font-size:12.5px;opacity:.92;line-height:1.4;}
-.e0312-ciclo{margin-top:14px;}
-.e0312-ciclo h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between;}
-.e0312-cat{border:1.5px solid var(--line);border-radius:12px;margin-bottom:6px;background:#fff;}
-.e0312-cat summary{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-weight:700;font-size:13.5px;list-style:none;}
-.e0312-cat summary::-webkit-details-marker{display:none;}
-.e0312-cat summary .c{margin-left:auto;font-size:12px;font-weight:800;background:#eef3f9;border-radius:99px;padding:3px 10px;white-space:nowrap;}
-.e0312-cat ol{margin:0;padding:0 12px 10px 34px;font-size:12.5px;line-height:1.45;}
-.e0312-cat li{margin:3px 0;}
-.e0312-cat li code{font-weight:700;color:#2f6bff;margin-right:4px;}
-.mods label .apoya{margin-left:auto;font-size:11px;font-weight:800;color:#0c8a57;background:#ddf6ea;border-radius:99px;padding:2px 7px;white-space:nowrap;}
-</style>
-<style>
-.tipos{display:grid;gap:8px;margin-bottom:10px;}
-.tipos label{display:block;border:1.5px solid #d6dbe3;border-radius:12px;padding:10px 12px;cursor:pointer;font-size:14px;line-height:1.35;}
-.tipos label span{display:block;font-size:12.5px;color:#5b6472;margin-top:2px;}
-.tipos label:has(input:checked){border-color:#151b24;background:#f6f7f9;}
-/* v118: asistente — primero qué se instala, y un aviso fijo que lo recuerda */
-.inst-inicio h2{font-size:20px;margin:6px 0 4px;}
-.inst-ops{display:grid;gap:12px;margin-top:12px;}
-.inst-op{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);border-radius:18px;padding:16px;background:#fff;cursor:pointer;font:inherit;color:var(--ink);}
-.inst-op:hover{border-color:#2f6bff;box-shadow:0 8px 22px rgba(47,107,255,.15);}
-.inst-op .ico{width:52px;height:52px;flex:0 0 52px;border-radius:16px;display:grid;place-items:center;font-size:26px;color:#fff;}
-.inst-op.admin .ico{background:linear-gradient(135deg,#3b2a7a,#6a4cff);} .inst-op.cli .ico{background:linear-gradient(135deg,#08b3c6,#2f6bff);}
-.inst-op > span:last-child{display:block;}
-.inst-op b{display:block;font-size:17px;margin-bottom:3px;}
-.inst-op > span:last-child > span{display:block;font-size:13.5px;color:var(--muted);line-height:1.45;}
-.inst-op em{display:inline-block;margin-top:8px;font-style:normal;font-size:12px;font-weight:800;border-radius:99px;padding:3px 10px;background:#eef3f9;color:#33465f;}
-.inst-avanzado{margin-top:12px;font-size:13px;}
-.inst-avanzado button{background:none;border:0;color:#2f6bff;text-decoration:underline;font:inherit;cursor:pointer;padding:0;}
-.que-instalo{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;margin:0 -14px 14px;padding:12px 16px;color:#fff;box-shadow:0 8px 20px rgba(16,33,58,.18);}
-.que-instalo.proveedor{background:linear-gradient(135deg,#2a1d63,#5b3fd9);} .que-instalo.cliente{background:linear-gradient(135deg,#0789a8,#2f6bff);} .que-instalo.propio{background:linear-gradient(135deg,#0f6b4a,#1d9a5b);}
-.que-instalo .ico{font-size:24px;flex:0 0 auto;}
-.que-instalo small{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.85;font-weight:800;}
-.que-instalo b{display:block;font-size:15.5px;line-height:1.3;}
-.que-instalo span{display:block;font-size:12px;opacity:.9;line-height:1.35;}
-.que-instalo button{margin-left:auto;flex:0 0 auto;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:99px;padding:8px 12px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;min-height:40px;}
-.que-instalo .barra{position:absolute;left:0;bottom:0;height:3px;background:rgba(255,255,255,.85);transition:width .3s;}
-.mod-cat{border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;}
-.mod-cat-cab{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
-.mod-cat-cab b{font-size:15px;} .mod-cat-cab small{display:block;font-size:12px;color:var(--muted);font-weight:500;}
-.mod-cat-cab .n{margin-left:auto;font-size:12px;font-weight:800;background:#eef3f9;border-radius:99px;padding:3px 10px;}
-.mod-cat-cab button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;min-height:36px;}
-.mod-cat.apagada{opacity:.6;}
-.tipos[hidden],.mods label[hidden],.mod-cat[hidden]{display:none;}
-.mod-cat > summary{list-style:none;cursor:pointer;} .mod-cat > summary::-webkit-details-marker{display:none;}
-.mod-cat > summary .mod-cat-cab{margin-bottom:0;} .mod-cat[open] > summary .mod-cat-cab{margin-bottom:10px;}
-.mod-cat > summary .chev{width:18px;height:18px;transition:transform .2s;flex:0 0 auto;} .mod-cat[open] > summary .chev{transform:rotate(180deg);}
-.paquetes{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;}
-.paquetes button{border:1.5px solid #2f6bff;color:#2f6bff;background:#fff;border-radius:99px;padding:8px 14px;font:700 13px inherit;font-family:inherit;cursor:pointer;min-height:40px;}
-.siguientes{background:#f4f1ff;border:1.5px solid #d9d0ff;border-radius:14px;padding:12px 14px;margin-top:12px;font-size:13.5px;line-height:1.5;}
-.siguientes ol{margin:6px 0 0 18px;padding:0;}
-</style>
+<style>:root{--ink:#151b24;--line:#dde3e8;--muted:#5c6a76;--ok:#1d7a4c;--mal:#c0392b;--amber:#c9a227}*{box-sizing:border-box}body{margin:0;background:var(--bg,var(--bg));color:var(--ink);font-family:var(--font-family,-apple-system,sans-serif);padding-bottom:60px}.wrap{max-width:760px;margin:0 auto;padding:0 14px}.hdr{display:block;background:var(--ink);padding:1.3rem 1.2rem 1.05rem;margin:0 -14px 14px;border-radius:0 0 16px 16px}.hdr .eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--n-400);margin-bottom:6px}.hdr h1{font-family:var(--font-display);font-size:var(--fs-display);color:#fff;margin:0 0 3px}.hdr p{font-size:var(--fs-menor);color:var(--n-400);margin:0;line-height:1.45}.hdr a.back{display:inline-block;margin-bottom:10px;font-size:var(--fs-menor);color:var(--ambar-600);text-decoration:none;font-weight:600}.card{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:14px 15px;margin-bottom:12px}.card h2{font-family:var(--font-display);font-size:var(--fs-titulo);margin:0 0 4px}.card .ayuda{font-size:var(--fs-menor);color:var(--muted);margin:0 0 12px;line-height:1.45}.paso{display:inline-block;background:var(--ink);color:#fff;border-radius:var(--r-xl);font-size:var(--fs-etiqueta);font-weight:700;padding:2px 9px;margin-right:6px;vertical-align:2px}label{display:block;font-size:var(--fs-menor);font-weight:700;color:var(--n-700);margin:10px 0 4px}input[type=email],input[type=text],textarea{width:100%;min-width:0;border:1.5px solid var(--line);border-radius:var(--r-s);padding:10px 11px;font:inherit;font-size:var(--fs-titulo);background:#fff;color:var(--ink)}textarea{min-height:84px;resize:vertical;font-size:var(--fs-base)}input:focus,textarea:focus{outline:2px solid #c9a22766;border-color:var(--ambar-600)}.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}@media (max-width:520px){.g2{grid-template-columns:minmax(0,1fr)}}.logo-fila{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.logo-prev{width:150px;height:84px;border:1.5px dashed var(--line);border-radius:var(--r-m);background:#fff center/88% auto no-repeat;flex:0 0 auto}.color{display:flex;align-items:center;gap:10px}.color input[type=color]{width:52px;height:40px;border:1.5px solid var(--line);border-radius:var(--r-s);padding:2px;background:#fff}table.fmt{width:100%;border-collapse:collapse;font-size:var(--fs-menor)}table.fmt th{text-align:left;font-size:var(--fs-etiqueta);color:var(--muted);font-weight:700;padding:4px 4px 6px}table.fmt td{padding:4px;vertical-align:top}table.fmt td input{font-size:var(--fs-base);padding:8px 8px}table.fmt .tit{font-weight:600;font-size:var(--fs-menor);line-height:1.3;padding-top:9px}@media (max-width:620px){table.fmt thead{display:none}table.fmt tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 8px;border-bottom:1px dashed var(--line);padding:6px 0 10px}table.fmt td.tit{grid-column:1/-1}table.fmt td[data-l]::before{content:attr(data-l);display:block;font-size:var(--fs-etiqueta);color:var(--muted);font-weight:700;margin-bottom:2px}}.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}.mods label{display:flex;align-items:center;gap:9px;margin:0;font-weight:600;font-size:var(--fs-base);border:1.5px solid var(--line);border-radius:var(--r-m);padding:10px 11px;cursor:pointer}.mods input{width:20px;height:20px}.btn{display:block;width:100%;text-align:center;background:var(--ink);color:#fff;font-weight:700;font-size:var(--fs-titulo);border:none;border-radius:var(--r-m);padding:14px;margin-top:10px;cursor:pointer;font-family:inherit}.btn.amber{background:var(--amber);color:var(--ink)}.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}.btn.peq{display:inline-block;width:auto;padding:9px 13px;font-size:var(--fs-base);margin:0}.msg{font-size:var(--fs-menor);line-height:1.45;border-radius:var(--r-m);padding:10px 12px;margin-top:10px}.msg.ok{background:var(--verde-50);border:1px solid var(--verde-100);color:var(--verde-700)}.msg.mal{background:var(--rojo-50);border:1px solid var(--rojo-200);color:var(--rojo-900)}.msg.aviso{background:var(--ambar-50);border:1px solid var(--ambar-200);color:var(--ambar-900)}.vista{display:flex;align-items:center;gap:12px;background:var(--ink);border-radius:var(--r-l);padding:14px;color:#fff}.vista .lg{width:84px;height:48px;border-radius:var(--r-m);background:#fff center/88% auto no-repeat;flex:0 0 auto}.vista b{display:block;font-family:var(--font-display);font-size:var(--fs-display)}.vista span{font-size:var(--fs-menor);color:var(--n-400)}pre{white-space:pre-wrap;word-break:break-all;background:var(--ink);color:var(--line);border-radius:var(--r-m);padding:12px;font-size:var(--fs-etiqueta);max-height:260px;overflow:auto}.e0312-res{display:flex;align-items:center;gap:14px;border-radius:var(--r-l);padding:14px;margin-top:12px;color:#fff;background:linear-gradient(135deg,var(--cian-500),var(--azul))}.e0312-res .n{font-size:var(--fs-hero);font-weight:800;letter-spacing:-.05em;line-height:1;flex:0 0 auto;min-width:64px;text-align:center}.e0312-res b{display:block;font-size:var(--fs-titulo)}.e0312-res span{display:block;font-size:var(--fs-menor);opacity:.92;line-height:1.4}.e0312-ciclo{margin-top:14px}.e0312-ciclo h3{font-size:var(--fs-menor);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between}.e0312-cat{border:1.5px solid var(--line);border-radius:var(--r-m);margin-bottom:6px;background:#fff}.e0312-cat summary{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-weight:700;font-size:var(--fs-base);list-style:none}.e0312-cat summary::-webkit-details-marker{display:none}.e0312-cat summary .c{margin-left:auto;font-size:var(--fs-menor);font-weight:800;background:var(--bg);border-radius:var(--r-pill);padding:3px 10px;white-space:nowrap}.e0312-cat ol{margin:0;padding:0 12px 10px 34px;font-size:var(--fs-menor);line-height:1.45}.e0312-cat li{margin:3px 0}.e0312-cat li code{font-weight:700;color:var(--azul);margin-right:4px}.mods label .apoya{margin-left:auto;font-size:var(--fs-etiqueta);font-weight:800;color:#0c8a57;background:var(--verde-50);border-radius:var(--r-pill);padding:2px 7px;white-space:nowrap}</style>
+<style>.tipos{display:grid;gap:8px;margin-bottom:10px}.tipos label{display:block;border:1.5px solid var(--line);border-radius:var(--r-m);padding:10px 12px;cursor:pointer;font-size:var(--fs-base);line-height:1.35}.tipos label span{display:block;font-size:var(--fs-menor);color:var(--ink-soft);margin-top:2px}.tipos label:has(input:checked){border-color:var(--ink);background:var(--n-50)}.inst-inicio h2{font-size:var(--fs-subtitulo);margin:6px 0 4px}.inst-ops{display:grid;gap:12px;margin-top:12px}.inst-op{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);border-radius:var(--r-l);padding:16px;background:#fff;cursor:pointer;font:inherit;color:var(--ink)}.inst-op:hover{border-color:var(--azul);box-shadow:0 8px 22px rgba(47,107,255,.15)}.inst-op .ico{width:52px;height:52px;flex:0 0 52px;border-radius:var(--r-l);display:grid;place-items:center;font-size:var(--fs-h1);color:#fff}.inst-op.admin .ico{background:linear-gradient(135deg,#3b2a7a,var(--violeta))}.inst-op.cli .ico{background:linear-gradient(135deg,var(--cian-500),var(--azul))}.inst-op>span:last-child{display:block}.inst-op b{display:block;font-size:var(--fs-display);margin-bottom:3px}.inst-op>span:last-child>span{display:block;font-size:var(--fs-base);color:var(--muted);line-height:1.45}.inst-op em{display:inline-block;margin-top:8px;font-style:normal;font-size:var(--fs-menor);font-weight:800;border-radius:var(--r-pill);padding:3px 10px;background:var(--bg);color:var(--azul-800)}.inst-avanzado{margin-top:12px;font-size:var(--fs-base)}.inst-avanzado button{background:0 0;border:0;color:var(--azul);text-decoration:underline;font:inherit;cursor:pointer;padding:0}.que-instalo{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;margin:0 -14px 14px;padding:12px 16px;color:#fff;box-shadow:0 8px 20px rgba(16,33,58,.18)}.que-instalo.proveedor{background:linear-gradient(135deg,#2a1d63,#5b3fd9)}.que-instalo.cliente{background:linear-gradient(135deg,#0789a8,var(--azul))}.que-instalo.propio{background:linear-gradient(135deg,var(--verde-600),var(--verde-400))}.que-instalo .ico{font-size:var(--fs-subtitulo);flex:0 0 auto}.que-instalo small{display:block;font-size:var(--fs-etiqueta);letter-spacing:.1em;text-transform:uppercase;opacity:.85;font-weight:800}.que-instalo b{display:block;font-size:var(--fs-titulo);line-height:1.3}.que-instalo span{display:block;font-size:var(--fs-menor);opacity:.9;line-height:1.35}.que-instalo button{margin-left:auto;flex:0 0 auto;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:var(--r-pill);padding:8px 12px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;min-height:40px}.que-instalo .barra{position:absolute;left:0;bottom:0;height:3px;background:rgba(255,255,255,.85);transition:width .3s}.mod-cat{border:1.5px solid var(--line);border-radius:var(--r-l);padding:12px;margin-bottom:10px}.mod-cat-cab{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}.mod-cat-cab b{font-size:var(--fs-titulo)}.mod-cat-cab small{display:block;font-size:var(--fs-menor);color:var(--muted);font-weight:500}.mod-cat-cab .n{margin-left:auto;font-size:var(--fs-menor);font-weight:800;background:var(--bg);border-radius:var(--r-pill);padding:3px 10px}.mod-cat-cab button{border:1.5px solid var(--line);background:#fff;border-radius:var(--r-pill);padding:6px 12px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;min-height:36px}.mod-cat.apagada{opacity:.6}.mod-cat[hidden],.mods label[hidden],.tipos[hidden]{display:none}.mod-cat>summary{list-style:none;cursor:pointer}.mod-cat>summary::-webkit-details-marker{display:none}.mod-cat>summary .mod-cat-cab{margin-bottom:0}.mod-cat[open]>summary .mod-cat-cab{margin-bottom:10px}.mod-cat>summary .chev{width:18px;height:18px;transition:transform .2s;flex:0 0 auto}.mod-cat[open]>summary .chev{transform:rotate(180deg)}.paquetes{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.paquetes button{border:1.5px solid var(--azul);color:var(--azul);background:#fff;border-radius:var(--r-pill);padding:8px 14px;font:700 13px inherit;font-family:inherit;cursor:pointer;min-height:40px}.siguientes{background:var(--azul-50);border:1.5px solid #d9d0ff;border-radius:var(--r-l);padding:12px 14px;margin-top:12px;font-size:var(--fs-base);line-height:1.5}.siguientes ol{margin:6px 0 0 18px;padding:0}</style>
 </head>
 <body>
 <div class="wrap" data-empresa-no-tocar>
@@ -125,12 +29,12 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
 
   <div class="card inst-inicio" id="instInicio" hidden>
     <h2>¿Qué vas a instalar?</h2>
-    <p class="ayuda" style="margin:0;">Elige una. Arriba quedará siempre a la vista qué estás instalando.</p>
+    <p class="ayuda u-m0">Elige una. Arriba quedará siempre a la vista qué estás instalando.</p>
     <div class="inst-ops">
       <button type="button" class="inst-op admin" data-inst="proveedor"><span class="ico">🛡️</span><span><b>Mi sitio — soy el administrador</b><span>Tu marca, tu servidor y tu consola. Se hace una sola vez, antes del primer cliente.</span><em>Una vez</em></span></button>
       <button type="button" class="inst-op cli" data-inst="cliente"><span class="ico">🏢</span><span><b>Una empresa cliente</b><span>Cada empresa a la que le vendes el portal: sus datos, sus estándares 0312, sus módulos y su servidor. Queda guardada en tu consola.</span><em>Cada cliente nuevo</em></span></button>
     </div>
-    <div class="bien" style="margin-top:12px;background:#eef3ff;border:1px solid #cfdcff;border-radius:12px;padding:10px 12px;font-size:14px;">¿Primera vez? <a href="instalar.html"><b>Instalar paso a paso</b></a> te lleva por todo (servidor, sitio y consola) y prueba tu servidor.</div>
+    <div class="bien" style="margin-top:12px;background:var(--azul-50);border:1px solid var(--azul-100);border-radius:var(--r-m);padding:10px 12px;font-size:var(--fs-base);">¿Primera vez? <a href="instalar.html"><b>Instalar paso a paso</b></a> te lleva por todo (servidor, sitio y consola) y prueba tu servidor.</div>
     <div class="inst-avanzado">¿La empresa tiene su propio sitio, aparte del tuyo? <button type="button" data-inst="propio">Sitio propio de una empresa (avanzado)</button></div>
   </div>
 
@@ -176,8 +80,8 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
       </div>
     </div>
     <label for="cColor">Color de la marca</label>
-    <div class="color"><input type="color" id="cColor" value="#1f3b57"><span class="ayuda" style="margin:0;">Franja superior del inicio y color de la app instalada.</span></div>
-    <div id="bPrivacidad"><h3 style="margin:16px 0 4px;font-size:15px;">Datos personales (Ley 1581 de 2012)</h3>
+    <div class="color"><input type="color" id="cColor" value="#1f3b57"><span class="ayuda u-m0">Franja superior del inicio y color de la app instalada.</span></div>
+    <div id="bPrivacidad"><h3 style="margin:16px 0 4px;font-size:var(--fs-titulo);">Datos personales (Ley 1581 de 2012)</h3>
     <p class="ayuda">Salen en el aviso de privacidad del portal (privacidad.html). La empresa es la responsable del tratamiento.</p>
     <div class="g2">
       <div><label for="cPrivCorreo">Correo para consultas y reclamos de datos personales</label><input type="email" id="cPrivCorreo" placeholder="datospersonales@empresa.com"></div>
@@ -190,7 +94,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
     <p class="ayuda">Según el número de trabajadores y la clase de riesgo, la empresa debe cumplir 3, 7, 21 o 60 estándares. Cuenta a todos los trabajadores (de planta, temporales y en misión) y usa la clase de riesgo más alta de la afiliación a la ARL. El portal usa este dato en la autoevaluación, la carpeta de evidencias, el plan anual y el informe, hasta que SST lo cambie en el perfil de la empresa.</p>
     <div class="g2">
       <div><label for="cTrab">Número de trabajadores</label><input type="text" id="cTrab" inputmode="numeric" placeholder="Ej: 35" maxlength="6"></div>
-      <div><label for="cRiesgo">Clase de riesgo más alta (ARL)</label><select id="cRiesgo" style="width:100%;border:1.5px solid var(--line);border-radius:9px;padding:10px 11px;font:inherit;font-size:15px;background:#fff;"><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></div>
+      <div><label for="cRiesgo">Clase de riesgo más alta (ARL)</label><select id="cRiesgo" style="width:100%;border:1.5px solid var(--line);border-radius:var(--r-s);padding:10px 11px;font:inherit;font-size:var(--fs-titulo);background:#fff;"><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option></select></div>
     </div>
     <label style="display:flex;gap:9px;align-items:flex-start;font-weight:600;margin-top:12px;"><input type="checkbox" id="cAgro" style="width:20px;height:20px;flex:0 0 auto;"> <span>Es una <b>unidad de producción agropecuaria</b> (con 10 o menos trabajadores permanentes, le aplican 3 estándares, art. 7)</span></label>
     <div id="r0312"></div>
@@ -246,10 +150,10 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
     <button type="button" class="btn amber" id="btnEmpresa">⬇️ Descargar empresa.js</button>
     <div id="qrCliente" hidden style="margin:10px 0;text-align:center;"><canvas id="qrCanvas" width="220" height="220"></canvas><div class="ayuda" id="qrTexto"></div></div>
     <button type="button" class="btn ghost" id="btnManifest">⬇️ Descargar manifest.json</button>
-    <details class="mt-12"><summary style="font-size:12.5px;font-weight:700;cursor:pointer;">Ver el archivo empresa.js</summary><pre id="vista"></pre>
+    <details class="mt-12"><summary style="font-size:var(--fs-menor);font-weight:700;cursor:pointer;">Ver el archivo empresa.js</summary><pre id="vista"></pre>
       <button type="button" class="btn ghost peq" id="btnCopiar">Copiar</button></details>
     <div class="siguientes" id="siguientes" hidden></div>
-    <p class="ayuda" style="margin-top:12px;" id="despues">Después: sube los dos archivos al sitio, ábrelo y entra a 🩺 Estado. Todo debe salir en verde. Guía completa: INSTALAR-NUEVA-EMPRESA.md.</p>
+    <p class="ayuda u-mt12" id="despues">Después: sube los dos archivos al sitio, ábrelo y entra a 🩺 Estado. Todo debe salir en verde. Guía completa: INSTALAR-NUEVA-EMPRESA.md.</p>
   </div>
 </div>
 
@@ -263,372 +167,6 @@ pre{white-space:pre-wrap;word-break:break-all;background:#0f1720;color:#d6e2ee;b
 <script src="inspecciones-plantillas.js"></script>
 <script src="ayuda-guias.js"></script>
 <script src="menus-empresa.js"></script>
-<script>
-(function () {
-  const $ = (id) => document.getElementById(id);
-  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const E = EMPRESA;   // la configuración actual de este sitio: se edita sobre ella
-  const MODULOS = (typeof CATALOGO_MODULOS !== 'undefined' && CATALOGO_MODULOS) || [];   // v116: el catálogo está en empresa-motor.js (lo usa también la consola)
-  const esFabrica = !!E.sinConfigurar;   // este sitio todavía tiene los datos de ejemplo de fábrica
-  const ME = typeof MultiEmpresa !== 'undefined' && MultiEmpresa.activo;
-  // En un sitio multiempresa sin empresa elegida, el formulario empieza vacío (empresa nueva).
-  const nuevaEnMulti = ME && E.sinEmpresa;
-  let tipo = ME ? 'cliente' : 'propio';
-  // v115: la consola abre el configurador con «?tipo=» (cliente nuevo o tu marca) o «?editar=<código>» (módulos de un cliente).
-  const QS = new URLSearchParams(location.search), DESDE_CONSOLA = QS.has('editar') || QS.has('nueva') || QS.has('tipo');
-  if (/^(propio|cliente|proveedor)$/.test(QS.get('tipo') || '') && (ME || QS.get('tipo') === 'propio')) tipo = QS.get('tipo');
-  if (E.editandoCliente) tipo = 'cliente';
-  if (DESDE_CONSOLA) { const a = document.querySelector('.hdr .back'); if (a) { a.href = 'admin.html'; a.textContent = '← Volver a la consola'; }
-    // v116: abierto desde la consola, con su mismo aspecto (oscuro), para no confundirlo con el portal de un cliente.
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'consola.css'; document.head.appendChild(l); document.body.classList.add('consola'); }
-  if (E.editandoCliente) document.querySelector('.hdr').insertAdjacentHTML('beforeend', '<div class="aviso info" style="margin-top:10px;">Editando <b>' + esc(E.nombre || E.codigo) + '</b> (código <b>' + esc(E.codigo) + '</b>) con lo que tiene publicado. Cambia lo que necesites y, al final, toca <b>Guardar en tu consola y publicar</b>: queda en tu servidor y sus celulares lo toman solos. No hay que descargar ni subir nada.</div>');
-  let logo = esFabrica || nuevaEnMulti ? '' : E.logo;
-  const RAIZ_SITIO = location.href.split(/[?#]/)[0].replace(/[^/]*$/, '');
-
-  // ── Cargar lo actual
-  if (!esFabrica && !nuevaEnMulti) {
-    $('cNombre').value = E.nombre || ''; $('cCorto').value = E.nombreCorto || ''; $('cNit').value = E.nit || ''; $('cSub').value = E.subtitulo || '';
-    $('cCorreoEpp').value = (E.correos && E.correos.aprobacionEpp) || ''; $('cDominio').value = (E.correos && E.correos.dominio) || '';
-    $('cCentros').value = (E.centrosCosto || []).join('\n');
-    $('cPrivCorreo').value = (E.privacidad && E.privacidad.correo) || ''; $('cPrivPolitica').value = (E.privacidad && E.privacidad.politica) || '';
-    $('cWaNombre').value = (E.contactoEpp && E.contactoEpp.nombre) || ''; $('cWaNumero').value = (E.contactoEpp && E.contactoEpp.whatsapp) || '';
-    if (E.servidor) $('cServidorTxt').value = "  servidor: '" + E.servidor + "',\n  apiToken: '" + (E.apiToken || '') + "',";
-  } else {
-    $('cSub').value = 'Sistema de Gestión SST';
-  }
-  if (E.colorMarca && !nuevaEnMulti) $('cColor').value = E.colorMarca;
-  // v113: perfil de la Res. 0312 guardado en la instalación
-  if (E.perfil0312 && !esFabrica && !nuevaEnMulti) { $('cTrab').value = E.perfil0312.trabajadores || ''; $('cRiesgo').value = E.perfil0312.claseRiesgo || 'I'; $('cAgro').checked = !!E.perfil0312.agropecuaria; }
-  $('cCodigo').value = (ME && E.codigo) || '';
-  $('cSitio').value = RAIZ_SITIO;
-  $('cProducto').value = (ME ? MultiEmpresa.proveedor.producto : E.producto) || '';
-  const marcarTipo = ()=> { document.querySelectorAll('[name="tipo"]').forEach((r)=> { r.checked = r.value === tipo; }); $('bCliente').hidden = tipo !== 'cliente'; $('bProveedor').hidden = tipo !== 'proveedor';
-    // El panel del asesor es de la consola del administrador: no es un módulo de los clientes.
-    const ma = document.querySelector('[data-mod="asesor"]'); if (ma) ma.closest('label').hidden = tipo === 'cliente';
-    aplicarTipo(); };
-  /* v118: qué tarjetas ve cada tipo de instalación, el aviso fijo «Estás instalando…» y los pasos en orden. */
-  const VE = { cTipo: ['cliente', 'proveedor'], cDatos: ['propio', 'cliente', 'proveedor'], c0312: ['propio', 'cliente'], cFormatos: ['propio', 'cliente'], cModulos: ['propio', 'cliente'],
-    cCorreos: ['propio', 'cliente'], cServidor: ['propio', 'cliente', 'proveedor'], cFinal: ['propio', 'cliente', 'proveedor'] };
-  let elegido = true;
-  function aplicarTipo() {
-    if (typeof contarCats === 'function') try { contarCats(); } catch (e) {}
-    const ini = $('instInicio'), av = $('queInstalo');
-    ini.hidden = elegido; av.hidden = !elegido;
-    Object.keys(VE).forEach((id) => { const c = $(id); if (c) c.hidden = !elegido || VE[id].indexOf(tipo) === -1; });
-    $('tTipo').textContent = tipo === 'proveedor' ? 'Tu marca' : 'Código y enlace de la empresa';
-    $('tDatos').textContent = tipo === 'proveedor' ? 'Datos de tu empresa (la que vende el portal)' : 'Datos de la empresa';
-    $('bPrivacidad').hidden = tipo === 'proveedor';
-    $('tServidor').textContent = tipo === 'proveedor' ? 'Tu servidor (el de tu consola)' : 'Servidor de la empresa';
-    $('tFinal').textContent = tipo === 'cliente' && $('bConsola') && !$('bConsola').hidden ? 'Revisar y guardar' : 'Revisar y descargar';
-    let n = 0; document.querySelectorAll('.card').forEach((c) => { const p = c.querySelector('h2 > .paso'); if (p && !c.hidden) p.textContent = ++n; });
-    if (!elegido) return;
-    const nom = $('cNombre').value.trim(), cod = $('cCodigo').value.trim();
-    const T = {
-      proveedor: ['🛡️', 'Estás instalando', 'TU SITIO · administrador general', 'Una sola vez. Los clientes se instalan después, desde tu consola.'],
-      cliente: ['🏢', 'Estás instalando una empresa cliente', (nom || 'Empresa sin nombre') + (cod ? ' · código ' + cod : ''), 'Se guarda en tu consola. No cambia tu sitio ni tu marca.'],
-      propio: ['🏭', 'Estás instalando el sitio propio de', nom || 'una empresa', 'Su propio empresa.js, aparte de tu sitio.']
-    }[tipo];
-    const cambiar = !E.editandoCliente && !(DESDE_CONSOLA && tipo === 'cliente') && ME;
-    av.className = 'que-instalo ' + tipo;
-    av.innerHTML = '<span class="ico" aria-hidden="true">' + T[0] + '</span><span><small>' + esc(T[1]) + '</small><b>' + esc(T[2]) + '</b><span>' + esc(T[3]) + '</span></span>' + (cambiar ? '<button type="button" id="btnCambiarTipo">Cambiar</button>' : '');
-    const bc = $('btnCambiarTipo'); if (bc) bc.addEventListener('click', () => { elegido = false; aplicarTipo(); window.scrollTo(0, 0); });
-    pintarSiguientes();
-  }
-  function pintarSiguientes() {
-    const sg = $('siguientes'), d = $('despues'); if (!sg) return;
-    if (tipo === 'proveedor') {
-      sg.hidden = false; d.hidden = true;
-      sg.innerHTML = '<b>Después de descargar, en este orden:</b><ol><li>Sube <code>empresa.js</code> y <code>manifest.json</code> a tu repositorio.</li><li>Abre <a href="admin.html">tu consola (admin.html)</a> y crea tu usuario con el código de <code>sgsst__codigoAdministrador</code>.</li><li>En tu servidor ejecuta una vez <code>sgsst__instalarVigilancia</code>.</li><li>Desde la consola, «Instalar empresa nueva» para tu primer cliente.</li></ol>';
-    } else if (tipo === 'cliente') {
-      sg.hidden = false; d.hidden = true;
-      sg.innerHTML = '<b>Cómo queda:</b> con «Guardar en tu consola y publicar» la empresa queda registrada y sus celulares la toman al abrir su enlace. Si no ves ese botón, entra primero a <a href="admin.html">tu consola</a> y vuelve a «Instalar empresa nueva».';
-    } else { sg.hidden = true; d.hidden = false; }
-  }
-  // Sitio multiempresa abierto sin venir de la consola: primero se pregunta qué se instala.
-  if (ME && !DESDE_CONSOLA && !E.editandoCliente) elegido = false;
-  document.getElementById('instInicio').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-inst]'); if (!b) return;
-    tipo = b.dataset.inst; elegido = true;
-    if (tipo === 'proveedor') cargarProveedor();
-    marcarTipo(); pintar(); document.dispatchEvent(new Event('change')); window.scrollTo(0, 0);
-  });
-  document.addEventListener('input', (e) => { if (e.target && (e.target.id === 'cNombre' || e.target.id === 'cCodigo')) aplicarTipo(); });
-  $('tipos').addEventListener('change', (e)=> {
-    const r = e.target.closest('[name="tipo"]'); if (!r) return; tipo = r.value; marcarTipo();
-    // Tu marca: se arranca de lo que tiene el sitio (si es multiempresa, la configuración del proveedor).
-    if (tipo === 'proveedor') cargarProveedor();
-    pintar();
-  });
-  function cargarProveedor(){
-    if (ME) { const P = MultiEmpresa.proveedor; $('cNombre').value = P.nombre || ''; $('cCorto').value = P.nombreCorto || ''; $('cNit').value = P.nit || ''; $('cSub').value = P.subtitulo || ''; logo = /^data:/.test(P.logo || '') ? P.logo : ''; if (P.colorMarca) $('cColor').value = P.colorMarca; $('cDefecto').value = P.empresaPorDefecto || ''; $('cServidorTxt').value = P.servidor ? "  servidor: '" + P.servidor + "',\n  apiToken: '" + (P.apiToken || '') + "'," : ''; }
-  }
-  marcarTipo();
-  if (tipo === 'proveedor') cargarProveedor();
-  // Formatos de gestión que trajeron versiones nuevas del portal (un empresa.js viejo no los tiene).
-  const GESTION = { 'SG-REPORTE': 'Reporte e investigación de actos, condiciones, incidentes y accidentes', 'SG-PLAN': 'Plan de acción del SG-SST', 'SG-HABILITACION': 'Estado de habilitación del personal',
-    'SG-INSPECCION': 'Inspección planeada / preoperacional', 'SG-INVENTARIO': 'Inventario de equipos e inspecciones', 'SG-INDICADORES': 'Informe de indicadores del SG-SST',
-    'SG-COMITE-CONFORMACION': 'Conformación de comités (COPASST / Convivencia)', 'SG-COPASST-ACTA': 'Acta de reunión del COPASST', 'SG-CONVIVENCIA-ACTA': 'Acta de reunión del Comité de Convivencia Laboral',
-    'SG-CONVIVENCIA-QUEJA': 'Expediente de queja (Comité de Convivencia)', 'SG-CONVIVENCIA-INFORME': 'Informe de gestión del Comité de Convivencia', 'SG-AUDITORIA': 'Informe de auditoría del SG-SST', 'SG-AUDITORIA-PROGRAMA': 'Programa anual de auditorías',
-    'SG-PLAN-ANUAL': 'Plan anual de trabajo del SG-SST', 'SG-PLAN-CAPACITACION': 'Plan de capacitación', 'SG-MATRIZ-PELIGROS': 'Matriz de identificación de peligros y valoración de riesgos', 'SG-SUSTANCIAS': 'Inventario de sustancias químicas', 'SG-PLAN-EMERGENCIAS': 'Plan de prevención, preparación y respuesta ante emergencias', 'SG-SIMULACRO': 'Informe de simulacro', 'SG-PROFESIOGRAMA': 'Profesiograma', 'SG-EXAMENES': 'Programación de evaluaciones médicas ocupacionales', 'SG-AUSENTISMO': 'Informe de ausentismo', 'SG-POLITICA': 'Política de seguridad y salud en el trabajo', 'SG-MATRIZ-LEGAL': 'Matriz de requisitos legales', 'SG-LISTADO-MAESTRO': 'Listado maestro de documentos', 'SG-PROVEEDORES': 'Evaluación de proveedores y contratistas', 'SG-REVISION-DIRECCION': 'Revisión por la alta dirección', 'SG-RENDICION': 'Rendición de cuentas en SST', 'SG-CONTRATISTA': 'Ficha y documentos del contratista', 'SG-INGRESO-CONTRATISTA': 'Control de ingreso de contratistas', 'SG-MATRIZ-EPP': 'Matriz de EPP por cargo', 'SG-ENTREGA-EPP': 'Registro de entrega de EPP', 'SG-INDUCCION': 'Inducción y reinducción en SST', 'SG-PROGRAMA-ALTO-RIESGO': 'Programas de tareas de alto riesgo', 'SG-PESV': 'Plan estratégico de seguridad vial', 'SG-TABLERO-GERENCIA': 'Informe del SG-SST para la gerencia', 'SG-REPORTE-ANUAL-0312': 'Reporte anual de estándares mínimos', 'SG-ASPECTOS-AMBIENTALES': 'Matriz de aspectos e impactos ambientales', 'SG-RESIDUOS': 'Registro de generación de residuos', 'SG-INFORME-ASESORIA': 'Informe de asesoría en SST', 'SG-COMPATIBILIDAD': 'Matriz de compatibilidad de sustancias químicas', 'SG-GESTION-QUIMICA': 'Gestión del riesgo químico (SGA)', 'SG-CRONOGRAMA-INSP': 'Cronograma de inspecciones', 'SG-OBJETIVOS': 'Objetivos del SG-SST', 'SG-DESIGNACION': 'Designación del responsable del SG-SST', 'SG-ROLES': 'Roles y responsabilidades en el SG-SST', 'SG-RECURSOS': 'Asignación de recursos para el SG-SST', 'SG-REGLAMENTO': 'Reglamento de higiene y seguridad industrial', 'SG-PROC-PELIGROS': 'Procedimiento de identificación de peligros, evaluación y valoración de riesgos', 'SG-PROC-INVESTIGACION': 'Procedimiento de reporte e investigación de incidentes, accidentes de trabajo y enfermedades laborales', 'SG-PROC-ACCIONES': 'Procedimiento de acciones correctivas, preventivas y de mejora', 'SG-PROC-CAMBIO': 'Procedimiento de gestión del cambio', 'SG-PROC-AUDITORIA': 'Procedimiento de auditoría interna del SG-SST', 'SG-PROC-REVISION': 'Procedimiento de revisión por la alta dirección', 'SG-PROC-DOCUMENTOS': 'Procedimiento de control de documentos y conservación de registros', 'SG-PROC-COMUNICACION': 'Procedimiento de comunicación, participación y consulta', 'SG-PROC-COMPRAS': 'Procedimiento de adquisiciones y contratación con criterios de SST', 'SG-PROC-EMERGENCIAS': 'Procedimiento de prevención, preparación y respuesta ante emergencias', 'SG-PROG-CAPACITACION': 'Programa de capacitación, inducción y reinducción en SST', 'SG-PROG-INSPECCIONES': 'Programa de inspecciones planeadas', 'SG-PROG-MEDICO': 'Programa de evaluaciones médicas ocupacionales', 'SG-MANUAL': 'Manual del Sistema de Gestión de la Seguridad y Salud en el Trabajo', 'SG-CONTEXTO': 'Contexto de la organización (DOFA y partes interesadas)', 'SG-RIESGOS-CALIDAD': 'Matriz de riesgos y oportunidades', 'SG-OBJETIVOS-CALIDAD': 'Objetivos e indicadores de calidad', 'SG-PNC': 'Registro de producto o servicio no conforme', 'SG-PQRS': 'Informe de PQRS de clientes', 'SG-SATISFACCION': 'Encuesta e informe de satisfacción del cliente', 'SG-PREOPERACIONAL': 'Inspección preoperacional', 'SG-CIERRE-MES': 'Informe mensual del SG-SST', 'SG-EVIDENCIAS': 'Índice de evidencias del SG-SST por estándar', 'SG-ETIQUETAS-QR': 'Etiquetas QR de equipos e instalaciones', 'SG-EMERGENCIAS-ACTA': 'Acta de reunión del comité de emergencias', 'SG-EVAL-PROVEEDOR': 'Evaluación y reevaluación de proveedores, contratistas y subcontratistas', 'SG-LUGARES-QUIMICOS': 'Lugares de almacenamiento de sustancias químicas', 'SG-CONSUMOS': 'Informe de consumos de agua, energía y combustibles' };
-  E.formatos = E.formatos || {};
-  Object.keys(GESTION).forEach((id) => { if (!E.formatos[id]) E.formatos[id] = { codigo: '', titulo: GESTION[id], version: '', fecha: '', actualizacion: '' }; });
-  // v126: los códigos los crea cada empresa. Una empresa nueva empieza con todo en blanco.
-  const NUEVA_EMPRESA = QS.get('nueva') === '1';
-  $('tFormatos').innerHTML = Object.keys(E.formatos).map((id) => {
-    const f = E.formatos[id];
-    return '<tr data-id="' + esc(id) + '"><td class="tit">' + esc(f.titulo || id) + '</td>' +
-      '<td data-l="Código"><input type="text" data-k="codigo" value="' + esc(NUEVA_EMPRESA ? '' : (f.codigo || '')) + '" placeholder="Sin código"></td>' +
-      '<td data-l="Versión"><input type="text" data-k="version" value="' + esc(NUEVA_EMPRESA ? '' : (f.version || '')) + '"></td>' +
-      '<td data-l="Fecha"><input type="text" data-k="fecha" value="' + esc(NUEVA_EMPRESA ? '' : (f.fecha || '')) + '" placeholder="dd/mm/aaaa"></td>' +
-      '<td data-l="Actualización"><input type="text" data-k="actualizacion" value="' + esc(NUEVA_EMPRESA ? '' : (f.actualizacion || '')) + '" placeholder="dd/mm/aaaa"></td></tr>';
-  }).join('');
-  // v118: los módulos por categoría (las del inicio), con «todos / ninguno» por categoría y paquetes.
-  const NOMBRE_MOD = {}; MODULOS.forEach(([k, t]) => { NOMBRE_MOD[k] = t; });
-  const CATS = (typeof CATEGORIAS_MODULOS !== 'undefined' && CATEGORIAS_MODULOS) || [['todos', 'Módulos', '', MODULOS.map((x) => x[0])]];
-  const enCat = [].concat.apply([], CATS.map((c) => c[3])), sueltos = MODULOS.map((x) => x[0]).filter((k) => enCat.indexOf(k) === -1);
-  const casilla = (k) => NOMBRE_MOD[k] ? '<label><input type="checkbox" data-mod="' + k + '"' + (!E.modulos || E.modulos[k] !== false ? ' checked' : '') + '> ' + NOMBRE_MOD[k] + '</label>' : '';
-  $('mods').classList.remove('mods');
-  $('mods').innerHTML = CATS.concat(sueltos.length ? [['otros', 'Otros', '', sueltos]] : []).map(([id, nom, desc, ks]) =>
-    '<details class="mod-cat" data-cat="' + id + '"><summary><div class="mod-cat-cab"><span><b>' + esc(nom) + '</b><small>' + esc(desc) + '</small></span><span class="n" data-n></span><button type="button" data-todos>Todos</button><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></summary><div class="mods">' + ks.map(casilla).join('') + '</div></details>').join('');
-  function contarCats() {
-    document.querySelectorAll('.mod-cat').forEach((c) => {
-      const cs = [...c.querySelectorAll('[data-mod]')].filter((i) => !i.closest('label').hidden), on = cs.filter((i) => i.checked).length;
-      c.querySelector('[data-n]').textContent = on + ' de ' + cs.length;
-      c.querySelector('[data-todos]').textContent = on === cs.length ? 'Ninguno' : 'Todos';
-      c.classList.toggle('apagada', !on); c.hidden = !cs.length;
-    });
-  }
-  $('mods').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-todos]'); if (!b) return; e.preventDefault();   // el botón está dentro del título plegable: no lo abre ni lo cierra
-    const cs = [...b.closest('.mod-cat').querySelectorAll('[data-mod]')].filter((i) => !i.closest('label').hidden), todos = cs.every((i) => i.checked);
-    cs.forEach((i) => { i.checked = !todos; }); contarCats(); pintar();
-  });
-  $('mods').addEventListener('change', contarCats);
-  const ESENCIALES = ['reportes', 'usuarios'];   // reportes sin usuario y quién entra: van en todos los paquetes
-  const PAQ = { obra: ['obra', 'personas'], sgsst: ['obra', 'personas', 'planear', 'hacer', 'comites', 'verificar', 'mejorar', 'admin'], todo: null };
-  $('paquetes').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-paq]'); if (!b) return; const cats = PAQ[b.dataset.paq];
-    document.querySelectorAll('.mod-cat').forEach((c) => { const on = !cats || cats.indexOf(c.dataset.cat) !== -1; c.querySelectorAll('[data-mod]').forEach((i) => { i.checked = ESENCIALES.indexOf(i.dataset.mod) !== -1 || (on && !(b.dataset.paq === 'sgsst' && ['calidad', 'ambiental', 'pesv'].indexOf(i.dataset.mod) !== -1)); }); });
-    contarCats(); pintar();
-  });
-  // v124: dentro de los módulos, qué preoperacionales y qué listas de inspección se ofrecen.
-  $('menusDentro').innerHTML = MenusEmpresa.html(E, { sinModulos: true }); MenusEmpresa.activar($('menusDentro'));
-  marcarTipo();
-
-  // ── Logo: se reduce y queda dentro de empresa.js (un solo archivo que subir)
-  $('cLogo').addEventListener('change', () => {
-    const f = $('cLogo').files[0]; if (!f) return;
-    const fr = new FileReader();
-    fr.onload = () => {
-      if (/svg/.test(f.type) && fr.result.length < 120000) { logo = fr.result; pintar(); return; }
-      const img = new Image();
-      img.onload = () => {
-        const max = 420, k = Math.min(1, max / Math.max(img.width, img.height));
-        const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        logo = c.toDataURL('image/png');
-        if (logo.length > 120000) logo = c.toDataURL('image/jpeg', 0.88);
-        pintar();
-      };
-      img.src = fr.result;
-    };
-    fr.readAsDataURL(f);
-  });
-
-  function leerServidor() {
-    const t = $('cServidorTxt').value;
-    const s = (/servidor:\s*'([^']+)'/.exec(t) || /(https:\/\/script\.google\.com\/macros\/s\/[^\s'"]+)/.exec(t) || [])[1] || '';
-    const k = (/apiToken:\s*'([^']+)'/.exec(t) || [])[1] || '';
-    // v116: lo que verConfiguracion da para la consola (no va en empresa.js ni en el archivo del cliente).
-    const x = (n) => ((new RegExp(n + ":\\s*'([^']*)'")).exec(t) || [])[1] || '';
-    return { servidor: s.trim(), apiToken: k.trim(), clave: x('clave').trim(), llaveProveedor: x('llaveProveedor').trim(), scriptId: x('scriptId').trim() };
-  }
-  function armar() {
-    const formatos = {};
-    document.querySelectorAll('#tFormatos tr').forEach((tr) => {
-      const id = tr.dataset.id, f = { codigo: '', titulo: E.formatos[id].titulo || '' , version: '', fecha: '', actualizacion: '' };
-      tr.querySelectorAll('input').forEach((i) => { f[i.dataset.k] = i.value.trim(); });
-      formatos[id] = { codigo: f.codigo, titulo: f.titulo, version: f.version, fecha: f.fecha, actualizacion: f.actualizacion };
-    });
-    const modulos = {}; document.querySelectorAll('[data-mod]').forEach((c) => { modulos[c.dataset.mod] = c.checked; });
-    const srv = leerServidor();
-    const centros = $('cCentros').value.split('\n').map((x) => x.trim()).filter(Boolean);
-    // Lo que el formulario no muestra (requisitos de habilitación, etc.) se conserva tal cual.
-    // El sitio del proveedor parte de su propia configuración, nunca de la empresa que esté abierta en este equipo.
-    const base = tipo === 'proveedor' && ME ? MultiEmpresa.proveedor : E;
-    const otros = {}; Object.keys(base).forEach((k) => { if (['sinEmpresa', 'sinConfigurar', 'codigo', 'nombre', 'nombreCorto', 'nit', 'subtitulo', 'logo', 'colorMarca', 'formatos', 'modulos', 'correos', 'privacidad', 'contactoEpp', 'centrosCosto', 'servidor', 'apiToken', 'demo', 'perfil0312', 'empresaPorDefecto', 'editandoCliente', 'consola'].indexOf(k) === -1) otros[k] = JSON.parse(JSON.stringify(base[k])); });
-    const p0312 = perfil0312();
-    return Object.assign(otros, {
-      nombre: $('cNombre').value.trim(), nombreCorto: $('cCorto').value.trim().toUpperCase(), nit: $('cNit').value.trim(), subtitulo: $('cSub').value.trim(),
-      logo: logo || '', colorMarca: $('cColor').value, formatos, modulos,
-      correos: { aprobacionEpp: $('cCorreoEpp').value.trim(), dominio: $('cDominio').value.trim().replace(/^@/, '') },
-      privacidad: { correo: $('cPrivCorreo').value.trim(), politica: /^https:\/\//.test($('cPrivPolitica').value.trim()) ? $('cPrivPolitica').value.trim() : '' },
-      contactoEpp: { nombre: $('cWaNombre').value.trim(), cargo: '', whatsapp: $('cWaNumero').value.trim() },
-      ocultos: MenusEmpresa.leer($('menusDentro')).ocultos, bautizos: MenusEmpresa.leer($('menusDentro')).bautizos,
-      centrosCosto: centros, servidor: srv.servidor, apiToken: srv.apiToken, demo: false,
-      perfil0312: tipo === 'proveedor' ? undefined : p0312
-    }, tipo === 'proveedor' ? { multiempresa: true, empresaPorDefecto: $('cDefecto').value.trim().toLowerCase(), producto: $('cProducto').value.trim() || 'Portal SSTA', sinEmpresa: undefined, codigo: undefined } : { multiempresa: undefined, producto: tipo === 'propio' && !ME ? (E.producto || undefined) : undefined, sinEmpresa: undefined, codigo: undefined });
-  }
-  const codigoOk = ()=> /^[a-z0-9][a-z0-9-]{1,39}$/.test($('cCodigo').value.trim());
-  const enlace = ()=> String($('cSitio').value.trim() || RAIZ_SITIO).replace(/\/?$/, '/') + '?e=' + encodeURIComponent($('cCodigo').value.trim());
-  function jsonCliente(c){
-    const emp = Object.assign({}, c); delete emp.multiempresa; delete emp.producto; delete emp.demo; delete emp.sinEmpresa; delete emp.codigo; delete emp.empresaPorDefecto;
-    return JSON.stringify({ codigo: $('cCodigo').value.trim(), generado: new Date().toISOString(), empresa: emp }, null, 2);
-  }
-  function problemas(c) {
-    const p = [], a = [];
-    if (!c.nombre) p.push('Falta la razón social.');
-    if (!c.nombreCorto) p.push('Falta el nombre corto.');
-    if (/^TU (EMPRESA|MARCA)$/i.test(c.nombreCorto)) p.push('Cambia el nombre corto: «' + c.nombreCorto + '» es el de ejemplo.');
-    if (tipo === 'cliente' && !codigoOk()) p.push('El código de la empresa: minúsculas, números y guiones (2 a 40), sin espacios.');
-    if (tipo === 'proveedor' && $('cDefecto').value.trim() && !/^[a-z0-9][a-z0-9-]{1,39}$/.test($('cDefecto').value.trim().toLowerCase())) p.push('La empresa principal: minúsculas, números y guiones (2 a 40), sin espacios.');
-    if (tipo === 'proveedor' && !$('cProducto').value.trim()) a.push('Sin nombre de producto: se seguirá llamando Portal SSTA.');
-    if (tipo === 'proveedor' && !c.servidor) { /* el sitio del proveedor puede no tener servidor propio */ }
-    else if (!c.servidor) (tipo === 'cliente' ? p : a).push('Sin servidor: el portal no podrá guardar. Pega lo que da verConfiguracion en el paso 6.');
-    if (c.servidor && !/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(c.servidor)) p.push('La URL del servidor no parece la de una aplicación web de Apps Script (debe terminar en /exec).');
-    if (c.servidor && !c.apiToken) p.push('Falta el apiToken (sale junto a la URL en verConfiguracion).');
-    if (!logo) a.push('Sin logo: se usará un distintivo con las iniciales.');
-    if (tipo !== 'proveedor' && !(c.privacidad && c.privacidad.correo)) a.push('Sin correo para datos personales: el aviso de privacidad dirá que se pregunte al área SST.');
-    if (tipo !== 'proveedor' && !c.perfil0312) a.push('Sin número de trabajadores (paso 2): el portal tomará los 60 estándares hasta que SST defina el perfil de la empresa.');
-    return { p, a };
-  }
-  // v116: empresa.js lleva solo los datos; el motor está en empresa-motor.js y se actualiza con el portal
-  // (un empresa.js viejo, con el motor adentro, queda al día al volver a generarlo aquí).
-  const motor = '';
-  function archivo(c) {
-    return '/* ============================================================\n' +
-      '   empresa.js — ' + c.nombre.replace(/\*\//g, '') + '\n' +
-      '   Generado con configurar-empresa.html el ' + new Date().toLocaleString('es-CO') + '.\n' +
-      '   Para cambiar algo, vuelve a abrir configurar-empresa.html en este sitio:\n' +
-      '   el formulario carga estos mismos datos.\n' +
-      '   ============================================================ */\n\n' +
-      'const EMPRESA = ' + JSON.stringify(c, null, 2) + ';\n';
-  }
-  /* ── v113: estándares mínimos según tamaño y riesgo (regla en auditorias-plantillas.js) ── */
-  const MOD_DE_ESTANDAR = {
-    '1.1.1': ['documental', 'kit'], '1.1.2': ['documental'], '1.1.3': ['documental', 'plananual'], '1.1.4': ['habilitacion', 'contratistas'], '1.1.5': ['habilitacion'],
-    '1.1.6': ['copasst'], '1.1.7': ['copasst'], '1.1.8': ['convivencia'], '1.2.1': ['plananual', 'asistencia', 'induccion'], '1.2.2': ['induccion'], '1.2.3': ['habilitacion'],
-    '2.1.1': ['documental', 'kit'], '2.2.1': ['indicadores', 'documental'], '2.3.1': ['auditorias', 'evidencias'], '2.4.1': ['plananual'], '2.5.1': ['documental', 'evidencias'],
-    '2.6.1': ['revision'], '2.7.1': ['documental'], '2.8.1': ['reportes'], '2.9.1': ['proveedores'], '2.10.1': ['proveedores', 'contratistas'], '2.11.1': ['documental'],
-    '3.1.1': ['salud'], '3.1.2': ['salud'], '3.1.3': ['salud'], '3.1.4': ['salud'], '3.1.5': ['salud'], '3.1.6': ['salud'], '3.1.7': ['salud'], '3.1.8': ['ambiental'], '3.1.9': ['ambiental'],
-    '3.2.1': ['reportes'], '3.2.2': ['reportes', 'plan'], '3.2.3': ['reportes', 'indicadores'], '3.3.1': ['indicadores'], '3.3.2': ['indicadores'], '3.3.3': ['indicadores'], '3.3.4': ['indicadores'], '3.3.5': ['indicadores'], '3.3.6': ['indicadores'],
-    '4.1.1': ['peligros'], '4.1.2': ['peligros'], '4.1.3': ['quimicos'], '4.1.4': ['peligros'],
-    '4.2.1': ['peligros', 'programas', 'caliente', 'alturas', 'confinados', 'izajes', 'electrico', 'ats'], '4.2.2': ['inspecciones', 'epp'], '4.2.3': ['documental', 'programas'],
-    '4.2.4': ['inspecciones', 'preop'], '4.2.5': ['inspecciones', 'preop'], '4.2.6': ['dotacion', 'epp'],
-    '5.1.1': ['emergencias'], '5.1.2': ['emergencias', 'comiteemergencias', 'brigadistas'],
-    '6.1.1': ['indicadores'], '6.1.2': ['auditorias'], '6.1.3': ['revision'], '6.1.4': ['auditorias'],
-    '7.1.1': ['plan'], '7.1.2': ['plan'], '7.1.3': ['plan'], '7.1.4': ['plan'], 'UPA.3': ['epp', 'dotacion']
-  };
-  function perfil0312() {
-    const t = Number(String($('cTrab').value).replace(/\D/g, ''));
-    if (!t) return undefined;
-    const agro = $('cAgro').checked, r = $('cRiesgo').value;
-    return { trabajadores: t, claseRiesgo: r, agropecuaria: agro, grupo0312: grupo0312(t, r, agro), fecha: new Date().toISOString().slice(0, 10) };
-  }
-  function pintar0312() {
-    const p = perfil0312(), caja = $('r0312');
-    document.querySelectorAll('.mods .apoya').forEach((x) => x.remove());
-    if (!p) { caja.innerHTML = '<div class="msg aviso">Escribe el número de trabajadores para ver cuántos estándares debe cumplir.</div>'; return; }
-    const g = p.grupo0312, ciclos = clasificar0312(g), oficial = g === 60;
-    const aviso = p.agropecuaria && g !== 3 ? '<div class="msg aviso">Con ' + p.trabajadores + ' trabajadores' + (/IV|V/.test(p.claseRiesgo) ? ' o riesgo ' + p.claseRiesgo : '') + ' ya no aplica el grupo de 3 de las unidades agropecuarias.</div>' : '';
-    caja.innerHTML = aviso + '<div class="e0312-res"><div class="n">' + g + '</div><div><b>estándares mínimos que debe cumplir</b><span>Res. 0312 de 2019, ' + ARTICULO_0312[g] + ': ' + esc(QUIEN_0312[g]) + '.</span></div></div>' +
-      ciclos.map((ci) => '<div class="e0312-ciclo"><h3><span>' + esc(ci.ciclo) + '</span><span>' + ci.n + ' de ' + g + '</span></h3>' +
-        ci.categorias.map((c) => '<details class="e0312-cat"><summary>' + esc(c.nombre) + '<span class="c">' + c.n + (c.n === 1 ? ' estándar' : ' estándares') + (oficial ? ' · ' + String(c.peso).replace('.', ',') + ' %' : '') + '</span></summary><ol>' +
-          c.items.map((x) => '<li><code>' + esc(x.id) + '</code>' + esc(x.nombre) + '</li>').join('') + '</ol></details>').join('') + '</div>').join('') +
-      '<p class="ayuda" style="margin-top:10px;">' + (oficial ? 'El porcentaje es el peso de cada categoría en la calificación (art. 27).' : 'Cada estándar va en la categoría de su numeral equivalente en los 60 (así lo califica el portal).') +
-      ' Cumplir estos estándares no exime de las demás normas de SST (Decreto 1072 de 2015, Ley 1562 de 2012, comité de convivencia, vigía o COPASST, etc.).</p>';
-    // En «Módulos», qué módulos apoyan esos estándares (informativo: no se apaga nada).
-    const cuenta = {}; ciclos.forEach((ci) => ci.categorias.forEach((c) => c.items.forEach((x) => (MOD_DE_ESTANDAR[x.id] || []).forEach((m) => { cuenta[m] = (cuenta[m] || 0) + 1; }))));
-    document.querySelectorAll('[data-mod]').forEach((i) => { const n = cuenta[i.dataset.mod]; if (n) i.parentElement.insertAdjacentHTML('beforeend', '<span class="apoya" title="Módulo que apoya ' + n + ' de los estándares que le aplican">0312 · ' + n + '</span>'); });
-  }
-  function pintar() {
-    pintar0312();
-    const c = armar();
-    const lg = logo || '';
-    $('logoPrev').style.backgroundImage = lg ? 'url("' + lg + '")' : '';
-    $('vLogo').style.backgroundImage = lg ? 'url("' + lg + '")' : '';
-    $('vNombre').textContent = (tipo === 'proveedor' ? $('cProducto').value.trim() : (ME ? MultiEmpresa.proveedor.producto : E.producto)) || 'Portal SSTA';
-    $('btnEmpresa').textContent = tipo === 'cliente' ? '⬇️ Descargar empresas/' + ($('cCodigo').value.trim() || 'código') + '.json' : '⬇️ Descargar empresa.js';
-    $('btnManifest').hidden = tipo === 'cliente';
-    $('vEnlace').textContent = codigoOk() ? enlace() : '—';
-    $('qrCliente').hidden = !(tipo === 'cliente' && codigoOk());
-    if (tipo === 'cliente' && codigoOk() && typeof QR !== 'undefined') { try { QR.dibujar($('qrCanvas'), enlace(), { px: 220 }); } catch (e) {} $('qrTexto').textContent = 'Enlace para los celulares de ' + (c.nombreCorto || 'la empresa') + ': ' + enlace(); }
-    $('vSub').textContent = (c.nombre || 'Razón social') + (c.nit ? ' · NIT ' + c.nit : '') + (c.subtitulo ? ' — ' + c.subtitulo : '');
-    const { p, a } = problemas(c);
-    $('errores').innerHTML = (p.length ? '<div class="msg mal">' + p.map(esc).join('<br>') + '</div>' : '') + (a.length ? '<div class="msg aviso">' + a.map(esc).join('<br>') + '</div>' : '') +
-      (!p.length && !a.length ? '<div class="msg ok">Todo listo para descargar.</div>' : '');
-    const srv = leerServidor();
-    $('servidorMsg').innerHTML = srv.servidor ? '<div class="msg ' + (srv.apiToken ? 'ok' : 'aviso') + '">Servidor: ' + esc(srv.servidor) + (srv.apiToken ? '<br>Token: ' + esc(srv.apiToken.slice(0, 6)) + '…' : '<br>Falta el apiToken.') + '</div>' : '';
-    const cv = Object.assign({}, c, { logo: c.logo.length > 120 ? c.logo.slice(0, 60) + '…(imagen)' : c.logo });
-    $('vista').textContent = tipo === 'cliente' ? jsonCliente(cv) : motor === null ? 'Cargando…' : archivo(cv);
-    $('btnEmpresa').disabled = $('btnManifest').disabled = !!p.length || motor === null;
-  }
-  document.addEventListener('input', pintar);
-  document.addEventListener('change', pintar);
-
-  /* ── v116: guardar el cliente en TU servidor desde la consola (sin archivos) ── */
-  const ADMIN = (function () { try { const x = JSON.parse(localStorage.getItem('ssta-admin-sesion') || 'null'); return x && x.token && x.exp > Date.now() && x.yo && x.yo.rol === 'admin' ? x : null; } catch (e) { return null; } })();
-  const PROV = ME ? MultiEmpresa.proveedor : null;
-  const urlConsola = PROV && PROV.servidor ? String(PROV.servidor).replace(/\/+$/, '') + '?modulo=sgsst' : '';   // v121: ?modulo= (con /sgsst Google pedía iniciar sesión)
-  const claveConsola = (function () { try { return localStorage.getItem('ssta-admin-clave-portal') || (PROV && PROV.apiToken) || ''; } catch (e) { return (PROV && PROV.apiToken) || ''; } })();
-  const opId = () => 'cfg-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-  async function getConsola(q) { const r = await fetch(urlConsola + '&' + Object.keys(q).map((k) => k + '=' + encodeURIComponent(q[k])).join('&') + '&token=' + encodeURIComponent(claveConsola) + '&sesion=' + encodeURIComponent(ADMIN.token)); return r.json(); }
-  async function postConsola(b) { const r = await fetch(urlConsola, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ token: claveConsola, sesion: ADMIN.token, opId: opId() }, b)) }); return r.json(); }
-  const enConsola = () => !!(ADMIN && urlConsola && tipo === 'cliente');
-  function pintarConsola() { $('bConsola').hidden = !enConsola(); aplicarTipo(); }
-  document.addEventListener('change', pintarConsola);
-  $('btnConsola').addEventListener('click', async () => {
-    const msg = $('msgConsola'), b = $('btnConsola');
-    const c = armar(), { p } = problemas(c);
-    if (p.length) { msg.innerHTML = '<div class="msg mal">Corrige primero lo que está en rojo arriba.</div>'; return; }
-    const codigo = $('cCodigo').value.trim(), srv = leerServidor();
-    const config = JSON.parse(jsonCliente(c)).empresa;
-    b.disabled = true; msg.innerHTML = '<div class="msg aviso">Guardando en tu servidor…</div>';
-    try {
-      const l = await getConsola({ action: 'list', tipo: 'cliente' });
-      if (!l.ok) throw new Error(l.error || 'Tu servidor no respondió la lista de clientes.');
-      let ed = null; try { ed = JSON.parse(sessionStorage.getItem('ssta-admin-editar') || 'null'); } catch (e) {}
-      const fila = l.rows.find((x) => (ed && ed.id && x.id === ed.id)) || l.rows.find((x) => String(x.resumen.codigo || '').toLowerCase() === codigo);
-      let doc = {}, version = 0, id = fila ? fila.id : 'CLI-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
-      if (fila) { const d = await getConsola({ action: 'doc', id }); if (!d.ok) throw new Error(d.error || 'No se pudo abrir el cliente.'); doc = d.doc || {}; version = d.version || 0; }
-      const p0 = c.perfil0312 || {}, mods = config.modulos || {}, ks = Object.keys(mods);
-      Object.assign(doc, {
-        nombre: c.nombre, nit: c.nit || doc.nit || '', codigo, estado: doc.estado || 'ACTIVO', modo: 'unico',
-        trabajadores: p0.trabajadores || doc.trabajadores || '', claseRiesgo: p0.claseRiesgo || doc.claseRiesgo || 'I', agropecuaria: p0.agropecuaria ? 'Sí' : (doc.agropecuaria || 'No'), grupo0312: p0.grupo0312 || doc.grupo0312 || '',
-        servidor: srv.servidor || doc.servidor || '', clave: srv.clave || doc.clave || '', llaveProveedor: srv.llaveProveedor || doc.llaveProveedor || '', scriptId: srv.scriptId || doc.scriptId || '',
-        config, publicado: new Date().toISOString(), modulosOn: ks.filter((k) => mods[k] !== false).length, modulosTotal: ks.length
-      });
-      const g = await postConsola({ action: 'guardar', tipo: 'cliente', id, doc, versionBase: version });
-      if (!g.ok) throw new Error(g.error || 'No se pudo guardar.');
-      const pub = await postConsola({ action: 'publicarCliente', id });
-      const m = pub && pub.modulos;
-      msg.innerHTML = '<div class="msg ok">✓ Guardado en tu consola. Sus celulares toman esta configuración al abrir el portal.' +
-        (m ? (m.ok ? '<br>✓ Su servidor recibió los módulos contratados.' : '<br>⚠ Módulos solo en pantalla: ' + esc(m.error || '') ) : '') +
-        '<br><a href="admin.html">← Volver a la consola</a></div>';
-      try { sessionStorage.removeItem('ssta-admin-editar'); } catch (e) {}
-    } catch (e) { msg.innerHTML = '<div class="msg mal">' + esc(e.message || 'Sin conexión con tu servidor.') + '</div>'; }
-    b.disabled = false;
-  });
-  pintarConsola();
-  function descargar(nombre, texto, tipo) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([texto], { type: tipo }));
-    a.download = nombre; document.body.appendChild(a); a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-  }
-  $('btnEmpresa').addEventListener('click', () => tipo === 'cliente' ? descargar($('cCodigo').value.trim() + '.json', jsonCliente(armar()), 'application/json') : descargar('empresa.js', archivo(armar()), 'text/javascript'));
-  $('btnCopiar').addEventListener('click', () => { navigator.clipboard && navigator.clipboard.writeText(tipo === 'cliente' ? jsonCliente(armar()) : archivo(armar())).then(() => { $('btnCopiar').textContent = '✓ Copiado'; }); });
-  $('btnManifest').addEventListener('click', async () => {
-    const c = armar();
-    let m = {};
-    try { m = await (await fetch('manifest.json', { cache: 'no-store' })).json(); } catch (e) {}
-    if (tipo === 'proveedor') { m.name = c.producto; m.short_name = c.producto.slice(0, 18); }
-    else { const pr = E.producto || 'Portal SSTA'; m.name = pr + ' — ' + c.nombreCorto; m.short_name = (pr === 'Portal SSTA' ? 'SSTA ' + c.nombreCorto : c.nombreCorto).slice(0, 18); }
-    m.theme_color = c.colorMarca;
-    descargar('manifest.json', JSON.stringify(m, null, 2), 'application/json');
-  });
-  pintar();
-})();
-</script>
+<script>!function(){const $=e=>document.getElementById(e),esc=e=>String(e??"").replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e])),e=EMPRESA,o="undefined"!=typeof CATALOGO_MODULOS&&CATALOGO_MODULOS||[],a=!!e.sinConfigurar,t="undefined"!=typeof MultiEmpresa&&MultiEmpresa.activo,r=t&&e.sinEmpresa;let i=t?"cliente":"propio";const n=new URLSearchParams(location.search),s=n.has("editar")||n.has("nueva")||n.has("tipo");if(/^(propio|cliente|proveedor)$/.test(n.get("tipo")||"")&&(t||"propio"===n.get("tipo"))&&(i=n.get("tipo")),e.editandoCliente&&(i="cliente"),s){const e=document.querySelector(".hdr .back");e&&(e.href="admin.html",e.textContent="← Volver a la consola");const o=document.createElement("link");o.rel="stylesheet",o.href="consola.css",document.head.appendChild(o),document.body.classList.add("consola")}e.editandoCliente&&document.querySelector(".hdr").insertAdjacentHTML("beforeend",'<div class="aviso info u-mt10">Editando <b>'+esc(e.nombre||e.codigo)+"</b> (código <b>"+esc(e.codigo)+"</b>) con lo que tiene publicado. Cambia lo que necesites y, al final, toca <b>Guardar en tu consola y publicar</b>: queda en tu servidor y sus celulares lo toman solos. No hay que descargar ni subir nada.</div>");let c=a||r?"":e.logo;const d=location.href.split(/[?#]/)[0].replace(/[^/]*$/,"");a||r?$("cSub").value="Sistema de Gestión SST":($("cNombre").value=e.nombre||"",$("cCorto").value=e.nombreCorto||"",$("cNit").value=e.nit||"",$("cSub").value=e.subtitulo||"",$("cCorreoEpp").value=e.correos&&e.correos.aprobacionEpp||"",$("cDominio").value=e.correos&&e.correos.dominio||"",$("cCentros").value=(e.centrosCosto||[]).join("\n"),$("cPrivCorreo").value=e.privacidad&&e.privacidad.correo||"",$("cPrivPolitica").value=e.privacidad&&e.privacidad.politica||"",$("cWaNombre").value=e.contactoEpp&&e.contactoEpp.nombre||"",$("cWaNumero").value=e.contactoEpp&&e.contactoEpp.whatsapp||"",e.servidor&&($("cServidorTxt").value="  servidor: '"+e.servidor+"',\n  apiToken: '"+(e.apiToken||"")+"',")),e.colorMarca&&!r&&($("cColor").value=e.colorMarca),!e.perfil0312||a||r||($("cTrab").value=e.perfil0312.trabajadores||"",$("cRiesgo").value=e.perfil0312.claseRiesgo||"I",$("cAgro").checked=!!e.perfil0312.agropecuaria),$("cCodigo").value=t&&e.codigo||"",$("cSitio").value=d,$("cProducto").value=(t?MultiEmpresa.proveedor.producto:e.producto)||"";const marcarTipo=()=>{document.querySelectorAll('[name="tipo"]').forEach(e=>{e.checked=e.value===i}),$("bCliente").hidden="cliente"!==i,$("bProveedor").hidden="proveedor"!==i;const e=document.querySelector('[data-mod="asesor"]');e&&(e.closest("label").hidden="cliente"===i),aplicarTipo()},l={cTipo:["cliente","proveedor"],cDatos:["propio","cliente","proveedor"],c0312:["propio","cliente"],cFormatos:["propio","cliente"],cModulos:["propio","cliente"],cCorreos:["propio","cliente"],cServidor:["propio","cliente","proveedor"],cFinal:["propio","cliente","proveedor"]};let p=!0;function aplicarTipo(){try{contarCats()}catch(e){}const o=$("instInicio"),a=$("queInstalo");o.hidden=p,a.hidden=!p,Object.keys(l).forEach(e=>{const o=$(e);o&&(o.hidden=!p||-1===l[e].indexOf(i))}),$("tTipo").textContent="proveedor"===i?"Tu marca":"Código y enlace de la empresa",$("tDatos").textContent="proveedor"===i?"Datos de tu empresa (la que vende el portal)":"Datos de la empresa",$("bPrivacidad").hidden="proveedor"===i,$("tServidor").textContent="proveedor"===i?"Tu servidor (el de tu consola)":"Servidor de la empresa",$("tFinal").textContent="cliente"===i&&$("bConsola")&&!$("bConsola").hidden?"Revisar y guardar":"Revisar y descargar";let r=0;if(document.querySelectorAll(".card").forEach(e=>{const o=e.querySelector("h2 > .paso");o&&!e.hidden&&(o.textContent=++r)}),!p)return;const n=$("cNombre").value.trim(),c=$("cCodigo").value.trim(),d={proveedor:["🛡️","Estás instalando","TU SITIO · administrador general","Una sola vez. Los clientes se instalan después, desde tu consola."],cliente:["🏢","Estás instalando una empresa cliente",(n||"Empresa sin nombre")+(c?" · código "+c:""),"Se guarda en tu consola. No cambia tu sitio ni tu marca."],propio:["🏭","Estás instalando el sitio propio de",n||"una empresa","Su propio empresa.js, aparte de tu sitio."]}[i],u=!e.editandoCliente&&!(s&&"cliente"===i)&&t;a.className="que-instalo "+i,a.innerHTML='<span class="ico" aria-hidden="true">'+d[0]+"</span><span><small>"+esc(d[1])+"</small><b>"+esc(d[2])+"</b><span>"+esc(d[3])+"</span></span>"+(u?'<button type="button" id="btnCambiarTipo">Cambiar</button>':"");const m=$("btnCambiarTipo");m&&m.addEventListener("click",()=>{p=!1,aplicarTipo(),window.scrollTo(0,0)}),function pintarSiguientes(){const e=$("siguientes"),o=$("despues");if(!e)return;"proveedor"===i?(e.hidden=!1,o.hidden=!0,e.innerHTML='<b>Después de descargar, en este orden:</b><ol><li>Sube <code>empresa.js</code> y <code>manifest.json</code> a tu repositorio.</li><li>Abre <a href="admin.html">tu consola (admin.html)</a> y crea tu usuario con el código de <code>sgsst__codigoAdministrador</code>.</li><li>En tu servidor ejecuta una vez <code>sgsst__instalarVigilancia</code>.</li><li>Desde la consola, «Instalar empresa nueva» para tu primer cliente.</li></ol>'):"cliente"===i?(e.hidden=!1,o.hidden=!0,e.innerHTML='<b>Cómo queda:</b> con «Guardar en tu consola y publicar» la empresa queda registrada y sus celulares la toman al abrir su enlace. Si no ves ese botón, entra primero a <a href="admin.html">tu consola</a> y vuelve a «Instalar empresa nueva».'):(e.hidden=!0,o.hidden=!1)}()}function cargarProveedor(){if(t){const e=MultiEmpresa.proveedor;$("cNombre").value=e.nombre||"",$("cCorto").value=e.nombreCorto||"",$("cNit").value=e.nit||"",$("cSub").value=e.subtitulo||"",c=/^data:/.test(e.logo||"")?e.logo:"",e.colorMarca&&($("cColor").value=e.colorMarca),$("cDefecto").value=e.empresaPorDefecto||"",$("cServidorTxt").value=e.servidor?"  servidor: '"+e.servidor+"',\n  apiToken: '"+(e.apiToken||"")+"',":""}}!t||s||e.editandoCliente||(p=!1),document.getElementById("instInicio").addEventListener("click",e=>{const o=e.target.closest("[data-inst]");o&&(i=o.dataset.inst,p=!0,"proveedor"===i&&cargarProveedor(),marcarTipo(),pintar(),document.dispatchEvent(new Event("change")),window.scrollTo(0,0))}),document.addEventListener("input",e=>{!e.target||"cNombre"!==e.target.id&&"cCodigo"!==e.target.id||aplicarTipo()}),$("tipos").addEventListener("change",e=>{const o=e.target.closest('[name="tipo"]');o&&(i=o.value,marcarTipo(),"proveedor"===i&&cargarProveedor(),pintar())}),marcarTipo(),"proveedor"===i&&cargarProveedor();const u={"SG-REPORTE":"Reporte e investigación de actos, condiciones, incidentes y accidentes","SG-PLAN":"Plan de acción del SG-SST","SG-HABILITACION":"Estado de habilitación del personal","SG-INSPECCION":"Inspección planeada / preoperacional","SG-INVENTARIO":"Inventario de equipos e inspecciones","SG-INDICADORES":"Informe de indicadores del SG-SST","SG-COMITE-CONFORMACION":"Conformación de comités (COPASST / Convivencia)","SG-COPASST-ACTA":"Acta de reunión del COPASST","SG-CONVIVENCIA-ACTA":"Acta de reunión del Comité de Convivencia Laboral","SG-CONVIVENCIA-QUEJA":"Expediente de queja (Comité de Convivencia)","SG-CONVIVENCIA-INFORME":"Informe de gestión del Comité de Convivencia","SG-AUDITORIA":"Informe de auditoría del SG-SST","SG-AUDITORIA-PROGRAMA":"Programa anual de auditorías","SG-PLAN-ANUAL":"Plan anual de trabajo del SG-SST","SG-PLAN-CAPACITACION":"Plan de capacitación","SG-MATRIZ-PELIGROS":"Matriz de identificación de peligros y valoración de riesgos","SG-SUSTANCIAS":"Inventario de sustancias químicas","SG-PLAN-EMERGENCIAS":"Plan de prevención, preparación y respuesta ante emergencias","SG-SIMULACRO":"Informe de simulacro","SG-PROFESIOGRAMA":"Profesiograma","SG-EXAMENES":"Programación de evaluaciones médicas ocupacionales","SG-AUSENTISMO":"Informe de ausentismo","SG-POLITICA":"Política de seguridad y salud en el trabajo","SG-MATRIZ-LEGAL":"Matriz de requisitos legales","SG-LISTADO-MAESTRO":"Listado maestro de documentos","SG-PROVEEDORES":"Evaluación de proveedores y contratistas","SG-REVISION-DIRECCION":"Revisión por la alta dirección","SG-RENDICION":"Rendición de cuentas en SST","SG-CONTRATISTA":"Ficha y documentos del contratista","SG-INGRESO-CONTRATISTA":"Control de ingreso de contratistas","SG-MATRIZ-EPP":"Matriz de EPP por cargo","SG-ENTREGA-EPP":"Registro de entrega de EPP","SG-INDUCCION":"Inducción y reinducción en SST","SG-PROGRAMA-ALTO-RIESGO":"Programas de tareas de alto riesgo","SG-PESV":"Plan estratégico de seguridad vial","SG-TABLERO-GERENCIA":"Informe del SG-SST para la gerencia","SG-REPORTE-ANUAL-0312":"Reporte anual de estándares mínimos","SG-ASPECTOS-AMBIENTALES":"Matriz de aspectos e impactos ambientales","SG-RESIDUOS":"Registro de generación de residuos","SG-INFORME-ASESORIA":"Informe de asesoría en SST","SG-COMPATIBILIDAD":"Matriz de compatibilidad de sustancias químicas","SG-GESTION-QUIMICA":"Gestión del riesgo químico (SGA)","SG-CRONOGRAMA-INSP":"Cronograma de inspecciones","SG-OBJETIVOS":"Objetivos del SG-SST","SG-DESIGNACION":"Designación del responsable del SG-SST","SG-ROLES":"Roles y responsabilidades en el SG-SST","SG-RECURSOS":"Asignación de recursos para el SG-SST","SG-REGLAMENTO":"Reglamento de higiene y seguridad industrial","SG-PROC-PELIGROS":"Procedimiento de identificación de peligros, evaluación y valoración de riesgos","SG-PROC-INVESTIGACION":"Procedimiento de reporte e investigación de incidentes, accidentes de trabajo y enfermedades laborales","SG-PROC-ACCIONES":"Procedimiento de acciones correctivas, preventivas y de mejora","SG-PROC-CAMBIO":"Procedimiento de gestión del cambio","SG-PROC-AUDITORIA":"Procedimiento de auditoría interna del SG-SST","SG-PROC-REVISION":"Procedimiento de revisión por la alta dirección","SG-PROC-DOCUMENTOS":"Procedimiento de control de documentos y conservación de registros","SG-PROC-COMUNICACION":"Procedimiento de comunicación, participación y consulta","SG-PROC-COMPRAS":"Procedimiento de adquisiciones y contratación con criterios de SST","SG-PROC-EMERGENCIAS":"Procedimiento de prevención, preparación y respuesta ante emergencias","SG-PROG-CAPACITACION":"Programa de capacitación, inducción y reinducción en SST","SG-PROG-INSPECCIONES":"Programa de inspecciones planeadas","SG-PROG-MEDICO":"Programa de evaluaciones médicas ocupacionales","SG-MANUAL":"Manual del Sistema de Gestión de la Seguridad y Salud en el Trabajo","SG-CONTEXTO":"Contexto de la organización (DOFA y partes interesadas)","SG-RIESGOS-CALIDAD":"Matriz de riesgos y oportunidades","SG-OBJETIVOS-CALIDAD":"Objetivos e indicadores de calidad","SG-PNC":"Registro de producto o servicio no conforme","SG-PQRS":"Informe de PQRS de clientes","SG-SATISFACCION":"Encuesta e informe de satisfacción del cliente","SG-PREOPERACIONAL":"Inspección preoperacional","SG-CIERRE-MES":"Informe mensual del SG-SST","SG-EVIDENCIAS":"Índice de evidencias del SG-SST por estándar","SG-ETIQUETAS-QR":"Etiquetas QR de equipos e instalaciones","SG-EMERGENCIAS-ACTA":"Acta de reunión del comité de emergencias","SG-EVAL-PROVEEDOR":"Evaluación y reevaluación de proveedores, contratistas y subcontratistas","SG-LUGARES-QUIMICOS":"Lugares de almacenamiento de sustancias químicas","SG-CONSUMOS":"Informe de consumos de agua, energía y combustibles"};e.formatos=e.formatos||{},Object.keys(u).forEach(o=>{e.formatos[o]||(e.formatos[o]={codigo:"",titulo:u[o],version:"",fecha:"",actualizacion:""})});const m="1"===n.get("nueva");$("tFormatos").innerHTML=Object.keys(e.formatos).map(o=>{const a=e.formatos[o];return'<tr data-id="'+esc(o)+'"><td class="tit">'+esc(a.titulo||o)+'</td><td data-l="Código"><input type="text" data-k="codigo" value="'+esc(m?"":a.codigo||"")+'" placeholder="Sin código"></td><td data-l="Versión"><input type="text" data-k="version" value="'+esc(m?"":a.version||"")+'"></td><td data-l="Fecha"><input type="text" data-k="fecha" value="'+esc(m?"":a.fecha||"")+'" placeholder="dd/mm/aaaa"></td><td data-l="Actualización"><input type="text" data-k="actualizacion" value="'+esc(m?"":a.actualizacion||"")+'" placeholder="dd/mm/aaaa"></td></tr>'}).join("");const v={};o.forEach(([e,o])=>{v[e]=o});const S="undefined"!=typeof CATEGORIAS_MODULOS&&CATEGORIAS_MODULOS||[["todos","Módulos","",o.map(e=>e[0])]],g=[].concat.apply([],S.map(e=>e[3])),C=o.map(e=>e[0]).filter(e=>-1===g.indexOf(e)),casilla=o=>v[o]?'<label><input type="checkbox" data-mod="'+o+'"'+(e.modulos&&!1===e.modulos[o]?"":" checked")+"> "+v[o]+"</label>":"";function contarCats(){document.querySelectorAll(".mod-cat").forEach(e=>{const o=[...e.querySelectorAll("[data-mod]")].filter(e=>!e.closest("label").hidden),a=o.filter(e=>e.checked).length;e.querySelector("[data-n]").textContent=a+" de "+o.length,e.querySelector("[data-todos]").textContent=a===o.length?"Ninguno":"Todos",e.classList.toggle("apagada",!a),e.hidden=!o.length})}$("mods").classList.remove("mods"),$("mods").innerHTML=S.concat(C.length?[["otros","Otros","",C]]:[]).map(([e,o,a,t])=>'<details class="mod-cat" data-cat="'+e+'"><summary><div class="mod-cat-cab"><span><b>'+esc(o)+"</b><small>"+esc(a)+'</small></span><span class="n" data-n></span><button type="button" data-todos>Todos</button><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div></summary><div class="mods">'+t.map(casilla).join("")+"</div></details>").join(""),$("mods").addEventListener("click",e=>{const o=e.target.closest("[data-todos]");if(!o)return;e.preventDefault();const a=[...o.closest(".mod-cat").querySelectorAll("[data-mod]")].filter(e=>!e.closest("label").hidden),t=a.every(e=>e.checked);a.forEach(e=>{e.checked=!t}),contarCats(),pintar()}),$("mods").addEventListener("change",contarCats);const b=["reportes","usuarios"],h={obra:["obra","personas"],sgsst:["obra","personas","planear","hacer","comites","verificar","mejorar","admin"],todo:null};function leerServidor(){const e=$("cServidorTxt").value,o=(/servidor:\s*'([^']+)'/.exec(e)||/(https:\/\/script\.google\.com\/macros\/s\/[^\s'"]+)/.exec(e)||[])[1]||"",a=(/apiToken:\s*'([^']+)'/.exec(e)||[])[1]||"",x=o=>(new RegExp(o+":\\s*'([^']*)'").exec(e)||[])[1]||"";return{servidor:o.trim(),apiToken:a.trim(),clave:x("clave").trim(),llaveProveedor:x("llaveProveedor").trim(),scriptId:x("scriptId").trim()}}function armar(){const o={};document.querySelectorAll("#tFormatos tr").forEach(a=>{const t=a.dataset.id,r={codigo:"",titulo:e.formatos[t].titulo||"",version:"",fecha:"",actualizacion:""};a.querySelectorAll("input").forEach(e=>{r[e.dataset.k]=e.value.trim()}),o[t]={codigo:r.codigo,titulo:r.titulo,version:r.version,fecha:r.fecha,actualizacion:r.actualizacion}});const a={};document.querySelectorAll("[data-mod]").forEach(e=>{a[e.dataset.mod]=e.checked});const r=leerServidor(),n=$("cCentros").value.split("\n").map(e=>e.trim()).filter(Boolean),s="proveedor"===i&&t?MultiEmpresa.proveedor:e,d={};Object.keys(s).forEach(e=>{-1===["sinEmpresa","sinConfigurar","codigo","nombre","nombreCorto","nit","subtitulo","logo","colorMarca","formatos","modulos","correos","privacidad","contactoEpp","centrosCosto","servidor","apiToken","demo","perfil0312","empresaPorDefecto","editandoCliente","consola"].indexOf(e)&&(d[e]=JSON.parse(JSON.stringify(s[e])))});const l=perfil0312();return Object.assign(d,{nombre:$("cNombre").value.trim(),nombreCorto:$("cCorto").value.trim().toUpperCase(),nit:$("cNit").value.trim(),subtitulo:$("cSub").value.trim(),logo:c||"",colorMarca:$("cColor").value,formatos:o,modulos:a,correos:{aprobacionEpp:$("cCorreoEpp").value.trim(),dominio:$("cDominio").value.trim().replace(/^@/,"")},privacidad:{correo:$("cPrivCorreo").value.trim(),politica:/^https:\/\//.test($("cPrivPolitica").value.trim())?$("cPrivPolitica").value.trim():""},contactoEpp:{nombre:$("cWaNombre").value.trim(),cargo:"",whatsapp:$("cWaNumero").value.trim()},ocultos:MenusEmpresa.leer($("menusDentro")).ocultos,bautizos:MenusEmpresa.leer($("menusDentro")).bautizos,centrosCosto:n,servidor:r.servidor,apiToken:r.apiToken,demo:!1,perfil0312:"proveedor"===i?void 0:l},"proveedor"===i?{multiempresa:!0,empresaPorDefecto:$("cDefecto").value.trim().toLowerCase(),producto:$("cProducto").value.trim()||"Portal SSTA",sinEmpresa:void 0,codigo:void 0}:{multiempresa:void 0,producto:"propio"!==i||t?void 0:e.producto||void 0,sinEmpresa:void 0,codigo:void 0})}$("paquetes").addEventListener("click",e=>{const o=e.target.closest("[data-paq]");if(!o)return;const a=h[o.dataset.paq];document.querySelectorAll(".mod-cat").forEach(e=>{const t=!a||-1!==a.indexOf(e.dataset.cat);e.querySelectorAll("[data-mod]").forEach(e=>{e.checked=-1!==b.indexOf(e.dataset.mod)||t&&!("sgsst"===o.dataset.paq&&-1!==["calidad","ambiental","pesv"].indexOf(e.dataset.mod))})}),contarCats(),pintar()}),$("menusDentro").innerHTML=MenusEmpresa.html(e,{sinModulos:!0}),MenusEmpresa.activar($("menusDentro")),marcarTipo(),$("cLogo").addEventListener("change",()=>{const e=$("cLogo").files[0];if(!e)return;const o=new FileReader;o.onload=()=>{if(/svg/.test(e.type)&&o.result.length<12e4)return c=o.result,void pintar();const a=new Image;a.onload=()=>{const e=Math.min(1,420/Math.max(a.width,a.height)),o=document.createElement("canvas");o.width=Math.round(a.width*e),o.height=Math.round(a.height*e),o.getContext("2d").drawImage(a,0,0,o.width,o.height),c=o.toDataURL("image/png"),c.length>12e4&&(c=o.toDataURL("image/jpeg",.88)),pintar()},a.src=o.result},o.readAsDataURL(e)});const codigoOk=()=>/^[a-z0-9][a-z0-9-]{1,39}$/.test($("cCodigo").value.trim()),enlace=()=>String($("cSitio").value.trim()||d).replace(/\/?$/,"/")+"?e="+encodeURIComponent($("cCodigo").value.trim());function jsonCliente(e){const o=Object.assign({},e);return delete o.multiempresa,delete o.producto,delete o.demo,delete o.sinEmpresa,delete o.codigo,delete o.empresaPorDefecto,JSON.stringify({codigo:$("cCodigo").value.trim(),generado:(new Date).toISOString(),empresa:o},null,2)}function problemas(e){const o=[],a=[];return e.nombre||o.push("Falta la razón social."),e.nombreCorto||o.push("Falta el nombre corto."),/^TU (EMPRESA|MARCA)$/i.test(e.nombreCorto)&&o.push("Cambia el nombre corto: «"+e.nombreCorto+"» es el de ejemplo."),"cliente"!==i||codigoOk()||o.push("El código de la empresa: minúsculas, números y guiones (2 a 40), sin espacios."),"proveedor"===i&&$("cDefecto").value.trim()&&!/^[a-z0-9][a-z0-9-]{1,39}$/.test($("cDefecto").value.trim().toLowerCase())&&o.push("La empresa principal: minúsculas, números y guiones (2 a 40), sin espacios."),"proveedor"!==i||$("cProducto").value.trim()||a.push("Sin nombre de producto: se seguirá llamando Portal SSTA."),("proveedor"!==i||e.servidor)&&(e.servidor||("cliente"===i?o:a).push("Sin servidor: el portal no podrá guardar. Pega lo que da verConfiguracion en el paso 6.")),e.servidor&&!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(e.servidor)&&o.push("La URL del servidor no parece la de una aplicación web de Apps Script (debe terminar en /exec)."),e.servidor&&!e.apiToken&&o.push("Falta el apiToken (sale junto a la URL en verConfiguracion)."),c||a.push("Sin logo: se usará un distintivo con las iniciales."),"proveedor"===i||e.privacidad&&e.privacidad.correo||a.push("Sin correo para datos personales: el aviso de privacidad dirá que se pregunte al área SST."),"proveedor"===i||e.perfil0312||a.push("Sin número de trabajadores (paso 2): el portal tomará los 60 estándares hasta que SST defina el perfil de la empresa."),{p:o,a}}const E="";function archivo(e){return"/* ============================================================\n   empresa.js — "+e.nombre.replace(/\*\//g,"")+"\n   Generado con configurar-empresa.html el "+(new Date).toLocaleString("es-CO")+".\n   Para cambiar algo, vuelve a abrir configurar-empresa.html en este sitio:\n   el formulario carga estos mismos datos.\n   ============================================================ */\n\nconst EMPRESA = "+JSON.stringify(e,null,2)+";\n"}const f={"1.1.1":["documental","kit"],"1.1.2":["documental"],"1.1.3":["documental","plananual"],"1.1.4":["habilitacion","contratistas"],"1.1.5":["habilitacion"],"1.1.6":["copasst"],"1.1.7":["copasst"],"1.1.8":["convivencia"],"1.2.1":["plananual","asistencia","induccion"],"1.2.2":["induccion"],"1.2.3":["habilitacion"],"2.1.1":["documental","kit"],"2.2.1":["indicadores","documental"],"2.3.1":["auditorias","evidencias"],"2.4.1":["plananual"],"2.5.1":["documental","evidencias"],"2.6.1":["revision"],"2.7.1":["documental"],"2.8.1":["reportes"],"2.9.1":["proveedores"],"2.10.1":["proveedores","contratistas"],"2.11.1":["documental"],"3.1.1":["salud"],"3.1.2":["salud"],"3.1.3":["salud"],"3.1.4":["salud"],"3.1.5":["salud"],"3.1.6":["salud"],"3.1.7":["salud"],"3.1.8":["ambiental"],"3.1.9":["ambiental"],"3.2.1":["reportes"],"3.2.2":["reportes","plan"],"3.2.3":["reportes","indicadores"],"3.3.1":["indicadores"],"3.3.2":["indicadores"],"3.3.3":["indicadores"],"3.3.4":["indicadores"],"3.3.5":["indicadores"],"3.3.6":["indicadores"],"4.1.1":["peligros"],"4.1.2":["peligros"],"4.1.3":["quimicos"],"4.1.4":["peligros"],"4.2.1":["peligros","programas","caliente","alturas","confinados","izajes","electrico","ats"],"4.2.2":["inspecciones","epp"],"4.2.3":["documental","programas"],"4.2.4":["inspecciones","preop"],"4.2.5":["inspecciones","preop"],"4.2.6":["dotacion","epp"],"5.1.1":["emergencias"],"5.1.2":["emergencias","comiteemergencias","brigadistas"],"6.1.1":["indicadores"],"6.1.2":["auditorias"],"6.1.3":["revision"],"6.1.4":["auditorias"],"7.1.1":["plan"],"7.1.2":["plan"],"7.1.3":["plan"],"7.1.4":["plan"],"UPA.3":["epp","dotacion"]};function perfil0312(){const e=Number(String($("cTrab").value).replace(/\D/g,""));if(!e)return;const o=$("cAgro").checked,a=$("cRiesgo").value;return{trabajadores:e,claseRiesgo:a,agropecuaria:o,grupo0312:grupo0312(e,a,o),fecha:(new Date).toISOString().slice(0,10)}}function pintar(){!function pintar0312(){const e=perfil0312(),o=$("r0312");if(document.querySelectorAll(".mods .apoya").forEach(e=>e.remove()),!e)return void(o.innerHTML='<div class="msg aviso">Escribe el número de trabajadores para ver cuántos estándares debe cumplir.</div>');const a=e.grupo0312,t=clasificar0312(a),r=60===a,i=e.agropecuaria&&3!==a?'<div class="msg aviso">Con '+e.trabajadores+" trabajadores"+(/IV|V/.test(e.claseRiesgo)?" o riesgo "+e.claseRiesgo:"")+" ya no aplica el grupo de 3 de las unidades agropecuarias.</div>":"";o.innerHTML=i+'<div class="e0312-res"><div class="n">'+a+"</div><div><b>estándares mínimos que debe cumplir</b><span>Res. 0312 de 2019, "+ARTICULO_0312[a]+": "+esc(QUIEN_0312[a])+".</span></div></div>"+t.map(e=>'<div class="e0312-ciclo"><h3><span>'+esc(e.ciclo)+"</span><span>"+e.n+" de "+a+"</span></h3>"+e.categorias.map(e=>'<details class="e0312-cat"><summary>'+esc(e.nombre)+'<span class="c">'+e.n+(1===e.n?" estándar":" estándares")+(r?" · "+String(e.peso).replace(".",",")+" %":"")+"</span></summary><ol>"+e.items.map(e=>"<li><code>"+esc(e.id)+"</code>"+esc(e.nombre)+"</li>").join("")+"</ol></details>").join("")+"</div>").join("")+'<p class="ayuda u-mt10">'+(r?"El porcentaje es el peso de cada categoría en la calificación (art. 27).":"Cada estándar va en la categoría de su numeral equivalente en los 60 (así lo califica el portal).")+" Cumplir estos estándares no exime de las demás normas de SST (Decreto 1072 de 2015, Ley 1562 de 2012, comité de convivencia, vigía o COPASST, etc.).</p>";const n={};t.forEach(e=>e.categorias.forEach(e=>e.items.forEach(e=>(f[e.id]||[]).forEach(e=>{n[e]=(n[e]||0)+1})))),document.querySelectorAll("[data-mod]").forEach(e=>{const o=n[e.dataset.mod];o&&e.parentElement.insertAdjacentHTML("beforeend",'<span class="apoya" title="Módulo que apoya '+o+' de los estándares que le aplican">0312 · '+o+"</span>")})}();const o=armar(),a=c||"";if($("logoPrev").style.backgroundImage=a?'url("'+a+'")':"",$("vLogo").style.backgroundImage=a?'url("'+a+'")':"",$("vNombre").textContent=("proveedor"===i?$("cProducto").value.trim():t?MultiEmpresa.proveedor.producto:e.producto)||"Portal SSTA",$("btnEmpresa").textContent="cliente"===i?"⬇️ Descargar empresas/"+($("cCodigo").value.trim()||"código")+".json":"⬇️ Descargar empresa.js",$("btnManifest").hidden="cliente"===i,$("vEnlace").textContent=codigoOk()?enlace():"—",$("qrCliente").hidden=!("cliente"===i&&codigoOk()),"cliente"===i&&codigoOk()&&"undefined"!=typeof QR){try{QR.dibujar($("qrCanvas"),enlace(),{px:220})}catch(e){}$("qrTexto").textContent="Enlace para los celulares de "+(o.nombreCorto||"la empresa")+": "+enlace()}$("vSub").textContent=(o.nombre||"Razón social")+(o.nit?" · NIT "+o.nit:"")+(o.subtitulo?" — "+o.subtitulo:"");const{p:r,a:n}=problemas(o);$("errores").innerHTML=(r.length?'<div class="msg mal">'+r.map(esc).join("<br>")+"</div>":"")+(n.length?'<div class="msg aviso">'+n.map(esc).join("<br>")+"</div>":"")+(r.length||n.length?"":'<div class="msg ok">Todo listo para descargar.</div>');const s=leerServidor();$("servidorMsg").innerHTML=s.servidor?'<div class="msg '+(s.apiToken?"ok":"aviso")+'">Servidor: '+esc(s.servidor)+(s.apiToken?"<br>Token: "+esc(s.apiToken.slice(0,6))+"…":"<br>Falta el apiToken.")+"</div>":"";const d=Object.assign({},o,{logo:o.logo.length>120?o.logo.slice(0,60)+"…(imagen)":o.logo});$("vista").textContent="cliente"===i?jsonCliente(d):null===E?"Cargando…":archivo(d),$("btnEmpresa").disabled=$("btnManifest").disabled=!!r.length||null===E}document.addEventListener("input",pintar),document.addEventListener("change",pintar);const O=function(){try{const e=JSON.parse(localStorage.getItem("ssta-admin-sesion")||"null");return e&&e.token&&e.exp>Date.now()&&e.yo&&"admin"===e.yo.rol?e:null}catch(e){return null}}(),I=t?MultiEmpresa.proveedor:null,A=I&&I.servidor?String(I.servidor).replace(/\/+$/,"")+"?modulo=sgsst":"",T=function(){try{return localStorage.getItem("ssta-admin-clave-portal")||I&&I.apiToken||""}catch(e){return I&&I.apiToken||""}}();async function getConsola(e){return(await fetch(A+"&"+Object.keys(e).map(o=>o+"="+encodeURIComponent(e[o])).join("&")+"&token="+encodeURIComponent(T)+"&sesion="+encodeURIComponent(O.token))).json()}async function postConsola(e){return(await fetch(A,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({token:T,sesion:O.token,opId:"cfg-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8)},e))})).json()}function pintarConsola(){$("bConsola").hidden=!(O&&A&&"cliente"===i),aplicarTipo()}function descargar(e,o,a){const t=document.createElement("a");t.href=URL.createObjectURL(new Blob([o],{type:a})),t.download=e,document.body.appendChild(t),t.click(),setTimeout(()=>{URL.revokeObjectURL(t.href),t.remove()},1e3)}document.addEventListener("change",pintarConsola),$("btnConsola").addEventListener("click",async()=>{const e=$("msgConsola"),o=$("btnConsola"),a=armar(),{p:t}=problemas(a);if(t.length)return void(e.innerHTML='<div class="msg mal">Corrige primero lo que está en rojo arriba.</div>');const r=$("cCodigo").value.trim(),i=leerServidor(),n=JSON.parse(jsonCliente(a)).empresa;o.disabled=!0,e.innerHTML='<div class="msg aviso">Guardando en tu servidor…</div>';try{const o=await getConsola({action:"list",tipo:"cliente"});if(!o.ok)throw new Error(o.error||"Tu servidor no respondió la lista de clientes.");let t=null;try{t=JSON.parse(sessionStorage.getItem("ssta-admin-editar")||"null")}catch(e){}const s=o.rows.find(e=>t&&t.id&&e.id===t.id)||o.rows.find(e=>String(e.resumen.codigo||"").toLowerCase()===r);let c={},d=0,l=s?s.id:"CLI-"+(new Date).toISOString().slice(0,10).replace(/-/g,"")+"-"+Math.random().toString(36).slice(2,8).toUpperCase();if(s){const e=await getConsola({action:"doc",id:l});if(!e.ok)throw new Error(e.error||"No se pudo abrir el cliente.");c=e.doc||{},d=e.version||0}const p=a.perfil0312||{},u=n.modulos||{},m=Object.keys(u);Object.assign(c,{nombre:a.nombre,nit:a.nit||c.nit||"",codigo:r,estado:c.estado||"ACTIVO",modo:"unico",trabajadores:p.trabajadores||c.trabajadores||"",claseRiesgo:p.claseRiesgo||c.claseRiesgo||"I",agropecuaria:p.agropecuaria?"Sí":c.agropecuaria||"No",grupo0312:p.grupo0312||c.grupo0312||"",servidor:i.servidor||c.servidor||"",clave:i.clave||c.clave||"",llaveProveedor:i.llaveProveedor||c.llaveProveedor||"",scriptId:i.scriptId||c.scriptId||"",config:n,publicado:(new Date).toISOString(),modulosOn:m.filter(e=>!1!==u[e]).length,modulosTotal:m.length});const v=await postConsola({action:"guardar",tipo:"cliente",id:l,doc:c,versionBase:d});if(!v.ok)throw new Error(v.error||"No se pudo guardar.");const S=await postConsola({action:"publicarCliente",id:l}),g=S&&S.modulos;e.innerHTML='<div class="msg ok">✓ Guardado en tu consola. Sus celulares toman esta configuración al abrir el portal.'+(g?g.ok?"<br>✓ Su servidor recibió los módulos contratados.":"<br>⚠ Módulos solo en pantalla: "+esc(g.error||""):"")+'<br><a href="admin.html">← Volver a la consola</a></div>';try{sessionStorage.removeItem("ssta-admin-editar")}catch(e){}}catch(o){e.innerHTML='<div class="msg mal">'+esc(o.message||"Sin conexión con tu servidor.")+"</div>"}o.disabled=!1}),pintarConsola(),$("btnEmpresa").addEventListener("click",()=>"cliente"===i?descargar($("cCodigo").value.trim()+".json",jsonCliente(armar()),"application/json"):descargar("empresa.js",archivo(armar()),"text/javascript")),$("btnCopiar").addEventListener("click",()=>{navigator.clipboard&&navigator.clipboard.writeText("cliente"===i?jsonCliente(armar()):archivo(armar())).then(()=>{$("btnCopiar").textContent="✓ Copiado"})}),$("btnManifest").addEventListener("click",async()=>{const o=armar();let a={};try{a=await(await fetch("manifest.json",{cache:"no-store"})).json()}catch(e){}if("proveedor"===i)a.name=o.producto,a.short_name=o.producto.slice(0,18);else{const t=e.producto||"Portal SSTA";a.name=t+" — "+o.nombreCorto,a.short_name=("Portal SSTA"===t?"SSTA "+o.nombreCorto:o.nombreCorto).slice(0,18)}a.theme_color=o.colorMarca,descargar("manifest.json",JSON.stringify(a,null,2),"application/json")}),pintar()}();</script>
 </body>
 </html>
