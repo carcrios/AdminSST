@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Etiquetas QR de los equipos · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Etiquetas QR de los equipos · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>.etq-sel label{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--n-100);font-size:var(--fs-titulo)}.etq-sel input[type=checkbox]{width:22px;height:22px;flex:0 0 auto}.etq-sel small{display:block;color:var(--tenue);font-size:var(--fs-menor)}.hoja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.etq{border:2px dashed var(--n-300);border-radius:var(--r-m);padding:10px;text-align:center;background:#fff;break-inside:avoid;page-break-inside:avoid}.etq canvas{width:100%;max-width:170px;height:auto;display:block;margin:0 auto 6px}.etq b{display:block;font-size:var(--fs-titulo);line-height:1.2}.etq .cod{display:block;font-size:var(--fs-display);font-weight:800;letter-spacing:.04em;margin:2px 0}.etq small{display:block;font-size:var(--fs-menor);color:var(--n-700)}@media print{body{background:#fff!important}#botonDemo,.barra-inferior,.no-imprimir{display:none!important}.wrap{max-width:none;padding:0}.hoja{grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm;margin:0}.etq{border:1px dashed #999;border-radius:0}}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr no-imprimir">
+    <a class="back" href="preoperacional.html">← Volver</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Preoperacionales</div>
+    <h1>Etiquetas QR de los equipos</h1>
+    <p>Imprime, recorta y pega cada etiqueta en su equipo</p></div></div>
+  </div>
+  <div class="card no-imprimir">
+    <p class="ayuda u-mt0">El operario escanea la etiqueta con la cámara del celular y le abre el preoperacional de ese equipo, con el código ya puesto. No tiene que buscar ni escribir.</p>
+    <div id="avisoSrv"></div>
+    <h2 class="u-mt8" style="font-size:var(--fs-display);">Equipos del inventario</h2>
+    <div class="etq-sel" id="lista"><div class="empty">Cargando…</div></div>
+    <h2 style="font-size:var(--fs-display);margin-top:18px;">Agregar a mano</h2>
+    <p class="ayuda">Para equipos que no están en el inventario.</p>
+    <div class="field"><label for="mForm">Preoperacional</label><select id="mForm"></select></div>
+    <div class="field"><label for="mCods">Códigos de los equipos (uno por línea)</label><textarea id="mCods" rows="3" placeholder="MC-01&#10;MC-02"></textarea></div>
+    <button type="button" class="btn amber" id="btnVer">Ver las etiquetas</button>
+  </div>
+  <div id="hojaCaja" hidden>
+    <div class="no-imprimir u-fila" style="gap:8px;margin-top:12px;"><button type="button" class="btn" id="btnImprimir">Imprimir</button></div>
+    <div class="hoja" id="hoja"></div>
+  </div>
+  <div class="version-portal no-imprimir">Portal SSTA · versión v136</div>
+</div>
+<script src="dialogo.js"></script>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
+<script src="sgsst-ui.js"></script>
+<script src="preop-formularios.js"></script>
+<script src="preop-base.js"></script>
+<script src="qr.js"></script>
+<script>OfflineBanner.init(),"undefined"!=typeof UpdateManager&&UpdateManager.init();const $=e=>document.getElementById(e),FORMS=function(){const e="undefined"!=typeof PREOP_FORMULARIOS?PREOP_FORMULARIOS:[],a="undefined"!=typeof PREOP_BASE?PREOP_BASE:[],o=e.concat(a.filter(a=>!e.some(e=>e.id===a.id||e.codigo&&e.codigo===a.codigo)));return("undefined"!=typeof Empresa&&Empresa.bautizar?o.map(e=>Empresa.bautizar("preop",e)):o).filter(e=>!e.salud&&("undefined"==typeof Empresa||!Empresa.visible||Empresa.visible("preop",e.id)))}(),EQUIPO_DE={montacargas:["montacargas"],"plataforma-tijera":["plataforma"],camioneta:["vehiculo"],escalera:["escalera"],"equipo-alturas":["arnes"],camilla:["camilla"],"herramientas-menores":["herramientas_menores"],"equipo-soldar":["soldadura"],"equipo-oxicorte":["oxicorte"],pulidora:["pulidora","herramienta_electrica"],taladro:["taladro","herramienta_electrica"],motortool:["motortool","herramienta_electrica"],roladora:["roladora"],"diferencial-cadena":["diferencial"]},formDeCategoria=e=>FORMS.find(a=>-1!==(a.equipos||EQUIPO_DE[a.id]||[]).indexOf(e)),base=location.href.split(/[?#]/)[0].replace(/[^/]*$/,""),conEmp="undefined"!=typeof MultiEmpresa&&MultiEmpresa.activo&&EMPRESA.codigo?"e="+encodeURIComponent(EMPRESA.codigo)+"&":"",enlace=(e,a)=>base+"preoperacional.html?"+conEmp+"eq="+encodeURIComponent(a)+"#"+encodeURIComponent(e.id);let inventario=[];async function cargar(){if(UI.avisoServidor($("avisoSrv")))return void($("lista").innerHTML='<div class="empty">Sin servidor: agrega los equipos a mano.</div>');const e=await SGSST.listar("equipo");if(e.sinSesion)return void($("lista").innerHTML='<div class="empty">Entra con tu usuario para ver el inventario de equipos. También puedes agregarlos a mano.</div>');inventario=(e.rows||[]).filter(e=>!1!==e.resumen.activo&&e.resumen.codigo).map(e=>({cod:e.resumen.codigo,nombre:e.resumen.nombre||"",f:formDeCategoria(e.resumen.categoria)})).filter(e=>e.f),$("lista").innerHTML=inventario.length?'<label><input type="checkbox" id="todos" checked> <b>Todos ('+inventario.length+")</b></label>"+inventario.map((e,a)=>'<label><input type="checkbox" data-i="'+a+'" checked><span><b>'+esc(e.cod)+" · "+esc(e.nombre)+"</b><small>"+esc(e.f.nombre||e.f.titulo)+"</small></span></label>").join(""):'<div class="empty">No hay equipos en el inventario con su código. Agrégalos a mano abajo o regístralos en «Equipos».</div>';const a=$("todos");a&&a.addEventListener("change",()=>document.querySelectorAll("#lista [data-i]").forEach(e=>{e.checked=a.checked}))}function ver(){const e=[...document.querySelectorAll("#lista [data-i]:checked")].map(e=>inventario[Number(e.dataset.i)]),a=FORMS.find(e=>e.id===$("mForm").value);$("mCods").value.split(/\n+/).map(e=>e.trim().toUpperCase()).filter(Boolean).forEach(o=>{a&&e.push({cod:o,nombre:"",f:a})}),e.length?($("hoja").innerHTML=e.map((e,a)=>'<div class="etq"><canvas id="q'+a+'"></canvas><b>'+esc(e.f.nombre||e.f.titulo)+'</b><span class="cod">'+esc(e.cod)+"</span>"+(e.nombre?"<small>"+esc(e.nombre)+"</small>":"")+"<small>Escanea antes de usar el equipo</small></div>").join(""),e.forEach((e,a)=>{try{QR.dibujar($("q"+a),enlace(e.f,e.cod),{px:340,margen:2})}catch(e){}}),$("hojaCaja").hidden=!1,$("hojaCaja").scrollIntoView({behavior:"smooth"})):Dialogo.avisar("Marca al menos un equipo o escribe su código.")}$("mForm").innerHTML=FORMS.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.nombre||e.titulo)+"</option>").join(""),$("btnVer").addEventListener("click",ver),$("btnImprimir").addEventListener("click",()=>{try{localStorage.setItem("ssta-qr-impreso","1")}catch(e){}window.print()}),cargar();</script>
+</body>
+</html>
