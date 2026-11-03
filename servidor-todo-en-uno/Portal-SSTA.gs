@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v134';
+const VERSION_PORTAL = 'v136';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5141,10 +5141,10 @@ function modulo_sgsst_() {
 
    DESPLIEGUE: igual que los demás (Aplicación web · Ejecutar como: yo ·
    Acceso: cualquier usuario) → URL /exec en config.js (BACKENDS.sgsst.url).
-   Avisos diarios por correo: ▶ Ejecutar → instalarAvisosDiarios (una vez).
+   Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v134';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v136';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -6883,7 +6883,7 @@ function doGet(e) {
   // ¿Ya se aplicó este envío? (la cola sin señal lo pregunta antes de reenviar)
   if (p.action === 'opAplicado') return jsonOut_({ ok: true, aplicado: opIdYaAplicado_(texto_(p.opId)) });
   if (p.action === 'usuarios') { const no = soloAdmin_(); return jsonOut_(no || { ok: true, usuarios: leerUsuarios_().map(publicoUsuario_), roles: ROLES, yo: yo_() }); }
-  if (p.action === 'pendientes') return jsonOut_(pendientesLista_(p.dias));
+  if (p.action === 'pendientes') { asegurarAvisos_(); return jsonOut_(pendientesLista_(p.dias)); }
   if (p.action === 'responsables') return jsonOut_(responsables_());   // v107: a quién le deja tareas el asesor
   if (p.action === 'respaldo') { if (CTX_.modo && !esSst_()) return jsonOut_(CTX_.u ? errPermiso_('Solo Administrador o SST.') : errSesion_()); return jsonOut_(estadoRespaldo_()); }
 
@@ -7377,6 +7377,7 @@ function avisoDiario() {
   try { if (!ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'avisoSemanal'; }))
     ScriptApp.newTrigger('avisoSemanal').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(7).inTimezone('America/Bogota').create(); } catch (e) { console.log('Resumen del lunes: ' + e.message); }
   let tareas = 0; try { tareas = avisoTareasAsesor_(); } catch (e) { console.log('Avisos de tareas del asesor: ' + e.message); }
+  let personales = 0; try { personales = avisoPersonalDiario_(); } catch (e) { console.log('Avisos personales: ' + e.message); }
   const dest = correos_(); if (!dest.length) return 'Sin correos configurados.' + (tareas ? ' Avisos de tareas del asesor: ' + tareas + '.' : '');
   const hoy = hoyISO_();
   if (regSheet_().getLastRow() < 2) return 'Nada que revisar.';
@@ -7390,6 +7391,39 @@ function avisoDiario() {
 /** Los lunes: a cada usuario con correo, lo suyo de la semana (lo vencido y lo que vence en 7 días).
  *  Administrador y SST (y CORREOS_AVISO) reciben todo; los demás, lo que tiene su nombre como responsable.
  *  Los correos salen solo de la hoja Usuarios y de CORREOS_AVISO (nunca de lo que escribe alguien en un registro). */
+/** v136: cada mañana, a cada usuario con correo, SOLO si algo suyo vence hoy o mañana o venció ayer
+ *  («Hoy te vence esto y tienes N atrasados»). Si no hay nada nuevo, no le llega nada: así no se vuelve spam. */
+function avisoPersonalDiario_() {
+  if (!modoUsuarios_() || regSheet_().getLastRow() < 2) return 0;
+  const hoy = hoyISO_(), manana = sumarDias_(hoy, 1), ayer = sumarDias_(hoy, -1);
+  const items = pendientes_().items, perfil = perfilEmpresa_(), emp = nombreEmpresa_(perfil), sitio = texto_(perfil.sitio), ya = {};
+  correos_().forEach(function (c) { ya[c] = true; });   // quienes ya reciben el resumen general
+  let n = 0;
+  leerUsuarios_().filter(function (u) { return u.correo && u.activo === 'Sí' && u.debeCambiar !== 'Sí'; }).forEach(function (u) {
+    const correo = correoValido_(u.correo); if (!correo || ya[correo]) return; ya[correo] = true;
+    const sst = u.rol === 'admin' || u.rol === 'sst';
+    const suyos = items.filter(function (x) { if (SOLO_SST.indexOf(x.tipo) !== -1 && !sst) return false; return mismoNombre_(x.responsable, u.nombre) || (sst && !x.responsable); });
+    const nuevo = suyos.filter(function (x) { return x.fecha && (x.fecha === hoy || x.fecha === manana || (x.nivel === 'vencido' && x.fecha === ayer)); });
+    if (!nuevo.length) return;
+    const atras = suyos.filter(function (x) { return x.nivel === 'vencido'; }).length;
+    const ln = function (x) { return '· ' + (x.fecha === hoy ? 'HOY: ' : x.fecha === manana ? 'Mañana: ' : 'Venció ayer: ') + x.texto; };
+    MailApp.sendEmail(correo, 'SG-SST ' + emp + ': ' + nuevo.length + ' para hoy' + (atras ? ' y ' + atras + ' atrasado(s)' : ''),
+      'Hola ' + texto_(u.nombre).split(' ')[0] + ',\n\n' + nuevo.map(ln).join('\n') + (atras ? '\n\nTienes ' + atras + ' pendiente(s) atrasado(s).' : '') +
+      '\n\nÁbrelo en el portal: Gestión → Hoy.' + (sitio ? '\n' + sitio : '') + '\n\nCorreo automático del Portal SSTA.');
+    n++;
+  });
+  return n;
+}
+/** v136: los avisos por correo se programan solos la primera vez que alguien abre sus pendientes
+ *  (antes había que ejecutar instalarAvisosDiarios a mano). Se revisa una vez al día. */
+function asegurarAvisos_() {
+  try {
+    const c = cacheScript_(); if (c && c.get('avisos-ok')) return;
+    if (c) c.put('avisos-ok', '1', 21600);
+    if (PropertiesService.getScriptProperties().getProperty('AVISOS_APAGADOS') === '1') return;
+    if (!ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'avisoDiario'; })) instalarAvisosDiarios();
+  } catch (e) { console.log('Avisos automáticos: ' + e.message); }
+}
 function avisoSemanal() {
   const hoy = hoyISO_(), en7 = sumarDias_(hoy, 7);
   if (regSheet_().getLastRow() < 2) return 'Nada que revisar.';
