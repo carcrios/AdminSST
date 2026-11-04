@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v139';
+const VERSION_PORTAL = 'v140';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5334,7 +5334,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v139';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v140';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5376,7 +5376,8 @@ const TIPOS_GEN = {
   revmatriz: { hoja: 'Revisiones de la matriz', titulo: 'alcance', fecha: 'fecha', estado: '', responsable: 'responsable', vence: '',
     campos: ['fecha', 'alcance', 'responsable', 'participantes', 'cambios'] },
   emergencia: { hoja: 'Plan de emergencias', titulo: 'sede', fecha: 'fechaActualizacion', estado: 'estado', responsable: 'coordinador', vence: 'proximaRevision',
-    campos: ['sede', 'direccion', 'ocupantes', 'coordinador', 'amenazas', 'riesgoAlto', 'riesgoMedio', 'brigadistas', 'brigadistasCapacitados', 'dotacionFaltantes', 'fechaActualizacion', 'proximaRevision', 'estado'] },
+    campos: ['sede', 'direccion', 'ocupantes', 'coordinador', 'amenazas', 'riesgoAlto', 'riesgoMedio', 'brigadistas', 'brigadistasCapacitados', 'dotacionFaltantes', 'fechaActualizacion', 'proximaRevision', 'estado',
+             'puntoEncuentro', 'hospital', 'hospitalDireccion', 'hospitalTelefono', 'hospitalTiempo', 'ambulanciaTelefono', 'arlNombre', 'arlTelefono', 'medevacTransporte'] },   // v140: MEDEVAC
   simulacro: { hoja: 'Simulacros', titulo: 'escenario', fecha: 'fecha', estado: 'calificacion', responsable: 'sede', vence: '',
     campos: ['fecha', 'tipoSimulacro', 'escenario', 'sede', 'participantes', 'tiempoTotal', 'conteoCompleto', 'calificacion', 'hallazgos'] },
   plananual: { hoja: 'Plan anual de trabajo', titulo: 'anio', fecha: 'fechaFirma', estado: 'estado', responsable: 'responsable', vence: '',
@@ -6054,7 +6055,7 @@ function resumen_(tipo, d) {
       req[k] = { fecha: texto_(r.fecha), vence: texto_(r.vence), apto: texto_(r.apto), restricciones: corto_(r.restricciones, 120), soporte: !!r.soporte };
     });
     const aut = d.autorizacionDatos || null;
-    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), empresa: corto_(d.empresa, 60), activo: d.activo !== false, req: req,
+    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), empresa: corto_(d.empresa, 60), activo: d.activo !== false, req: req, emer: !!(d.emergencia && d.emergencia.telefono),   // v140: el contacto viaja solo en el registro (pide usuario)
              autorizacion: aut ? { general: aut.general === true, sensibles: aut.sensibles === true, fecha: texto_(aut.fecha) } : null };
   }
   if (tipo === 'reporte') {
