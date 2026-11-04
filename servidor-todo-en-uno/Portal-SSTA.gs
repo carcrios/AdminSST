@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v136';
+const VERSION_PORTAL = 'v139';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -829,6 +829,43 @@ function opIdYaAplicado_(opId) {
 
 /* ================= ESCRITURA ================= */
 
+
+/* ===== v137 · SELLO DE AUDITORÍA DE LAS FIRMAS =====
+   Cada firma (imagen data:image en un campo «firma…» o «sig…») recibe al llegar al servidor un sello
+   a su lado (<campo>_sello): fecha y hora DEL SERVIDOR, quién (si hay usuario), el equipo (navegador),
+   el GPS si la persona lo permitió, la huella SHA-256 de la imagen y un código HMAC con una clave que
+   solo conoce este servidor. Así no se puede fabricar ni mover una firma a otro registro sin que se
+   note. Si la misma firma vuelve a llegar (guardar de nuevo), se conserva su sello original. */
+function selloSecreto_() {
+  const p = PropertiesService.getScriptProperties(); let s = p.getProperty('SELLO_SECRETO');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SELLO_SECRETO', s); }
+  return s;
+}
+function selloHex_(b) { return b.map(function (x) { return ((x < 0 ? x + 256 : x).toString(16)).padStart(2, '0'); }).join(''); }
+function selloCodigo_(s) { return selloHex_(Utilities.computeHmacSha256Signature([s.huella, s.fecha, s.usuario, s.equipo, s.gps, s.ref].join('|'), selloSecreto_())); }
+function selloValido_(s, huella) { return !!(s && typeof s === 'object' && s.huella === huella && s.codigo === selloCodigo_(s)); }
+function ctxSello_(body, usuario, ref) {
+  const d = (body && body._disp && typeof body._disp === 'object') ? body._disp : {}, g = d.gps || {};
+  const gps = isFinite(g.lat) && isFinite(g.lon) && g.lat !== null && g.lon !== null ? Number(g.lat).toFixed(5) + ',' + Number(g.lon).toFixed(5) + (isFinite(g.prec) && g.prec !== null ? ' ±' + Math.round(g.prec) + ' m' : '') : '';
+  return { usuario: String(usuario || '').slice(0, 120), equipo: String(d.ua || '').slice(0, 180), gps: gps, ref: String(ref || '').slice(0, 80) };
+}
+function sellarFirmas_(obj, ctx, prof) {
+  prof = prof || 0; if (!obj || typeof obj !== 'object' || prof > 12) return 0;
+  let n = 0;
+  if (Array.isArray(obj)) { obj.forEach(function (x) { n += sellarFirmas_(x, ctx, prof + 1); }); return n; }
+  Object.keys(obj).forEach(function (k) {
+    const v = obj[k];
+    if (/_sello$/.test(k) || k === '_disp') return;
+    if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+      const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v));
+      if (selloValido_(obj[k + '_sello'], huella)) return;
+      const s = { fecha: new Date().toISOString(), usuario: ctx.usuario, equipo: ctx.equipo, gps: ctx.gps, ref: ctx.ref, huella: huella };
+      s.codigo = selloCodigo_(s); obj[k + '_sello'] = s; n++;
+    } else if (v && typeof v === 'object') n += sellarFirmas_(v, ctx, prof + 1);
+  });
+  return n;
+}
+
 function doPost(e) {
   const body = JSON.parse(e.postData.contents);
   if (!checkToken_(body.token)) {
@@ -842,6 +879,7 @@ function doPost(e) {
     return jsonOut_({ ok: false, error: 'permitCode requerido' });
   }
 
+  try { sellarFirmas_(body, ctxSello_(body, '', 'permiso:' + code)); } catch (e) { console.log('Sello: ' + e.message); }
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -2315,6 +2353,43 @@ function doGet(e) {
 
 /* ================= ESCRITURA ================= */
 
+
+/* ===== v137 · SELLO DE AUDITORÍA DE LAS FIRMAS =====
+   Cada firma (imagen data:image en un campo «firma…» o «sig…») recibe al llegar al servidor un sello
+   a su lado (<campo>_sello): fecha y hora DEL SERVIDOR, quién (si hay usuario), el equipo (navegador),
+   el GPS si la persona lo permitió, la huella SHA-256 de la imagen y un código HMAC con una clave que
+   solo conoce este servidor. Así no se puede fabricar ni mover una firma a otro registro sin que se
+   note. Si la misma firma vuelve a llegar (guardar de nuevo), se conserva su sello original. */
+function selloSecreto_() {
+  const p = PropertiesService.getScriptProperties(); let s = p.getProperty('SELLO_SECRETO');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SELLO_SECRETO', s); }
+  return s;
+}
+function selloHex_(b) { return b.map(function (x) { return ((x < 0 ? x + 256 : x).toString(16)).padStart(2, '0'); }).join(''); }
+function selloCodigo_(s) { return selloHex_(Utilities.computeHmacSha256Signature([s.huella, s.fecha, s.usuario, s.equipo, s.gps, s.ref].join('|'), selloSecreto_())); }
+function selloValido_(s, huella) { return !!(s && typeof s === 'object' && s.huella === huella && s.codigo === selloCodigo_(s)); }
+function ctxSello_(body, usuario, ref) {
+  const d = (body && body._disp && typeof body._disp === 'object') ? body._disp : {}, g = d.gps || {};
+  const gps = isFinite(g.lat) && isFinite(g.lon) && g.lat !== null && g.lon !== null ? Number(g.lat).toFixed(5) + ',' + Number(g.lon).toFixed(5) + (isFinite(g.prec) && g.prec !== null ? ' ±' + Math.round(g.prec) + ' m' : '') : '';
+  return { usuario: String(usuario || '').slice(0, 120), equipo: String(d.ua || '').slice(0, 180), gps: gps, ref: String(ref || '').slice(0, 80) };
+}
+function sellarFirmas_(obj, ctx, prof) {
+  prof = prof || 0; if (!obj || typeof obj !== 'object' || prof > 12) return 0;
+  let n = 0;
+  if (Array.isArray(obj)) { obj.forEach(function (x) { n += sellarFirmas_(x, ctx, prof + 1); }); return n; }
+  Object.keys(obj).forEach(function (k) {
+    const v = obj[k];
+    if (/_sello$/.test(k) || k === '_disp') return;
+    if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+      const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v));
+      if (selloValido_(obj[k + '_sello'], huella)) return;
+      const s = { fecha: new Date().toISOString(), usuario: ctx.usuario, equipo: ctx.equipo, gps: ctx.gps, ref: ctx.ref, huella: huella };
+      s.codigo = selloCodigo_(s); obj[k + '_sello'] = s; n++;
+    } else if (v && typeof v === 'object') n += sellarFirmas_(v, ctx, prof + 1);
+  });
+  return n;
+}
+
 function doPost(e) {
   // Cualquier error se devuelve como DATOS ({ok:false, error}). Si el script
   // fallara sin atraparlo, Google responde con una página que el navegador no
@@ -2335,6 +2410,7 @@ function doPostInterno_(e) {
     registrarEvento_('', '', body.action || 'DESCONOCIDA', 'RECHAZADO', 'Token inválido', '', '');
     return jsonOut_({ ok: false, error: 'Clave del portal incorrecta o faltante (Token inválido).', codigoError: 'CLAVE' });
   }
+  try { sellarFirmas_(body, ctxSello_(body, '', body.action || '')); } catch (e) { console.log('Sello: ' + e.message); }
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -3063,6 +3139,43 @@ function genCode_() {
 
 /* ================= ESCRITURA ================= */
 
+
+/* ===== v137 · SELLO DE AUDITORÍA DE LAS FIRMAS =====
+   Cada firma (imagen data:image en un campo «firma…» o «sig…») recibe al llegar al servidor un sello
+   a su lado (<campo>_sello): fecha y hora DEL SERVIDOR, quién (si hay usuario), el equipo (navegador),
+   el GPS si la persona lo permitió, la huella SHA-256 de la imagen y un código HMAC con una clave que
+   solo conoce este servidor. Así no se puede fabricar ni mover una firma a otro registro sin que se
+   note. Si la misma firma vuelve a llegar (guardar de nuevo), se conserva su sello original. */
+function selloSecreto_() {
+  const p = PropertiesService.getScriptProperties(); let s = p.getProperty('SELLO_SECRETO');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SELLO_SECRETO', s); }
+  return s;
+}
+function selloHex_(b) { return b.map(function (x) { return ((x < 0 ? x + 256 : x).toString(16)).padStart(2, '0'); }).join(''); }
+function selloCodigo_(s) { return selloHex_(Utilities.computeHmacSha256Signature([s.huella, s.fecha, s.usuario, s.equipo, s.gps, s.ref].join('|'), selloSecreto_())); }
+function selloValido_(s, huella) { return !!(s && typeof s === 'object' && s.huella === huella && s.codigo === selloCodigo_(s)); }
+function ctxSello_(body, usuario, ref) {
+  const d = (body && body._disp && typeof body._disp === 'object') ? body._disp : {}, g = d.gps || {};
+  const gps = isFinite(g.lat) && isFinite(g.lon) && g.lat !== null && g.lon !== null ? Number(g.lat).toFixed(5) + ',' + Number(g.lon).toFixed(5) + (isFinite(g.prec) && g.prec !== null ? ' ±' + Math.round(g.prec) + ' m' : '') : '';
+  return { usuario: String(usuario || '').slice(0, 120), equipo: String(d.ua || '').slice(0, 180), gps: gps, ref: String(ref || '').slice(0, 80) };
+}
+function sellarFirmas_(obj, ctx, prof) {
+  prof = prof || 0; if (!obj || typeof obj !== 'object' || prof > 12) return 0;
+  let n = 0;
+  if (Array.isArray(obj)) { obj.forEach(function (x) { n += sellarFirmas_(x, ctx, prof + 1); }); return n; }
+  Object.keys(obj).forEach(function (k) {
+    const v = obj[k];
+    if (/_sello$/.test(k) || k === '_disp') return;
+    if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+      const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v));
+      if (selloValido_(obj[k + '_sello'], huella)) return;
+      const s = { fecha: new Date().toISOString(), usuario: ctx.usuario, equipo: ctx.equipo, gps: ctx.gps, ref: ctx.ref, huella: huella };
+      s.codigo = selloCodigo_(s); obj[k + '_sello'] = s; n++;
+    } else if (v && typeof v === 'object') n += sellarFirmas_(v, ctx, prof + 1);
+  });
+  return n;
+}
+
 function doPost(e) {
   let body;
   try { body = JSON.parse(e.postData.contents); }
@@ -3072,6 +3185,7 @@ function doPost(e) {
     registrarEvento_(body.code || '', 'GUARDAR', 'RECHAZADO', 'Token inválido', body.opId, '', '');
     return jsonOut_({ ok: false, error: 'Clave del portal incorrecta o faltante (Token inválido).', codigoError: 'CLAVE' });
   }
+  try { sellarFirmas_(body, ctxSello_(body, '', body.action || '')); } catch (e) { console.log('Sello: ' + e.message); }
 
   if (body.action === 'agregarParticipantes') return agregarParticipantes_(body);
   if (body.action === 'cerrarAts') return cerrarAts_(body);
@@ -3870,6 +3984,43 @@ function genCode_(semanaDel) {
 
 /* ================= ESCRITURA ================= */
 
+
+/* ===== v137 · SELLO DE AUDITORÍA DE LAS FIRMAS =====
+   Cada firma (imagen data:image en un campo «firma…» o «sig…») recibe al llegar al servidor un sello
+   a su lado (<campo>_sello): fecha y hora DEL SERVIDOR, quién (si hay usuario), el equipo (navegador),
+   el GPS si la persona lo permitió, la huella SHA-256 de la imagen y un código HMAC con una clave que
+   solo conoce este servidor. Así no se puede fabricar ni mover una firma a otro registro sin que se
+   note. Si la misma firma vuelve a llegar (guardar de nuevo), se conserva su sello original. */
+function selloSecreto_() {
+  const p = PropertiesService.getScriptProperties(); let s = p.getProperty('SELLO_SECRETO');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SELLO_SECRETO', s); }
+  return s;
+}
+function selloHex_(b) { return b.map(function (x) { return ((x < 0 ? x + 256 : x).toString(16)).padStart(2, '0'); }).join(''); }
+function selloCodigo_(s) { return selloHex_(Utilities.computeHmacSha256Signature([s.huella, s.fecha, s.usuario, s.equipo, s.gps, s.ref].join('|'), selloSecreto_())); }
+function selloValido_(s, huella) { return !!(s && typeof s === 'object' && s.huella === huella && s.codigo === selloCodigo_(s)); }
+function ctxSello_(body, usuario, ref) {
+  const d = (body && body._disp && typeof body._disp === 'object') ? body._disp : {}, g = d.gps || {};
+  const gps = isFinite(g.lat) && isFinite(g.lon) && g.lat !== null && g.lon !== null ? Number(g.lat).toFixed(5) + ',' + Number(g.lon).toFixed(5) + (isFinite(g.prec) && g.prec !== null ? ' ±' + Math.round(g.prec) + ' m' : '') : '';
+  return { usuario: String(usuario || '').slice(0, 120), equipo: String(d.ua || '').slice(0, 180), gps: gps, ref: String(ref || '').slice(0, 80) };
+}
+function sellarFirmas_(obj, ctx, prof) {
+  prof = prof || 0; if (!obj || typeof obj !== 'object' || prof > 12) return 0;
+  let n = 0;
+  if (Array.isArray(obj)) { obj.forEach(function (x) { n += sellarFirmas_(x, ctx, prof + 1); }); return n; }
+  Object.keys(obj).forEach(function (k) {
+    const v = obj[k];
+    if (/_sello$/.test(k) || k === '_disp') return;
+    if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+      const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v));
+      if (selloValido_(obj[k + '_sello'], huella)) return;
+      const s = { fecha: new Date().toISOString(), usuario: ctx.usuario, equipo: ctx.equipo, gps: ctx.gps, ref: ctx.ref, huella: huella };
+      s.codigo = selloCodigo_(s); obj[k + '_sello'] = s; n++;
+    } else if (v && typeof v === 'object') n += sellarFirmas_(v, ctx, prof + 1);
+  });
+  return n;
+}
+
 function doPost(e) {
   let body;
   try { body = JSON.parse(e.postData.contents); }
@@ -3878,6 +4029,7 @@ function doPost(e) {
     registrarEvento_(body.code || '', body.action || 'DESCONOCIDA', 'RECHAZADO', 'Token inválido', body.opId, '', '');
     return jsonOut_({ ok: false, error: 'Clave del portal incorrecta o faltante (Token inválido).', codigoError: 'CLAVE' });
   }
+  try { sellarFirmas_(body, ctxSello_(body, '', body.action || '')); } catch (e) { console.log('Sello: ' + e.message); }
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
@@ -4472,12 +4624,50 @@ function enviarSolicitudReposicion_(datos, inspeccionId) {
 
 /* ================= ESCRITURA ================= */
 
+
+/* ===== v137 · SELLO DE AUDITORÍA DE LAS FIRMAS =====
+   Cada firma (imagen data:image en un campo «firma…» o «sig…») recibe al llegar al servidor un sello
+   a su lado (<campo>_sello): fecha y hora DEL SERVIDOR, quién (si hay usuario), el equipo (navegador),
+   el GPS si la persona lo permitió, la huella SHA-256 de la imagen y un código HMAC con una clave que
+   solo conoce este servidor. Así no se puede fabricar ni mover una firma a otro registro sin que se
+   note. Si la misma firma vuelve a llegar (guardar de nuevo), se conserva su sello original. */
+function selloSecreto_() {
+  const p = PropertiesService.getScriptProperties(); let s = p.getProperty('SELLO_SECRETO');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SELLO_SECRETO', s); }
+  return s;
+}
+function selloHex_(b) { return b.map(function (x) { return ((x < 0 ? x + 256 : x).toString(16)).padStart(2, '0'); }).join(''); }
+function selloCodigo_(s) { return selloHex_(Utilities.computeHmacSha256Signature([s.huella, s.fecha, s.usuario, s.equipo, s.gps, s.ref].join('|'), selloSecreto_())); }
+function selloValido_(s, huella) { return !!(s && typeof s === 'object' && s.huella === huella && s.codigo === selloCodigo_(s)); }
+function ctxSello_(body, usuario, ref) {
+  const d = (body && body._disp && typeof body._disp === 'object') ? body._disp : {}, g = d.gps || {};
+  const gps = isFinite(g.lat) && isFinite(g.lon) && g.lat !== null && g.lon !== null ? Number(g.lat).toFixed(5) + ',' + Number(g.lon).toFixed(5) + (isFinite(g.prec) && g.prec !== null ? ' ±' + Math.round(g.prec) + ' m' : '') : '';
+  return { usuario: String(usuario || '').slice(0, 120), equipo: String(d.ua || '').slice(0, 180), gps: gps, ref: String(ref || '').slice(0, 80) };
+}
+function sellarFirmas_(obj, ctx, prof) {
+  prof = prof || 0; if (!obj || typeof obj !== 'object' || prof > 12) return 0;
+  let n = 0;
+  if (Array.isArray(obj)) { obj.forEach(function (x) { n += sellarFirmas_(x, ctx, prof + 1); }); return n; }
+  Object.keys(obj).forEach(function (k) {
+    const v = obj[k];
+    if (/_sello$/.test(k) || k === '_disp') return;
+    if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+      const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v));
+      if (selloValido_(obj[k + '_sello'], huella)) return;
+      const s = { fecha: new Date().toISOString(), usuario: ctx.usuario, equipo: ctx.equipo, gps: ctx.gps, ref: ctx.ref, huella: huella };
+      s.codigo = selloCodigo_(s); obj[k + '_sello'] = s; n++;
+    } else if (v && typeof v === 'object') n += sellarFirmas_(v, ctx, prof + 1);
+  });
+  return n;
+}
+
 function doPost(e) {
   const body = JSON.parse(e.postData.contents);
   if (!checkToken_(body.token)) {
     registrarEvento_('', 'INSPECCION', 'RECHAZADO', 'Token inválido', '', '', '', '');
     return jsonOut_({ ok: false, error: 'Clave del portal incorrecta o faltante (Token inválido).', codigoError: 'CLAVE' });
   }
+  try { sellarFirmas_(body, ctxSello_(body, '', body.action || '')); } catch (e) { console.log('Sello: ' + e.message); }
 
   // Envío manual del resumen del día, disparado por el botón del portal. Va
   // antes del lock porque no escribe en la hoja de inspecciones: solo lee y
@@ -5144,7 +5334,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v136';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v139';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5302,7 +5492,10 @@ const TIPOS_GEN = {
   buzon: { hoja: 'Buzón del comité (sin datos)', titulo: 'clase', fecha: 'fecha', estado: 'estado', responsable: '', vence: '',
     campos: ['codigo', 'clase', 'fecha', 'estado'] },
   reporteanual: { hoja: 'Reporte anual 0312', titulo: 'anio', fecha: 'fechaRegistro', estado: 'estado', responsable: 'responsable', vence: '',
-    campos: ['anio', 'puntaje', 'valoracion', 'fechaAutoevaluacion', 'acciones', 'fechaRegistro', 'radicado', 'fechaArl', 'responsable', 'estado'] }
+    campos: ['anio', 'puntaje', 'valoracion', 'fechaAutoevaluacion', 'acciones', 'fechaRegistro', 'radicado', 'fechaArl', 'responsable', 'estado'] },
+  // v139: plantillas de tareas frecuentes (lo que se llena siempre igual en un formulario), para todo el equipo.
+  plantillaform: { hoja: 'Plantillas de formularios', titulo: 'nombre', fecha: '', estado: '', responsable: 'pagina', vence: '',
+    campos: ['nombre', 'pagina', 'grupo', 'datos'], largos: ['datos'], largoMax: 6000 }
 };
 /* Qué dice el correo diario cuando vence algo de estos tipos. */
 const AVISO_GEN = { sustancia: 'Hoja de seguridad', medicion: 'Medición ambiental', emergencia: 'Actualizar el plan de emergencias', examen: 'Examen médico', psico: 'Aplicar la batería psicosocial',
@@ -5444,7 +5637,7 @@ function opIdYaAplicado_(opId) {
        individuales los ven solo Administrador y SST. */
 const ROLES = { admin: 'Administrador', sst: 'SST (todo el SG-SST)', supervisor: 'Supervisor / campo', comite: 'Integrante de comité', consulta: 'Solo consulta (gerencia, auditor)' };
 const ESCRIBE_ROL = {
-  supervisor: ['reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro'],
+  supervisor: ['reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro', 'plantillaform'],
   comite: ['reunion', 'queja', 'buzon', 'comite', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
   consulta: []
 };
@@ -5603,17 +5796,24 @@ function salDe_(usuario) {
   // A un usuario que no existe se le da una sal fija (no se revela quién existe).
   return u ? { salt: String(u.salt), iter: Number(u.iter) || ITER_USUARIO } : { salt: hex_(Utilities.computeHmacSha256Signature('sal|' + String(usuario).toLowerCase(), secretoSesion_())).slice(0, 32), iter: ITER_USUARIO };
 }
+/** v137: muchos intentos fallidos en una hora (de cualquier usuario, también inventados) avisa: alguien está probando claves. */
+function fallosEntrada_() {
+  const c = cacheScript_(); if (!c) return;
+  const k = 'fallos:' + Math.floor(Date.now() / 3600000), n = Number(c.get(k) || 0) + 1; c.put(k, String(n), 3700);
+  if (n === 20) alarma_('fallos-hora', 'Muchos intentos de entrada fallidos', 'En la última hora hubo 20 intentos de entrar al portal con usuario o clave incorrectos. Puede ser alguien probando claves. Revisa la bitácora (ENTRAR · RECHAZADO) y, si hace falta, cambia las claves.', 120);
+}
 function entrar_(body) {
   const u = buscarUsuario_(body.usuario), ahora = Date.now();
   // Un solo mensaje para todo (usuario que no existe, clave mala o bloqueado): no revela quién existe.
   const malo = { ok: false, codigoError: 'ENTRAR', error: 'Usuario o clave incorrectos. Después de 5 intentos fallidos hay que esperar 15 minutos.' };
-  if (!u || u.activo !== 'Sí') { registrarEvento_('', 'ENTRAR', 'RECHAZADO', 'Usuario desconocido o inactivo: ' + corto_(body.usuario, 40), body.opId, '', 'usuario'); return malo; }
+  if (!u || u.activo !== 'Sí') { registrarEvento_('', 'ENTRAR', 'RECHAZADO', 'Usuario desconocido o inactivo: ' + corto_(body.usuario, 40), body.opId, '', 'usuario'); fallosEntrada_(); return malo; }
   if (ms_(u.bloqueadoHasta) > ahora) { registrarEvento_('', 'ENTRAR', 'RECHAZADO', 'Bloqueado por intentos fallidos: ' + u.usuario, body.opId, '', 'usuario'); return malo; }
   if (!body.prueba || hashPrueba_(body.prueba) !== String(u.hash)) {
     u.intentos = (Number(u.intentos) || 0) + 1;
-    if (u.intentos >= 5) { u.intentos = 0; u.bloqueadoHasta = ahora + 15 * 60000; }
+    if (u.intentos >= 5) { u.intentos = 0; u.bloqueadoHasta = ahora + 15 * 60000; alarma_('bloqueo:' + u.usuario, 'Usuario bloqueado por claves incorrectas', 'Alguien escribió 5 veces una clave incorrecta para el usuario «' + u.usuario + '» (' + texto_(u.nombre) + '). Quedó bloqueado 15 minutos. Si no fue esa persona, cámbiale la clave en Usuarios.', 60); }
     escribirUsuario_(u);
     registrarEvento_('', 'ENTRAR', 'RECHAZADO', 'Clave incorrecta: ' + u.usuario, body.opId, '', 'usuario');
+    fallosEntrada_();
     return malo;
   }
   u.intentos = 0; u.bloqueadoHasta = ''; u.ultimoIngreso = new Date();
@@ -5678,8 +5878,10 @@ function guardarUsuario_(body) {
     detalle += nuevo ? ' con clave temporal' : ' · clave temporal nueva (se cerraron sus sesiones)';
   } else if (nuevo) return { ok: false, error: 'Falta la clave temporal.' };
   if (body.cerrarSesiones || o.activo !== 'Sí') { o.sesionDesde = Date.now(); if (body.cerrarSesiones) detalle += ' · cerró sus sesiones'; }
+  const eraAdmin = !nuevo && buscarUsuario_(o.usuario) && buscarUsuario_(o.usuario).rol === 'admin';
   o.actualizado = new Date();
   escribirUsuario_(o);
+  if (o.rol === 'admin' && o.activo === 'Sí' && (nuevo || !eraAdmin)) alarma_('admin:' + o.usuario, 'Nuevo administrador del portal', 'Se ' + (nuevo ? 'creó' : 'le dio rol de administrador a') + ' el usuario «' + o.usuario + '» (' + texto_(o.nombre) + '), por ' + (CTX_.u ? CTX_.u.usuario : 'el sistema') + '. Un administrador puede ver y cambiar todo. Si no lo reconoces, desactívalo en Usuarios.', 1);
   registrarEvento_(o.usuario, 'USUARIO', 'APLICADO', detalle, body.opId, '', 'usuario');
   return { ok: true, usuario: publicoUsuario_(o) };
 }
@@ -6053,6 +6255,43 @@ function escribirVista_(tipo, id, d, borrado) {
 }
 
 /* ================= ESCRITURA ================= */
+
+/* ===== v137 · SELLO DE AUDITORÍA DE LAS FIRMAS =====
+   Cada firma (imagen data:image en un campo «firma…» o «sig…») recibe al llegar al servidor un sello
+   a su lado (<campo>_sello): fecha y hora DEL SERVIDOR, quién (si hay usuario), el equipo (navegador),
+   el GPS si la persona lo permitió, la huella SHA-256 de la imagen y un código HMAC con una clave que
+   solo conoce este servidor. Así no se puede fabricar ni mover una firma a otro registro sin que se
+   note. Si la misma firma vuelve a llegar (guardar de nuevo), se conserva su sello original. */
+function selloSecreto_() {
+  const p = PropertiesService.getScriptProperties(); let s = p.getProperty('SELLO_SECRETO');
+  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); p.setProperty('SELLO_SECRETO', s); }
+  return s;
+}
+function selloHex_(b) { return b.map(function (x) { return ((x < 0 ? x + 256 : x).toString(16)).padStart(2, '0'); }).join(''); }
+function selloCodigo_(s) { return selloHex_(Utilities.computeHmacSha256Signature([s.huella, s.fecha, s.usuario, s.equipo, s.gps, s.ref].join('|'), selloSecreto_())); }
+function selloValido_(s, huella) { return !!(s && typeof s === 'object' && s.huella === huella && s.codigo === selloCodigo_(s)); }
+function ctxSello_(body, usuario, ref) {
+  const d = (body && body._disp && typeof body._disp === 'object') ? body._disp : {}, g = d.gps || {};
+  const gps = isFinite(g.lat) && isFinite(g.lon) && g.lat !== null && g.lon !== null ? Number(g.lat).toFixed(5) + ',' + Number(g.lon).toFixed(5) + (isFinite(g.prec) && g.prec !== null ? ' ±' + Math.round(g.prec) + ' m' : '') : '';
+  return { usuario: String(usuario || '').slice(0, 120), equipo: String(d.ua || '').slice(0, 180), gps: gps, ref: String(ref || '').slice(0, 80) };
+}
+function sellarFirmas_(obj, ctx, prof) {
+  prof = prof || 0; if (!obj || typeof obj !== 'object' || prof > 12) return 0;
+  let n = 0;
+  if (Array.isArray(obj)) { obj.forEach(function (x) { n += sellarFirmas_(x, ctx, prof + 1); }); return n; }
+  Object.keys(obj).forEach(function (k) {
+    const v = obj[k];
+    if (/_sello$/.test(k) || k === '_disp') return;
+    if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+      const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v));
+      if (selloValido_(obj[k + '_sello'], huella)) return;
+      const s = { fecha: new Date().toISOString(), usuario: ctx.usuario, equipo: ctx.equipo, gps: ctx.gps, ref: ctx.ref, huella: huella };
+      s.codigo = selloCodigo_(s); obj[k + '_sello'] = s; n++;
+    } else if (v && typeof v === 'object') n += sellarFirmas_(v, ctx, prof + 1);
+  });
+  return n;
+}
+
 function doPost(e) {
   CTX_ = { modo: false, u: null, colUsuario: false };
   let body;
@@ -6079,6 +6318,7 @@ function doPost(e) {
     if (body.action === 'guardar' || body.action === 'parche') return jsonOut_(guardar_(body));
     if (body.action === 'guardarLote') return jsonOut_(guardarLote_(body));
     if (body.action === 'borrar') return jsonOut_(borrar_(body));
+    if (body.action === 'restaurar') return jsonOut_(restaurar_(body));
     if (body.action === 'adjuntar') return jsonOut_(adjuntar_(body));
     if (body.action === 'quitarAdjunto') return jsonOut_(quitarAdjunto_(body));
     if (body.action === 'entrar') return jsonOut_(entrar_(body));
@@ -6234,6 +6474,7 @@ function guardar_(body) {
     if (por) doc.registradoPor = por;
     doc.modificadoPor = quien;
   }
+  if (tipo !== 'queja' && tipo !== 'buzon') { try { sellarFirmas_(doc, ctxSello_(body, CTX_.u ? etiquetaUsuario_() : '', tipo + ':' + id)); } catch (e) { console.log('Sello: ' + e.message); } }
   doc.id = id; doc.tipo = tipo; doc.version = version;
   doc.creado = doc.creado || (prev ? texto_(prev.createdAt && prev.createdAt.toISOString ? prev.createdAt.toISOString() : prev.createdAt) : ahora.toISOString());
   doc.actualizado = ahora.toISOString();
@@ -6568,11 +6809,48 @@ function borrar_(body) {
   const sinPermiso = puedeEscribir_(prev.tipo, 'borrar', true);
   if (sinPermiso) { registrarEvento_(id, 'BORRAR', 'RECHAZADO', sinPermiso.error, body.opId, prev.version, prev.tipo); return sinPermiso; }
   if (prev.tipo === 'comite') return { ok: false, error: 'La conformación de un comité no se borra (queda como historial).' };
+  const frenado = controlBorrado_(); if (frenado) { registrarEvento_(id, 'BORRAR', 'RECHAZADO', frenado.error, body.opId, prev.version, prev.tipo); return frenado; }
   if (prev.tipo === 'queja' || prev.tipo === 'buzon') { const conf = cifradoConvivencia_(); if (!conf || !pruebaValida_(body, conf.actual)) return { ok: false, error: 'Clave del comité incorrecta.' }; }
   regSheet_().getRange(fila, 12).setValue('BORRADO ' + new Date().toISOString() + (body.motivo ? ' · ' + corto_(body.motivo, 200) : ''));
   try { escribirVista_(prev.tipo, id, { mes: prev.tipo === 'mes' ? JSON.parse(prev.resumen || '{}').mes : '' }, true); } catch (e) {}
   registrarEvento_(id, 'BORRAR', 'APLICADO', body.motivo || '', body.opId, prev.version, prev.tipo);
   return { ok: true, id: id };
+}
+
+/* ===== v139 · DESHACER Y PAPELERA =====
+   Lo borrado no se pierde (columna «borrado»). «restaurar» lo devuelve a las listas, con quien
+   tenga permiso de borrar ese tipo, y queda en el historial. La papelera muestra lo borrado en
+   los últimos 30 días. */
+function restaurar_(body) {
+  const id = texto_(body.id), fila = filaDe_(id);
+  if (fila === -1) return { ok: false, error: 'Ese registro no existe.' };
+  const prev = leerFila_(fila);
+  if (!prev.borrado) return { ok: true, id: id, noEstabaBorrado: true };
+  const sinPermiso = puedeEscribir_(prev.tipo, 'borrar', true);
+  if (sinPermiso) { registrarEvento_(id, 'RESTAURAR', 'RECHAZADO', sinPermiso.error, body.opId, prev.version, prev.tipo); return sinPermiso; }
+  if (prev.tipo === 'queja' || prev.tipo === 'buzon') { const conf = cifradoConvivencia_(); if (!conf || !pruebaValida_(body, conf.actual)) return { ok: false, error: 'Clave del comité incorrecta.' }; }
+  regSheet_().getRange(fila, 12).setValue('');
+  try { escribirVista_(prev.tipo, id, leerDoc_(id, false) || {}, false); } catch (e) {}
+  registrarEvento_(id, 'RESTAURAR', 'APLICADO', '', body.opId, prev.version, prev.tipo);
+  return { ok: true, id: id, tipo: prev.tipo };
+}
+function papelera_() {
+  if (CTX_.modo && !CTX_.u) return errSesion_();
+  const sh = regSheet_(), n = sh.getLastRow() - 1;
+  if (n < 1) return { ok: true, rows: [] };
+  const lim = Date.now() - 30 * 864e5, vals = sh.getRange(2, 1, n, COLS_REG.length).getValues(), rows = [], puede = {};
+  vals.forEach(function (v) {
+    const b = String(v[11] || ''), m = /^BORRADO (\S+)(?: · (.*))?$/.exec(b);
+    if (!m) return;
+    const t = Date.parse(m[1]); if (!(t >= lim)) return;
+    const tipo = String(v[1]);
+    if (tipo === 'queja' || tipo === 'buzon' || tipo === 'comite') return;
+    if (!(tipo in puede)) puede[tipo] = !puedeEscribir_(tipo, 'borrar', true);
+    if (!puede[tipo]) return;
+    rows.push({ id: String(v[0]), tipo: tipo, titulo: String(v[5] || ''), fecha: v[4] instanceof Date ? v[4].toISOString().slice(0, 10) : String(v[4] || ''), responsable: String(v[6] || ''), borradoEn: m[1], motivo: m[2] || '' });
+  });
+  rows.sort(function (a, b) { return a.borradoEn < b.borradoEn ? 1 : -1; });
+  return { ok: true, rows: rows.slice(0, 300) };
 }
 
 /* ================= ADJUNTOS (Google Drive) =================
@@ -6700,6 +6978,50 @@ function librosParaRespaldar_() {
   return ids;
 }
 /** ▶ Lo corre el activador cada domingo (o "Respaldar ahora" en el portal). */
+/* ===== v137 · ALARMAS DE SEGURIDAD Y RESPALDO FUERA DE LA CUENTA ===== */
+/** A quién se avisa de algo raro: CORREOS_AVISO y los administradores con correo. */
+function destinosSeguridad_() {
+  const l = correos_().slice();
+  try { admins_().forEach(function (u) { const c = correoValido_(u.correo); if (c && l.indexOf(c) === -1) l.push(c); }); } catch (e) {}
+  return l;
+}
+function alarma_(clave, asunto, cuerpo, cadaMin) {
+  const c = cacheScript_(); if (c && c.get('alarma:' + clave)) return false;   // no repetir la misma alarma seguido
+  if (c) c.put('alarma:' + clave, '1', (cadaMin || 60) * 60);
+  const dest = destinosSeguridad_(); if (!dest.length) return false;
+  try { MailApp.sendEmail(dest.join(','), '🔒 ' + asunto + ' — ' + nombreEmpresa_(perfilEmpresa_()), cuerpo + '\n\nFecha: ' + new Date().toISOString() + '\n\nCorreo automático de seguridad del Portal SSTA.'); } catch (e) { console.log('Alarma: ' + e.message); return false; }
+  registrarEvento_('', 'ALARMA', 'APLICADO', asunto, '', '', 'seguridad');
+  return true;
+}
+/** Borrado masivo: más de 15 borrados de la misma persona en 10 minutos avisa; más de 40 la frena una hora. */
+function controlBorrado_() {
+  const c = cacheScript_(); if (!c) return null;
+  const quien = (CTX_.u && CTX_.u.usuario) || 'sin-usuario', kb = 'bloq-borrar:' + quien;
+  if (c.get(kb)) return { ok: false, codigoError: 'FRENADO', error: 'Se frenaron los borrados de tu usuario por seguridad (demasiados en pocos minutos). El administrador ya fue avisado; intenta en una hora.' };
+  const k = 'borra:' + quien + ':' + Math.floor(Date.now() / 600000), n = Number(c.get(k) || 0) + 1; c.put(k, String(n), 900);
+  if (n === 15) alarma_('borra15:' + quien, 'Muchos registros borrados', 'El usuario «' + quien + '» borró 15 registros en menos de 10 minutos. Si no fue algo planeado, cámbiale la clave en Usuarios y revisa la bitácora.', 30);
+  if (n >= 40) { c.put(kb, '1', 3600); alarma_('borra40:' + quien, 'Borrado masivo FRENADO', 'El usuario «' + quien + '» intentó borrar 40 registros en menos de 10 minutos: se le frenaron los borrados por una hora. Los registros borrados no se pierden (quedan marcados y en la bitácora).', 60); }
+  return null;
+}
+/** Respaldo fuera de la cuenta de Google: un Excel de cada hoja, por correo, a una dirección de otra cuenta
+ *  (propiedad RESPALDO_EXTERNO, o el correo del asesor). Si roban la cuenta, la copia está en otra parte. */
+function respaldoExterno_(hoy) {
+  const pf = perfilEmpresa_(), prop = PropertiesService.getScriptProperties().getProperty('RESPALDO_EXTERNO') || '';
+  const dest = String(prop || pf.correoAsesor || '').split(/[,;\s]+/).map(correoValido_).filter(String);
+  if (!dest.length) return 'sin destino (pon RESPALDO_EXTERNO en las propiedades del script)';
+  const token = ScriptApp.getOAuthToken(), adj = []; let total = 0;
+  librosParaRespaldar_().forEach(function (id) {
+    try {
+      const r = UrlFetchApp.fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=xlsx', { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true });
+      if (r.getResponseCode() !== 200) return;
+      const b = r.getBlob(); total += b.getBytes().length; if (total > 20 * 1024 * 1024) return;   // el correo admite 25 MB
+      b.setName(DriveApp.getFileById(id).getName() + ' — ' + hoy + '.xlsx'); adj.push(b);
+    } catch (e) { console.log('Respaldo externo: ' + e.message); }
+  });
+  if (!adj.length) return 'no se pudo exportar';
+  MailApp.sendEmail(dest.join(','), 'Respaldo SG-SST ' + nombreEmpresa_(pf) + ' — ' + hoy, 'Copia de seguridad semanal del SG-SST (' + adj.length + ' archivo(s) de Excel).\n\nGuárdala: si algún día se pierde o se daña la cuenta de Google de la empresa, con estos archivos se recupera la información.\n\nCorreo automático del Portal SSTA.', { attachments: adj });
+  return adj.length + ' archivo(s) a ' + dest.join(', ');
+}
 function respaldoSemanal() {
   const hoy = hoyISO_(), carpeta = carpetaRaiz_('CARPETA_RESPALDOS', 'Respaldos SG-SST'), hechos = [], errores = [];
   librosParaRespaldar_().forEach(function (id) {
@@ -6707,7 +7029,8 @@ function respaldoSemanal() {
     catch (e) { errores.push(id + ': ' + e.message); }
   });
   let depurados = 0; try { depurados = depurarRespaldos_(carpeta, hoy); } catch (e) { errores.push('Depurar: ' + e.message); }
-  const estado = { fecha: hoy, en: new Date().toISOString(), libros: hechos.length, nombres: hechos, errores: errores, depurados: depurados };
+  let externo = ''; try { externo = respaldoExterno_(hoy); } catch (e) { externo = 'error: ' + e.message; errores.push('Respaldo externo: ' + e.message); }
+  const estado = { fecha: hoy, en: new Date().toISOString(), libros: hechos.length, nombres: hechos, errores: errores, depurados: depurados, externo: externo };
   PropertiesService.getScriptProperties().setProperty('RESPALDO_ULTIMO', JSON.stringify(estado));
   registrarEvento_('', 'RESPALDO', errores.length ? 'CON ERRORES' : 'APLICADO', hechos.length + ' hoja(s) copiadas' + (errores.length ? ' · errores: ' + errores.join(' | ') : ''), '', '', 'respaldo');
   if (errores.length) { const dest = correos_(); if (dest.length) try { MailApp.sendEmail(dest.join(','), '⚠ Respaldo del SG-SST con errores — ' + hoy, 'No se pudieron copiar:\n· ' + errores.join('\n· ')); } catch (e) {} }
@@ -6848,6 +7171,8 @@ function doGet(e) {
   if (p.action === 'buzonPublico') return jsonOut_(buzonPublico_());   // v128: llave pública y correo del comité (sin usuario)   // v107: el cliente responde sin usuario (solo ESA encuesta, con su clave)
   if (p.action === 'novedadesNormas') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_(novedadesNormas_(p.forzar === '1')); }
 
+  if (p.action === 'papelera') return jsonOut_(papelera_());
+  if (p.action === 'sellos') return jsonOut_(verificarSellos_(texto_(p.id)));
   if (p.action === 'list' || p.list) {
     const tipos = texto_(p.tipo).split(',').filter(Boolean);
     // Sin usuario solo se lee el personal habilitado (lo consultan los permisos en campo).
@@ -7424,6 +7749,92 @@ function asegurarAvisos_() {
     if (!ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'avisoDiario'; })) instalarAvisosDiarios();
   } catch (e) { console.log('Avisos automáticos: ' + e.message); }
 }
+/** v137: verifica los sellos de las firmas de un registro (para el historial y para una auditoría). */
+function verificarSellos_(id) {
+  const fila = filaDe_(id); if (fila === -1) return { ok: false, error: 'No existe ese registro.' };
+  const prev = leerFila_(fila);
+  if (!puedeLeer_(prev.tipo)) return CTX_.u ? errPermiso_('Tu usuario no puede ver este registro.') : errSesion_();
+  const doc = leerDoc_(id, true) || {}, l = [];
+  (function andar(o, ruta, prof) {
+    if (!o || typeof o !== 'object' || prof > 12) return;
+    Object.keys(o).forEach(function (k) {
+      const v = o[k];
+      if (typeof v === 'string' && v.indexOf('data:image') === 0 && /firma|sig/i.test(k)) {
+        const huella = selloHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, v)), s = o[k + '_sello'];
+        l.push({ campo: (ruta ? ruta + '.' : '') + k, sellada: !!s, valida: selloValido_(s, huella), fecha: s ? s.fecha : '', usuario: s ? s.usuario : '', gps: s ? s.gps : '', equipo: s ? String(s.equipo || '').slice(0, 90) : '', codigo: s ? String(s.codigo || '').slice(0, 16) : '' });
+      } else if (v && typeof v === 'object' && !/_sello$/.test(k)) andar(v, (ruta ? ruta + '.' : '') + k, prof + 1);
+    });
+  })(doc, '', 0);
+  return { ok: true, firmas: l };
+}
+/* ===== v137 · ARCHIVO ANUAL =====
+   Con los años la hoja Registros crece (preoperacionales diarios, reportes, acciones…) y el portal se pone
+   lento. Esto mueve a un libro aparte («SG-SST Archivo …», en la carpeta de respaldos) lo CERRADO de los años
+   anteriores al pasado: preoperacionales, reportes cerrados, acciones cerradas, inspecciones y lo borrado.
+   El año en curso y el anterior quedan en línea (indicadores y autoevaluación). Nada se pierde: se copia,
+   se verifica la copia y solo entonces se quita de la base activa. Se conserva 20 años (Dec. 1072).
+   ▶ Ejecutar «archivoAnualVistaPrevia» para ver cuántos se moverían, y «archivarAniosAnteriores» para hacerlo. */
+function archivoCriterio_(v, corte) {
+  const f = v[4] instanceof Date ? Utilities.formatDate(v[4], 'America/Bogota', 'yyyy-MM-dd') : String(v[4] || '').slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f) || f >= corte) return false;
+  const tipo = v[1], estado = String(v[3] || '');
+  if (v[11]) return true;                                                   // borrado
+  if (tipo === 'preop' || tipo === 'preopsalud' || tipo === 'inspeccion') return true;
+  if (tipo === 'reporte' && estado === 'CERRADO') return true;
+  if (tipo === 'accion' && estado === 'CERRADA') return true;
+  return false;
+}
+function archivoCorte_() { return (Number(hoyISO_().slice(0, 4)) - 1) + '-01-01'; }
+function archivoVistaPrevia() {
+  const reg = regSheet_(), last = reg.getLastRow(), corte = archivoCorte_(); if (last < 2) return 'Nada que archivar.';
+  const vals = reg.getRange(2, 1, last - 1, COLS_REG.length).getValues(), por = {};
+  vals.forEach(function (v) { if (archivoCriterio_(v, corte)) por[v[1]] = (por[v[1]] || 0) + 1; });
+  const n = Object.keys(por).reduce(function (a, k) { return a + por[k]; }, 0);
+  const t = 'Registros activos: ' + vals.length + '. Se moverían al archivo ' + n + ' (anteriores al ' + corte + '): ' + JSON.stringify(por);
+  console.log(t); return t;
+}
+function archivoAnualVistaPrevia() { return archivoVistaPrevia(); }
+function archivarAniosAnteriores() {
+  const lock = LockService.getScriptLock(); lock.waitLock(30000);
+  try {
+    const reg = regSheet_(), last = reg.getLastRow(), corte = archivoCorte_(); if (last < 2) return 'Nada que archivar.';
+    const vals = reg.getRange(2, 1, last - 1, COLS_REG.length).getValues();
+    const mover = [], quedan = [], ids = {};
+    vals.forEach(function (v) { if (archivoCriterio_(v, corte) && mover.length < 4000) { mover.push(v); ids[v[0]] = v[1]; } else quedan.push(v); });
+    if (!mover.length) return 'Nada que archivar (todo es de ' + corte.slice(0, 4) + ' en adelante o sigue abierto).';
+    // 1) El libro del archivo (uno por corte), en la carpeta de respaldos.
+    const props = PropertiesService.getScriptProperties(), clave = 'ARCHIVO_' + corte.slice(0, 4);
+    let libro = null; try { if (props.getProperty(clave)) libro = SpreadsheetApp.openById(props.getProperty(clave)); } catch (e) { libro = null; }
+    if (!libro) {
+      libro = SpreadsheetApp.create('SG-SST Archivo (antes del ' + corte + ') — ' + nombreEmpresa_(perfilEmpresa_()));
+      try { DriveApp.getFileById(libro.getId()).moveTo(carpetaRaiz_('CARPETA_RESPALDOS', 'Respaldos SG-SST')); } catch (e) {}
+      props.setProperty(clave, libro.getId());
+    }
+    const hojaA = function (nombre, cols) { let h = libro.getSheetByName(nombre); if (!h) { h = libro.insertSheet(nombre); h.getRange(1, 1, 1, cols.length).setValues([cols]).setFontWeight('bold'); } return h; };
+    const agregar = function (h, filas) { if (filas.length) h.getRange(h.getLastRow() + 1, 1, filas.length, filas[0].length).setValues(filas); };
+    // 2) Copiar: registros, sus datos y sus imágenes.
+    const partir = function (sh, ncols) { const n = sh.getLastRow(); if (n < 2) return { va: [], queda: [] }; const t = sh.getRange(2, 1, n - 1, ncols).getValues(), va = [], queda = []; t.forEach(function (r) { (ids[r[0]] ? va : queda).push(r); }); return { va: va, queda: queda }; };
+    const dSh = datosSheet_(), iSh = imgSheet_(), D = partir(dSh, 4), I = partir(iSh, 4);
+    const hR = hojaA('Registros', COLS_REG), hD = hojaA('Datos', ['id', 'parte', 'texto', 'updatedAt']), hI = hojaA('Imagenes', ['id', 'imgKey', 'dataUrl', 'updatedAt']);
+    const antes = [hR.getLastRow(), hD.getLastRow(), hI.getLastRow()];
+    agregar(hR, mover.map(function (r) { return r.map(function (x) { return (typeof x === 'string' && /^[=+\-@]/.test(x)) ? "'" + x : x; }); })); agregar(hD, D.va.map(function (r) { return [r[0], r[1], "'" + String(r[2]), r[3]]; })); agregar(hI, I.va.map(function (r) { return [r[0], r[1], "'" + String(r[2]), r[3]]; }));
+    SpreadsheetApp.flush();
+    // 3) Verificar la copia antes de quitar nada.
+    if (hR.getLastRow() - antes[0] !== mover.length || hD.getLastRow() - antes[1] !== D.va.length || hI.getLastRow() - antes[2] !== I.va.length) throw new Error('La copia al archivo no quedó completa: no se quitó nada de la base activa.');
+    // 4) Quitar de la base activa (se reescribe cada hoja con lo que queda).
+    // Primero se escribe encima lo que queda y después se limpia la cola: nunca hay un momento con la hoja vacía.
+    const reescribir = function (sh, filas, ncols) { const n = sh.getLastRow();
+      const seguro = function (x, i) { if (i === 2 && ncols === 4) return "'" + String(x); return (typeof x === 'string' && /^[=+\-@]/.test(x)) ? "'" + x : x; };
+      if (filas.length) sh.getRange(2, 1, filas.length, ncols).setValues(filas.map(function (r) { return r.map(seguro); }));
+      if (n - 1 > filas.length) sh.getRange(2 + filas.length, 1, n - 1 - filas.length, ncols).clearContent(); };
+    reescribir(reg, quedan, COLS_REG.length); reescribir(dSh, D.queda, 4); reescribir(iSh, I.queda, 4);
+    Object.keys(ids).forEach(function (id) { try { escribirVista_(ids[id], id, {}, true); } catch (e) {} });
+    const t = mover.length + ' registro(s) anteriores al ' + corte + ' movidos al archivo: ' + libro.getUrl();
+    registrarEvento_('', 'ARCHIVO', 'APLICADO', t, '', '', 'archivo');
+    console.log(t + (mover.length >= 4000 ? '\nQuedan más: vuelve a ejecutarlo.' : ''));
+    return t;
+  } finally { lock.releaseLock(); }
+}
 function avisoSemanal() {
   const hoy = hoyISO_(), en7 = sumarDias_(hoy, 7);
   if (regSheet_().getLastRow() < 2) return 'Nada que revisar.';
@@ -7464,7 +7875,7 @@ function avisoSemanal() {
       doGet: doGet,
       doPost: doPost,
       libro: __entorno.libro,
-      funciones: { verLibro: verLibro, revisarSesionObra: revisarSesionObra, codigoAdministrador: codigoAdministrador, respaldoSemanal: respaldoSemanal, instalarRespaldo: instalarRespaldo, vigilarClientes: vigilarClientes, instalarVigilancia: instalarVigilancia, instalarAvisosDiarios: instalarAvisosDiarios, avisoDiario: avisoDiario, avisoSemanal: avisoSemanal }
+      funciones: { verLibro: verLibro, revisarSesionObra: revisarSesionObra, codigoAdministrador: codigoAdministrador, respaldoSemanal: respaldoSemanal, instalarRespaldo: instalarRespaldo, vigilarClientes: vigilarClientes, instalarVigilancia: instalarVigilancia, instalarAvisosDiarios: instalarAvisosDiarios, avisoDiario: avisoDiario, archivoVistaPrevia: archivoVistaPrevia, archivoAnualVistaPrevia: archivoAnualVistaPrevia, archivarAniosAnteriores: archivarAniosAnteriores, avisoSemanal: avisoSemanal }
     };
   })();
   return __sgsst;
@@ -7481,4 +7892,7 @@ function sgsst__vigilarClientes() { return modulo_sgsst_().funciones.vigilarClie
 function sgsst__instalarVigilancia() { return modulo_sgsst_().funciones.instalarVigilancia.apply(null, arguments); }
 function sgsst__instalarAvisosDiarios() { return modulo_sgsst_().funciones.instalarAvisosDiarios.apply(null, arguments); }
 function sgsst__avisoDiario() { return modulo_sgsst_().funciones.avisoDiario.apply(null, arguments); }
+function sgsst__archivoVistaPrevia() { return modulo_sgsst_().funciones.archivoVistaPrevia.apply(null, arguments); }
+function sgsst__archivoAnualVistaPrevia() { return modulo_sgsst_().funciones.archivoAnualVistaPrevia.apply(null, arguments); }
+function sgsst__archivarAniosAnteriores() { return modulo_sgsst_().funciones.archivarAniosAnteriores.apply(null, arguments); }
 function sgsst__avisoSemanal() { return modulo_sgsst_().funciones.avisoSemanal.apply(null, arguments); }
