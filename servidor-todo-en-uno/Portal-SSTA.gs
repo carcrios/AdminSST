@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v153';
+const VERSION_PORTAL = 'v155';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5609,7 +5609,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v153';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v155';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5664,7 +5664,11 @@ const TIPOS_GEN = {
   perfil: { hoja: 'Condiciones de salud', titulo: 'anio', fecha: 'fecha', estado: '', responsable: 'ips', vence: '',
     campos: ['anio', 'fecha', 'ips', 'trabajadores', 'actividades'] },
   sve: { hoja: 'Vigilancia epidemiológica', titulo: 'programa', fecha: 'fechaInicio', estado: 'estado', responsable: 'responsable', vence: '',
-    campos: ['programa', 'responsable', 'poblacion', 'intervenidos', 'cobertura', 'actividades', 'fechaInicio', 'estado'] },
+    campos: ['programa', 'programaOtro', 'responsable', 'poblacion', 'intervenidos', 'cobertura', 'actividades', 'fechaInicio', 'estado', 'cumplimiento', 'actProgramadas', 'actEjecutadas', 'metaPrevalencia', 'metaCobertura'] },
+  /* v155: persona dentro de un programa de vigilancia (PVE). Sin diagnóstico: clasificación del programa,
+     origen (examen médico, encuesta, manual), seguimientos y próxima evaluación. Solo SST. */
+  pvecaso: { hoja: 'PVE · personas', titulo: 'nombre', fecha: 'fechaIngreso', estado: 'estado', responsable: 'programa', vence: 'proximaEvaluacion',
+    campos: ['sveId', 'programa', 'nombre', 'cedula', 'cargo', 'area', 'clasificacion', 'origen', 'examenId', 'fechaIngreso', 'estado', 'fechaEgreso', 'proximaEvaluacion', 'ultimoSeguimiento', 'nSeguimientos', 'recomendaciones'], largos: ['recomendaciones'], largoMax: 1500, saltos: true },
   psico: { hoja: 'Riesgo psicosocial', titulo: 'fecha', fecha: 'fecha', estado: 'nivelGeneral', responsable: 'profesional', vence: 'proxima',
     campos: ['fecha', 'profesional', 'participantes', 'cobertura', 'intralaboralA', 'intralaboralB', 'extralaboral', 'estres', 'nivelGeneral', 'proxima', 'intervenciones'] },
   ausencia: { hoja: 'Ausentismo', titulo: 'nombre', fecha: 'inicio', estado: 'causa', responsable: 'cargo', vence: '',
@@ -5723,7 +5727,7 @@ const TIPOS_GEN = {
     campos: ['inscrito', 'numeroRegistro', 'autoridad', 'categoriaInscrita', 'fechaInscripcion', 'ultimaActualizacion', 'periodoReportado', 'proximaActualizacion', 'pgirespel', 'nit'] },
   // v97: perfil de la empresa (define los estándares 7, 21 o 60) y clientes del asesor
   empresa: { hoja: 'Perfil de la empresa', titulo: 'nombre', fecha: 'fechaActualizacion', estado: 'grupo0312', responsable: 'claseRiesgo', vence: '',
-    campos: ['nombre', 'nit', 'actividad', 'trabajadores', 'claseRiesgo', 'grupo0312', 'fechaActualizacion', 'correoSST', 'correoAsesor'] },
+    campos: ['nombre', 'nit', 'actividad', 'trabajadores', 'claseRiesgo', 'grupo0312', 'fechaActualizacion', 'correoSST', 'correoAsesor', 'areasTexto'], largos: ['areasTexto'], largoMax: 4000, saltos: true },
   cliente: { hoja: 'Clientes del asesor', titulo: 'nombre', fecha: 'ultimaVisita', estado: 'estado', responsable: 'contacto', vence: 'proximaVisita',
     campos: ['nombre', 'nit', 'ciudad', 'actividad', 'trabajadores', 'claseRiesgo', 'grupo0312', 'contacto', 'correo', 'telefono', 'sitio', 'codigo', 'ultimaVisita', 'proximaVisita', 'puntaje', 'tareasAbiertas', 'tareasVencidas', 'sincronizado', 'versionServidor', 'estado', 'tareasCerradas',
       // v116: configuración publicada desde la consola y vigilancia diaria de su servidor
@@ -5950,7 +5954,7 @@ const ESCRIBE_ROL = {
   consulta: ['revision', 'aprobrec']   // v148: la alta dirección firma su revisión y aprueba recursos (Dec. 1072, art. 2.2.4.6.31; estándar 1.1.3)
 };
 const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs', 'buzon'];   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
-const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'psico', 'preopsalud', 'cliente'];   // salud individual y conexiones a clientes
+const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'pvecaso', 'psico', 'preopsalud', 'cliente'];   // salud individual y conexiones a clientes
 const ITER_USUARIO = 150000;
 const USR_COLS = ['usuario', 'nombre', 'cedula', 'cargo', 'rol', 'correo', 'activo', 'salt', 'iter', 'hash', 'debeCambiar', 'sesionDesde', 'intentos', 'bloqueadoHasta', 'ultimoIngreso', 'creado', 'actualizado', 'comites'];   // v148: comites al final (las hojas viejas la ganan sola)
 const HORAS_SESION = { personal: 24 * 30, compartido: 12, sensible: 12 };   // v142: admin y SST (ven salud) 12 h
@@ -6108,7 +6112,7 @@ function puedeLeer_(tipo) {
 /** v142: Ley 1581 art. 6. Lo que la PERSONA declara de su salud (preoperacional de salud) exige su
  *  autorización expresa. Lo que registra el área SST (exámenes, ausencias, SVE, psicosocial) se trata por
  *  obligación legal: si la persona no dio la autorización en su ficha, queda escrita la base legal. */
-const TIPOS_SALUD_ = ['examen', 'sve', 'psico', 'ausencia', 'preopsalud'];
+const TIPOS_SALUD_ = ['examen', 'sve', 'pvecaso', 'psico', 'ausencia', 'preopsalud'];
 const BASE_LEGAL_SST_ = 'Obligación legal del empleador (Decreto 1072 de 2015, art. 2.2.4.6.24; Resolución 1843 de 2025): vigilancia de la salud de los trabajadores. Registrado por el área SST.';
 function autorizacionSalud_(tipo, d) {
   if (TIPOS_SALUD_.indexOf(tipo) === -1) return null;
@@ -6576,7 +6580,8 @@ function resumen_(tipo, d) {
   if (tipo === 'equipo') {
     const ven = {};
     Object.keys(d.vencimientos || {}).forEach(function (k) { ven[k] = texto_(d.vencimientos[k]); });
-    return { categoria: texto_(d.categoria), codigo: corto_(d.codigo, 40), nombre: corto_(d.nombre, 80), ubicacion: corto_(d.ubicacion, 80),
+    const hec = {}; Object.keys(d.hechas || {}).forEach(function (k) { hec[k] = texto_(d.hechas[k]); });   // v154: p. ej. fecha en que se recargó el extintor
+    return { categoria: texto_(d.categoria), codigo: corto_(d.codigo, 40), nombre: corto_(d.nombre, 80), ubicacion: corto_(d.ubicacion, 80), subtipo: corto_(d.subtipo, 20), hechas: hec, area: corto_(d.area, 80),
              frecuencia: texto_(d.frecuencia), ultimaInspeccion: texto_(d.ultimaInspeccion), ultimoResultado: texto_(d.ultimoResultado),
              vencimientos: ven, activo: d.activo !== false };
   }
@@ -8177,7 +8182,7 @@ function instalarAvisosDiarios() {
    pendientes del inicio. Cada pendiente:
    {nivel: 'vencido'|'pronto', texto, fecha, responsable, modulo, tipo, id, diario}
    (diario: false → no va en el correo diario; son tareas del mes, no vencimientos). */
-const MODULO_TIPO_ = { informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
+const MODULO_TIPO_ = { pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
   auditoria: 'auditorias.html', sustancia: 'quimicos.html', gestquim: 'quimicos.html', lugarquim: 'quimicos.html', respel: 'ambiental.html#residuos', medicion: 'peligros.html', emergencia: 'emergencias.html', examen: 'salud.html', psico: 'salud.html',
   politica: 'documental.html', legal: 'documental.html', documento: 'documental.html', proveedor: 'proveedores.html', compraprov: 'proveedores.html', cambio: 'documental.html', contratista: 'contratistas.html',
   induccion: 'induccion.html', programa: 'programas.html', pesv: 'pesv.html', vehiculo: 'pesv.html', conductor: 'pesv.html', cliente: 'asesor.html', pqrs: 'calidad.html',
