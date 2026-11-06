@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v156';
+const VERSION_PORTAL = 'v158';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5613,7 +5613,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v156';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v158';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5641,7 +5641,7 @@ function jsonOut_(obj) {
    salen de esta tabla (campos cortos; las listas se cuentan). */
 const TIPOS_GEN = {
   peligro: { hoja: 'Matriz de peligros', titulo: 'peligro', fecha: 'fechaRevision', estado: 'aceptabilidad', responsable: 'proceso', vence: '',
-    campos: ['proceso', 'zona', 'actividad', 'tarea', 'rutinaria', 'clasificacion', 'subtipo', 'peligro', 'efectos', 'expuestos', 'nd', 'ne', 'np', 'nc', 'nr', 'nivel', 'aceptabilidad', 'controlesPendientes', 'fechaRevision', 'cargos', 'ctrlIndividuo'] },   // v109: cargos y EPP → sugerencias de la matriz de EPP
+    campos: ['proceso', 'zona', 'actividad', 'tarea', 'rutinaria', 'clasificacion', 'subtipo', 'peligro', 'efectos', 'expuestos', 'nd', 'ne', 'np', 'nc', 'nr', 'nivel', 'aceptabilidad', 'controlesPendientes', 'fechaRevision', 'cargos', 'ctrlIndividuo', 'controlesTexto'], largos: ['controlesTexto'], largoMax: 700 },   // v109: cargos y EPP → sugerencias de la matriz de EPP
   sustancia: { hoja: 'Sustancias químicas', titulo: 'nombre', fecha: 'fechaHoja', estado: 'estado', responsable: 'ubicacion', vence: 'venceHoja',
     campos: ['nombre', 'fabricante', 'uso', 'area', 'ubicacion', 'cantidad', 'estadoFisico', 'cas', 'onu', 'pictogramas', 'palabra', 'frasesH', 'carcinogena', 'toxicidadAguda',
              'corrosivoTipo', 'hojaSeguridad', 'fdsEspanol', 'fechaHoja', 'venceHoja', 'etiquetaSGA', 'trasvasa', 'envasesRotulados', 'epp', 'controles', 'expuestos', 'estado',
@@ -5664,11 +5664,14 @@ const TIPOS_GEN = {
   cargo: { hoja: 'Profesiograma', titulo: 'nombre', fecha: '', estado: '', responsable: 'area', vence: '',
     campos: ['nombre', 'area', 'peligros', 'exposiciones', 'examenes', 'periodicidad', 'enfasis'] },
   examen: { hoja: 'Exámenes médicos', titulo: 'nombre', fecha: 'fecha', estado: 'concepto', responsable: 'cargo', vence: 'proxima',
-    campos: ['nombre', 'cedula', 'cargo', 'tipoExamen', 'fecha', 'ips', 'concepto', 'tieneRestricciones', 'temporalidad', 'venceRestriccion', 'proxima', 'comunicada', 'seguimiento', 'exposiciones', 'pruebas', 'pveIngresa', 'pve'] },
+    campos: ['nombre', 'cedula', 'cargo', 'tipoExamen', 'fecha', 'ips', 'concepto', 'tieneRestricciones', 'temporalidad', 'venceRestriccion', 'proxima', 'comunicada', 'seguimiento', 'exposiciones', 'pruebas', 'pveIngresa', 'pve', 'restringePara'] },
   perfil: { hoja: 'Condiciones de salud', titulo: 'anio', fecha: 'fecha', estado: '', responsable: 'ips', vence: '',
     campos: ['anio', 'fecha', 'ips', 'trabajadores', 'actividades'] },
   sve: { hoja: 'Vigilancia epidemiológica', titulo: 'programa', fecha: 'fechaInicio', estado: 'estado', responsable: 'responsable', vence: '',
     campos: ['programa', 'programaOtro', 'responsable', 'poblacion', 'intervenidos', 'cobertura', 'actividades', 'fechaInicio', 'estado', 'cumplimiento', 'actProgramadas', 'actEjecutadas', 'metaPrevalencia', 'metaCobertura'] },
+  /* v157: pedido de reposición que sale de la inspección de EPP (elementos en MALO); se cierra al entregarlos. */
+  solrepo: { hoja: 'Reposición pedida (EPP)', titulo: 'nombre', fecha: 'fecha', estado: 'estado', responsable: 'cargo', vence: '',
+    campos: ['nombre', 'cedula', 'cargo', 'fecha', 'inspeccionId', 'accionId', 'elementosTexto', 'estado', 'fechaEntrega', 'entregaId'] },
   /* v155: persona dentro de un programa de vigilancia (PVE). Sin diagnóstico: clasificación del programa,
      origen (examen médico, encuesta, manual), seguimientos y próxima evaluación. Solo SST. */
   pvecaso: { hoja: 'PVE · personas', titulo: 'nombre', fecha: 'fechaIngreso', estado: 'estado', responsable: 'programa', vence: 'proximaEvaluacion',
@@ -5953,7 +5956,7 @@ function opIdYaAplicado_(opId) {
        individuales los ven solo Administrador y SST. */
 const ROLES = { admin: 'Administrador', sst: 'SST (todo el SG-SST)', supervisor: 'Supervisor / campo', comite: 'Integrante de comité', consulta: 'Solo consulta (gerencia, auditor)' };
 const ESCRIBE_ROL = {
-  supervisor: ['reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'dotacion', 'dotaperfil', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro', 'plantillaform'],
+  supervisor: ['reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'solrepo', 'dotacion', 'dotaperfil', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro', 'plantillaform'],
   comite: ['reunion', 'queja', 'buzon', 'comite', 'informecc', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
   consulta: ['revision', 'aprobrec']   // v148: la alta dirección firma su revisión y aprueba recursos (Dec. 1072, art. 2.2.4.6.31; estándar 1.1.3)
 };
@@ -6554,7 +6557,7 @@ function resumen_(tipo, d) {
       req[k] = { fecha: texto_(r.fecha), vence: texto_(r.vence), apto: texto_(r.apto), restricciones: corto_(r.restricciones, 120), soporte: !!r.soporte };
     });
     const aut = d.autorizacionDatos || null;
-    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), empresa: corto_(d.empresa, 60), activo: d.activo !== false, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono),   // v140: el contacto viaja solo en el registro (pide usuario)
+    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), empresa: corto_(d.empresa, 60), activo: d.activo !== false, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
              autorizacion: aut ? { general: aut.general === true, sensibles: aut.sensibles === true, fecha: texto_(aut.fecha) } : null };
   }
   if (tipo === 'reporte') {
@@ -7035,6 +7038,7 @@ function guardar_(body) {
       else if (limpio.estado === 'CERRADA' && texto_(prev.estado) !== 'CERRADA') avisarTareaAsesor_(id, limpio, 'cerrada');
     } catch (e) { registrarEvento_(id, 'CORREO', 'RECHAZADO', 'No salió el aviso de la tarea: ' + e.message, '', '', tipo); }
   }
+  if (tipo === 'examen' && !body._sistema) { try { efectoExamen_(id, limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se pasó la restricción a Personal habilitado: ' + e.message, '', '', tipo); } }
   if (tipo === 'induccion' && !body._sistema) { try { efectoInduccion_(limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se actualizó Personal habilitado: ' + e.message, '', '', tipo); } }
   if (tipo === 'encresp' && !prev) { try { efectoRespuestaEnc_(id, limpio); } catch (e) { registrarEvento_(id, 'ENCUESTA', 'RECHAZADO', 'No se marcó la encuesta como respondida: ' + e.message, '', '', tipo); } }
   return puedeLeer_(tipo) ? { ok: true, id: id, version: version, resumen: c.resumen, estado: c.estado } : { ok: true, id: id, version: version, estado: c.estado };   // v148: sin resumen si no lo puede leer
@@ -7043,6 +7047,23 @@ function guardar_(body) {
 /* Una inducción o reinducción APROBADA deja al día el requisito "induccion" de la
    persona en Personal habilitado (la crea si no existe). Lo hace el servidor: un
    supervisor puede registrar inducciones aunque no pueda editar el personal. */
+/* v157 · Restricciones médicas que frenan el trabajo. Del examen solo pasa a Personal habilitado PARA QUÉ
+   trabajos tiene restricción (alturas, confinados…), hasta cuándo y el concepto; nunca el diagnóstico.
+   Así el permiso y el ATS no dejan incluir a la persona en esos trabajos. Manda el examen más reciente. */
+const RESTRINGE_ = { 'Trabajo en alturas': 'alturas', 'Espacios confinados': 'confinados', 'Trabajo en caliente': 'caliente', 'Riesgo eléctrico': 'electrico', 'Izaje de cargas': 'izajes', 'Manipulación manual de cargas': 'cargas', 'Conducción de vehículos': 'conduccion' };
+function efectoExamen_(id, d) {
+  if (!d.cedula || !/^\d{4}-\d{2}-\d{2}$/.test(texto_(d.fecha)) || d.tipoExamen === 'Egreso') return;
+  const tid = 'TRB-' + String(d.cedula).replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+  if (tid.length < 7 || filaDe_(tid) === -1) return;
+  const actual = leerDoc_(tid, false) || {}, ya = actual.restriccionMed;
+  if (ya && texto_(ya.fecha) > texto_(d.fecha) && ya.fuente !== id) return;   // hay un examen más reciente
+  const lista = Array.isArray(d.restringePara) ? d.restringePara : String(d.restringePara || '').split(/\s*[,;|]\s*/);
+  const para = lista.map(function (x) { return RESTRINGE_[texto_(x)] || ''; }).filter(Boolean);
+  if (d.concepto === 'No apto') para.push('todo');
+  const campos = { restriccionMed: { para: para, hasta: d.temporalidad === 'Temporales' ? texto_(d.venceRestriccion) : '', concepto: texto_(d.concepto), fecha: texto_(d.fecha), fuente: id } };
+  const r = guardar_({ action: 'parche', tipo: 'trabajador', id: tid, campos: campos, opId: '', _interno: true, _sistema: true });
+  if (!r.ok) throw new Error(r.error || 'error');
+}
 function efectoInduccion_(d) {
   if (d.resultado !== 'APROBADA' || !d.cedula || d.tipoInduccion === 'Visitante' || !/^\d{4}-\d{2}-\d{2}$/.test(texto_(d.fecha))) return;
   const tid = 'TRB-' + String(d.cedula).replace(/[^0-9A-Za-z]/g, '').toUpperCase();
@@ -8186,7 +8207,7 @@ function instalarAvisosDiarios() {
    pendientes del inicio. Cada pendiente:
    {nivel: 'vencido'|'pronto', texto, fecha, responsable, modulo, tipo, id, diario}
    (diario: false → no va en el correo diario; son tareas del mes, no vencimientos). */
-const MODULO_TIPO_ = { pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
+const MODULO_TIPO_ = { solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
   auditoria: 'auditorias.html', sustancia: 'quimicos.html', gestquim: 'quimicos.html', lugarquim: 'quimicos.html', respel: 'ambiental.html#residuos', medicion: 'peligros.html', emergencia: 'emergencias.html', examen: 'salud.html', psico: 'salud.html',
   politica: 'documental.html', legal: 'documental.html', documento: 'documental.html', proveedor: 'proveedores.html', compraprov: 'proveedores.html', cambio: 'documental.html', contratista: 'contratistas.html',
   induccion: 'induccion.html', programa: 'programas.html', pesv: 'pesv.html', vehiculo: 'pesv.html', conductor: 'pesv.html', cliente: 'asesor.html', pqrs: 'calidad.html',
@@ -8237,6 +8258,11 @@ function pendientes_(dias) {
     };
     if (tipo === 'trabajador' && r.activo !== false) Object.keys(r.req || {}).forEach(function (k) { anotar(r.req[k].vence, r.nombre + ' — ' + (NOMBRE_REQ_[k] || k)); });
     if (tipo === 'equipo' && r.activo !== false) Object.keys(r.vencimientos || {}).forEach(function (k) { anotar(r.vencimientos[k], (r.codigo || r.nombre) + ' — ' + k, { modulo: 'inspecciones.html#' + v[0] }); });
+    // v157: más fuentes en los pendientes (bandeja de cada persona)
+    if (tipo === 'equipo' && r.activo !== false && r.mantTipo && r.mantTipo !== 'No aplica') anotar(r.mantProximo, (r.codigo || r.nombre) + ' — mantenimiento ' + String(r.mantTipo).toLowerCase(), { modulo: 'inspecciones.html#' + v[0] });
+    if (tipo === 'solrepo' && r.estado !== 'ENTREGADA') add(sumarHabiles_(r.fecha, 3) < hoy ? 'vencido' : 'pronto', 'Entregar reposición de EPP a ' + r.nombre + ': ' + corto_(r.elementosTexto, 80), sumarHabiles_(r.fecha, 3), Object.assign({}, base, { modulo: 'entrega-epp.html' }));
+    if (tipo === 'pvecaso' && r.estado !== 'Egresado') anotar(r.proximaEvaluacion, 'PVE ' + corto_(r.programa, 40) + ': evaluación de ' + r.nombre, { modulo: 'pve.html' });
+    if (tipo === 'trabajador' && r.activo !== false && r.restr && r.restr.hasta) anotar(r.restr.hasta, r.nombre + ' — termina la restricción médica (pedir concepto de control)', { tipo: 'examen', modulo: 'salud.html' });
     // v107: las tareas del asesor salen siempre (no solo a 15 días), destacadas y con su responsable.
     if (tipo === 'accion' && v[3] !== 'CERRADA' && r.origen === ORIGEN_ASESOR_) { const fa = texto_(r.fechaCompromiso).slice(0, 10);
       add(fa && fa < hoy ? 'vencido' : 'pronto', 'Tarea del asesor SST: ' + corto_(r.accion || r.hallazgo, 90) + ' — ' + r.responsable, fa, Object.assign({}, base, { responsable: texto_(r.responsable), modulo: 'plan-accion.html#' + v[0], asesor: true, diario: !!fa && fa <= en15 })); }
