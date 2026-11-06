@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v150';
+const VERSION_PORTAL = 'v153';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -296,8 +296,13 @@ function entornoModulo_(mod, nombreLibro) {
     if (id) {
       // Si el libro existe pero no abre (Google caído un momento), se reporta el
       // error y NUNCA se crea otro: eso dejaría los datos viejos por fuera.
+      // v151: la revisión de la papelera (una llamada a Drive, lenta) se hace máximo una vez cada 10 minutos.
       let enPapelera = false;
-      try { enPapelera = DriveApp.getFileById(id).isTrashed(); } catch (e) { /* sin permiso de Drive: se sigue */ }
+      const cache = CacheService.getScriptCache(), ck = 'papelera.' + id;
+      if (!cache.get(ck)) {
+        try { enPapelera = DriveApp.getFileById(id).isTrashed(); } catch (e) { /* sin permiso de Drive: se sigue */ }
+        if (!enPapelera) try { cache.put(ck, '1', 600); } catch (e) {}
+      }
       if (enPapelera) throw new Error('El libro de "' + nombreLibro + '" está en la papelera de Google Drive. Restáuralo (Drive → Papelera → Restaurar).');
       libroCache = SpreadsheetApp.openById(id);
       return libroCache;
@@ -5604,7 +5609,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v150';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v153';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5827,7 +5832,10 @@ function verLibro() {
   Object.keys(VISTAS).forEach(function (t) { vistaSheet_(t); });
   console.log('Hoja del SG-SST: ' + ss.getUrl());
 }
+// v151: en una misma petición cada hoja se busca una sola vez (antes, varias veces por cada guardado).
+let HOJAS_CACHE_ = {};
 function hoja_(nombre, encabezado) {
+  if (HOJAS_CACHE_[nombre]) return HOJAS_CACHE_[nombre];
   const ss = libro_();
   let sheet = ss.getSheetByName(nombre);
   if (!sheet) {
@@ -5836,6 +5844,7 @@ function hoja_(nombre, encabezado) {
     sheet.setFrozenRows(1);
     SpreadsheetApp.flush();
   }
+  HOJAS_CACHE_[nombre] = sheet;
   return sheet;
 }
 function regSheet_() { return hoja_('Registros', COLS_REG); }
@@ -6430,6 +6439,25 @@ function actaPublica_(p) {
            temas: conv ? [] : (d.ordenDia || []).slice(0, 12).map(function (t) { return corto_(t, 160); }), cerrada: /FIRMAD|CERRAD/i.test(texto_(a.reg.estado)),
            asistentes: (d.asistentes || []).map(function (x, i) { return { i: i, nombre: texto_(x.nombre), cargo: texto_(x.cargo), firmado: !!x.firma }; }) };
 }
+/* v151 · Contacto de emergencia sin usuario. Solo con la cédula EXACTA (no hay lista ni búsqueda por nombre),
+   devuelve lo necesario para atender a la persona: nombre, cargo, RH, EPS, ARL y su contacto. Queda en Eventos. */
+function contactoEmergencia_(p) {
+  const ced = texto_(p.cedula).replace(/\D/g, '');
+  if (ced.length < 5) return { ok: false, error: 'Escribe la cédula completa.' };
+  const sh = regSheet_(), n = sh.getLastRow() - 1;
+  if (n < 1) return { ok: false, error: 'No hay personal registrado.' };
+  const v = sh.getRange(2, 1, n, COLS_REG.length).getValues(), iT = COLS_REG.indexOf('tipo'), iR = COLS_REG.indexOf('resumen'), iB = COLS_REG.indexOf('borrado');
+  for (let i = 0; i < v.length; i++) {
+    if (v[i][iT] !== 'trabajador' || v[i][iB]) continue;
+    let r = {}; try { r = JSON.parse(v[i][iR] || '{}'); } catch (e) {}
+    if (texto_(r.cedula).replace(/\D/g, '') !== ced) continue;
+    const d = leerDoc_(v[i][0]) || {}, em = d.emergencia || {};
+    registrarEvento_(v[i][0], 'CONTACTO_EMERGENCIA', 'CONSULTADO', 'Consulta sin usuario desde Emergencia (C.C. …' + ced.slice(-4) + ')', '', '', 'trabajador');
+    return { ok: true, nombre: texto_(r.nombre), cargo: texto_(r.cargo), empresa: texto_(r.empresa),
+             emergencia: { nombre: texto_(em.nombre), parentesco: texto_(em.parentesco), telefono: texto_(em.telefono), telefono2: texto_(em.telefono2), rh: texto_(em.rh), eps: texto_(em.eps), arl: texto_(em.arl) } };
+  }
+  return { ok: false, error: 'No encontramos esa cédula en el personal.' };
+}
 function firmarActa_(body) {
   const a = actaDeEnlace_(body.id, body.clave); if (a.error) return a.error;
   const d = a.doc, firma = texto_(body.firma), ced = texto_(body.cedula).replace(/\D/g, '').slice(0, 15), nombre = corto_(body.nombre, 90);
@@ -6776,6 +6804,7 @@ function sellarFirmas_(obj, ctx, prof, previo) {
 }
 
 function doPost(e) {
+  HOJAS_CACHE_ = {};
   CTX_ = { modo: false, u: null, colUsuario: false };
   let body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return jsonOut_({ ok: false, error: 'Los datos llegaron incompletos. Vuelve a enviar el formulario.' }); }
@@ -6805,6 +6834,7 @@ function doPost(e) {
     if (body.action === 'borrar') return jsonOut_(borrar_(body));
     if (body.action === 'restaurar') return jsonOut_(restaurar_(body));
     if (body.action === 'adjuntar') return jsonOut_(adjuntar_(body));
+    if (body.action === 'paqueteCliente') return jsonOut_(paqueteCliente_(body));   // v153: documentación para un cliente, en un .zip
     if (body.action === 'quitarAdjunto') return jsonOut_(quitarAdjunto_(body));
     if (body.action === 'entrar') return jsonOut_(entrar_(body));
     if (body.action === 'cambiarMiClave') return jsonOut_(cambiarMiClave_(body));
@@ -7390,6 +7420,73 @@ function adjuntar_(body) {
   if (!r.ok) { try { archivo.setTrashed(true); } catch (e) {} return r; }
   return Object.assign(r, { adjunto: item });
 }
+/* v153 · Paquete de documentación para un cliente. Arma un .zip con:
+   - 00 Índice.pdf (lo arma el portal: relación de personal, equipos y programas de vigilancia),
+   - Personal/<nombre - CC>/: los soportes adjuntos y las fotos de los soportes de cada requisito,
+   - Equipos/<código - nombre>/: los documentos del equipo (ficha técnica, certificados…),
+   - Programas de vigilancia/<programa>/: los documentos del programa.
+   Los conceptos médicos solo van si se marca expresamente (y nunca historias clínicas: no están en el portal).
+   El .zip queda en Drive («Paquetes para clientes»); si pesa poco también se devuelve para descargarlo de una vez. */
+const MAX_PAQUETE = 40 * 1024 * 1024, MAX_PAQUETE_DIRECTO = 15 * 1024 * 1024;
+function paqueteCliente_(body) {
+  if (CTX_.modo && !sstConSesion_()) return CTX_.u ? errPermiso_('Solo el administrador y SST arman paquetes para clientes.') : errSesion_();
+  const cliente = nombreArchivo_(corto_(body.cliente, 60) || 'Cliente'), hoy = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd');
+  const medico = body.incluirMedico === true, blobs = [], omitidos = [], usados = {};
+  let total = 0;
+  const ruta = function (r) { let x = r, i = 2; while (usados[x]) { x = r.replace(/(\.[^.\/]+)?$/, ' (' + (i++) + ')$1'); } usados[x] = 1; return x; };
+  const meter = function (b, r) {
+    const n = b.getBytes().length;
+    if (total + n > MAX_PAQUETE) { omitidos.push(r + ' (el paquete pasaría de 40 MB)'); return; }
+    total += n; blobs.push(b.setName(ruta(r)));
+  };
+  const deAdjuntos = function (doc, carpeta, filtro) {
+    (doc.adjuntos || []).forEach(function (a) {
+      if (!a || a.retirado || !a.fileId) return;
+      if (filtro && !filtro(a)) return;
+      try { meter(DriveApp.getFileById(a.fileId).getBlob(), carpeta + '/' + nombreArchivo_(a.nombre)); }
+      catch (e) { omitidos.push(carpeta + '/' + a.nombre + ' (no está en Drive)'); }
+    });
+  };
+  const ids = function (l) { return (Array.isArray(l) ? l : []).map(texto_).filter(Boolean).slice(0, 400); };
+  const leer = function (id, tipo) { const f = filaDe_(id); if (f === -1) return null; const r = leerFila_(f); if (r.borrado || r.tipo !== tipo) return null; return leerDoc_(id, true); };
+  const MED = /medic|aptitud|examen|concepto|historia|epicrisis|incapac/i;
+  ids(body.personas).forEach(function (id) {
+    const d = leer(id, 'trabajador'); if (!d) return;
+    const c = 'Personal/' + nombreArchivo_((d.nombre || id) + (d.cedula ? ' - CC ' + d.cedula : ''));
+    deAdjuntos(d, c, function (a) { return medico || !(a.ref === 'medico' || MED.test(String(a.ref || '') + ' ' + String(a.nombre || ''))); });
+    Object.keys(d.requisitos || {}).forEach(function (k) {
+      const q = d.requisitos[k] || {}, foto = String(q.soporte || '');
+      if (foto.indexOf('data:image') !== 0) return;
+      if (!medico && (k === 'medico' || q.apto)) return;
+      const m = /^data:(image\/[a-z]+);base64,(.*)$/.exec(foto); if (!m) return;
+      try { meter(Utilities.newBlob(Utilities.base64Decode(m[2]), m[1], 'x'), c + '/Soporte ' + nombreArchivo_(k) + (m[1] === 'image/png' ? '.png' : '.jpg')); } catch (e) {}
+    });
+  });
+  ids(body.equipos).forEach(function (id) {
+    const d = leer(id, 'equipo'); if (!d) return;
+    deAdjuntos(d, 'Equipos/' + nombreArchivo_([d.codigo, d.nombre].filter(Boolean).join(' - ') || id));
+  });
+  ids(body.programas).forEach(function (id) {
+    const f = filaDe_(id); if (f === -1) return; const r = leerFila_(f); if (r.borrado || (r.tipo !== 'sve' && r.tipo !== 'programa')) return;
+    const d = leerDoc_(id, true) || {};
+    deAdjuntos(d, 'Programas de vigilancia/' + nombreArchivo_(d.programa === 'Otro' ? d.programaOtro : (d.nombre || d.programa || id)));
+  });
+  const html = String(body.indiceHtml || '');
+  if (html) {
+    try { const pdf = Utilities.newBlob(html.slice(0, 900000), 'text/html', 'indice.html').getAs('application/pdf'); total += pdf.getBytes().length; blobs.unshift(pdf.setName('00 Índice - ' + cliente + '.pdf')); }
+    catch (e) { blobs.unshift(Utilities.newBlob(html, 'text/html', '00 Índice - ' + cliente + '.html')); }
+  }
+  if (!blobs.length) return { ok: false, error: 'No hay nada para empacar: elige personas, equipos o programas.' };
+  const nombre = 'Paquete ' + cliente + ' ' + hoy + '.zip';
+  const zip = Utilities.zip(blobs, nombre);
+  const archivo = carpetaRaiz_('CARPETA_PAQUETES', 'Paquetes para clientes').createFile(zip);
+  let compartido = false;
+  if (body.compartir === true) { try { archivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); compartido = true; } catch (e) {} }
+  const bytes = zip.getBytes();
+  registrarEvento_('PAQUETE', 'PAQUETE_CLIENTE', 'CREADO', cliente + ': ' + blobs.length + ' archivo(s), ' + Math.round(bytes.length / 1024) + ' KB' + (medico ? ' · con conceptos médicos' : '') + (compartido ? ' · compartido con enlace' : ''), body.opId || '', '', 'paquete');
+  return { ok: true, nombre: nombre, archivos: blobs.length, tamano: bytes.length, omitidos: omitidos, url: archivo.getUrl(), id: archivo.getId(), compartido: compartido,
+           base64: bytes.length <= MAX_PAQUETE_DIRECTO ? Utilities.base64Encode(bytes) : '' };
+}
 function quitarAdjunto_(body) {
   const id = texto_(body.id), fila = filaDe_(id);
   if (fila === -1) return { ok: false, codigoError: 'TEMPORAL', error: 'El registro todavía no ha llegado al servidor.' };
@@ -7631,6 +7728,7 @@ function restaurarDesdeRespaldo(idRespaldo) {
     const copias = hojas.map(function (h) { return { nombre: h.getName(), copia: h.copyTo(destino) }; });
     copias.forEach(function (x) { const actual = destino.getSheetByName(x.nombre); if (actual) actual.setName(x.nombre + ' (antes de restaurar ' + sello + ')'); });
     copias.forEach(function (x) { x.copia.setName(x.nombre); });
+    HOJAS_CACHE_ = {};   // v151: las hojas cambiaron: no usar las que se habían buscado antes
     registrarEvento_('', 'RESTAURAR RESPALDO', 'APLICADO', origen.getName(), '', '', 'respaldo');
     console.log('✓ Restaurado desde «' + origen.getName() + '». Las hojas anteriores quedaron con «(antes de restaurar ' + sello + ')»: bórralas cuando confirmes que todo está bien.');
     return { ok: true, desde: origen.getName() };
@@ -7741,6 +7839,7 @@ function novedadesNormas_(forzar) {
 
 /* ================= LECTURA ================= */
 function doGet(e) {
+  HOJAS_CACHE_ = {};
   CTX_ = { modo: false, u: null, colUsuario: false };
   const p = e.parameter || {};
   // v116: los celulares de cada cliente leen aquí su configuración por su código, sin la clave de
@@ -7757,7 +7856,8 @@ function doGet(e) {
   if (p.action === 'buzonPublico') return jsonOut_(buzonPublico_());   // v128: llave pública y correo del comité (sin usuario)   // v107: el cliente responde sin usuario (solo ESA encuesta, con su clave)
   if (p.action === 'novedadesNormas') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_(novedadesNormas_(p.forzar === '1')); }
 
-  if (p.action === 'actaPublica') return jsonOut_(actaPublica_(p));   // v149: quien recibe el enlace ve SOLO esa acta, sin usuario
+  if (p.action === 'actaPublica') return jsonOut_(actaPublica_(p));
+  if (p.action === 'contactoEmergencia') return jsonOut_(contactoEmergencia_(p));   // v151: en una emergencia, sin usuario, con la cédula exacta   // v149: quien recibe el enlace ve SOLO esa acta, sin usuario
   if (p.action === 'enlaceActa') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); if (!puedeLeer_('reunion')) return jsonOut_(errPermiso_('Tu usuario no puede ver actas.')); return jsonOut_({ ok: true, id: texto_(p.id), clave: claveActa_(p.id) }); }
   if (p.action === 'papelera') return jsonOut_(papelera_());
   if (p.action === 'sellos') return jsonOut_(verificarSellos_(texto_(p.id)));
