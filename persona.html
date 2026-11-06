@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Ficha del trabajador · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ficha del trabajador · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>.fx-sem{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}.fx-s{border-left:4px solid var(--n-300);background:var(--paper);border-radius:var(--r-m);padding:8px 10px;box-shadow:var(--sombra-1,0 1px 3px rgba(0,0,0,.08))}.fx-s .n{font-size:var(--fs-menor);font-weight:700}.fx-s .v{font-weight:800}.fx-s .f{font-size:.78rem;color:var(--n-600)}.fx-s.ok{border-color:var(--ok)}.fx-s.ok .v{color:var(--ok)}.fx-s.mal{border-color:var(--mal)}.fx-s.mal .v{color:var(--mal)}.fx-s.pronto{border-color:var(--ambar-500)}.fx-s.pronto .v{color:var(--ambar-500)}.fx-l{margin:0;padding:0;list-style:none}.fx-l li{border-bottom:1px solid var(--n-150);padding:7px 0;font-size:var(--fs-menor)}.fx-l li:last-child{border-bottom:0}.fx-l b{font-weight:700}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="screen active">
+  <div class="hdr">
+    <a class="back" href="index.html">← Atrás</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Todo de una persona en un solo lugar</div>
+    <h1 id="fxNom">Ficha del trabajador</h1>
+    <p id="fxSub">Busca a la persona por nombre o cédula</p></div></div>
+  </div>
+  <div id="avisoSrv"></div><div id="avisoCopia"></div>
+  <div class="card"><div class="field"><label for="fxBus">Trabajador</label><input type="search" id="fxBus" placeholder="Escribe el nombre o la cédula"></div></div>
+  <div id="fx"></div>
+</div>
+</div>
+<script src="dialogo.js"></script>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script src="registros.js"></script>
+<script>OfflineBanner.init(),OutboxBadge.init(),"undefined"!=typeof UpdateManager&&UpdateManager.init();const $=UI.$;let rows=[],esSst=!1;const de=e=>rows.filter(a=>a.tipo===e),cedK=e=>String(e||"").replace(/\D/g,"");async function cargar(){if(UI.avisoServidor($("avisoSrv")))return;const e=Sesion.rol();esSst=!e||"admin"===e||"sst"===e;const a=await SGSST.listar("trabajador,entrega,dotacion,induccion,reporte,solrepo"+(esSst?",examen,pvecaso":""));UI.avisoCopia($("avisoCopia"),a),rows=a.rows||[];try{await Habilitacion.cargar()}catch(e){}UI.autocompletar($("fxBus"),e=>ver(e.cedula));const n=new URLSearchParams(location.search).get("ced");n&&ver(n)}const fila=(e,a,n)=>"<li><b>"+e+"</b>"+(a?"<br>"+a:"")+(n?' <span class="chip '+n[0]+'">'+esc(n[1])+"</span>":"")+"</li>",bloque=(e,a,n,r)=>'<div class="card"><h2>'+e+"</h2>"+(a.length?'<ul class="fx-l">'+a.join("")+"</ul>":'<div class="empty">'+n+"</div>")+(r||"")+"</div>";async function ver(e){const a=cedK(e),n=de("trabajador").find(e=>cedK(e.resumen.cedula)===a);if(!n)return void($("fx").innerHTML='<div class="aviso amar">No está en Personal habilitado. <a href="habilitacion.html">Agregarla →</a></div>');try{history.replaceState(history.state,"",location.pathname+"?ced="+encodeURIComponent(a))}catch(e){}const r=n.resumen,mismo=e=>cedK(e.resumen.cedula)===a,s=UI.hoy();$("fxNom").textContent=r.nombre,$("fxSub").textContent="CC "+(r.cedula||"")+(r.cargo?" · "+r.cargo:"")+(r.area?" · "+r.area:"")+(r.empresa?" · "+r.empresa:"")+(!1===r.activo?" · INACTIVO":"");const o=[["general","Trabajo general"],["alturas","Alturas"],["confinados","Espacios confinados"],["caliente","Trabajo en caliente"],["electrico","Riesgo eléctrico"],["izajes","Izaje de cargas"]].map(([e,a])=>{const n=Habilitacion.revisar(r.cedula,e),s="ok"===n.estado?"ok":"pronto"===n.estado?"pronto":"mal";return'<div class="fx-s '+s+'"><div class="n">'+a+'</div><div class="v">'+("ok"===s?"Habilitado":"pronto"===s?"Por vencer":"No habilitado")+'</div><div class="f">'+esc(n.problemas.concat(n.avisos).slice(0,2).join(" · ")||"Todo al día")+"</div></div>"}).join(""),i=Object.keys(r.req||{}).map(e=>{const a=r.req[e],n=Habilitacion.config().requisitos[e]||{},o=a.vence||"";return fila(esc(n.nombre||e),(a.fecha?"Fecha "+esc(UI.corta(a.fecha)):"")+(o?" · vence "+esc(UI.corta(o)):"")+(a.apto?" · "+esc(a.apto):""),o&&o<s?["mal","Vencido"]:null)}),c=de("entrega").filter(mismo).sort((e,a)=>String(a.fecha).localeCompare(String(e.fecha))),t=de("solrepo").filter(mismo).filter(e=>"ENTREGADA"!==e.resumen.estado);let l=[];try{const e=PORTAL_CONFIG.BACKENDS.epp;if(e&&e.url){const a=await(await fetchWithRetry(e.url+"?cedula="+encodeURIComponent(r.cedula)+"&token="+encodeURIComponent(PORTAL_CONFIG.API_TOKEN)+(SGSST._ses?SGSST._ses():""))).json();l=a&&a.rows||[]}}catch(e){}const d=de("dotacion").filter(mismo).sort((e,a)=>String(a.fecha).localeCompare(String(e.fecha))),m=de("induccion").filter(mismo).sort((e,a)=>String(a.fecha).localeCompare(String(e.fecha))),u=de("reporte").filter(e=>cedK(e.resumen.lesionadoCc)===a).sort((e,a)=>String(a.fecha).localeCompare(String(e.fecha)));let p="";if(esSst){const e=de("examen").filter(mismo).sort((e,a)=>String(a.resumen.fecha).localeCompare(String(e.resumen.fecha))),a=de("pvecaso").filter(mismo);p=bloque("🔒 Salud (solo SST)",e.slice(0,6).map(e=>fila(esc(e.resumen.tipoExamen||"Examen")+" · "+esc(UI.corta(e.resumen.fecha)),esc(e.resumen.concepto||"")+("Sí"===e.resumen.tieneRestricciones||e.resumen.restringePara?" · con restricciones"+(e.resumen.venceRestriccion?" hasta "+esc(UI.corta(e.resumen.venceRestriccion)):""):"")+(e.resumen.proxima?" · próximo "+esc(UI.corta(e.resumen.proxima)):""),e.resumen.proxima&&e.resumen.proxima<s?["mal","Examen vencido"]:null)).concat(a.map(e=>fila("PVE: "+esc(e.resumen.programa),esc(String(e.resumen.clasificacion||"").replace(/ \(.*/,""))+" · "+esc(e.resumen.estado||"")+(e.resumen.proximaEvaluacion?" · próxima evaluación "+esc(UI.corta(e.resumen.proximaEvaluacion)):""),e.resumen.proximaEvaluacion&&e.resumen.proximaEvaluacion<s&&"Egresado"!==e.resumen.estado?["mal","Seguimiento vencido"]:null))),"Sin exámenes ni programas de vigilancia registrados.",'<a class="btn ghost mini u-mt8" href="salud.html">Abrir Salud →</a> <a class="btn ghost mini u-mt8" href="pve.html">Abrir PVE →</a>')}const f=[];m.length||f.push("inducción"),t.length&&f.push(t.length+" reposición(es) de EPP por entregar"),r.restr&&(r.restr.para||[]).length&&f.push("restricción médica para "+r.restr.para.join(", ")),$("fx").innerHTML=(f.length?'<div class="aviso amar"><b>Pendiente:</b> '+esc(f.join(" · "))+"</div>":"")+'<div class="card"><h2>Habilitación por tipo de trabajo</h2><div class="fx-sem">'+o+'</div><a class="btn ghost mini" href="habilitacion.html">Abrir Personal habilitado →</a></div>'+bloque("Requisitos",i,"Sin requisitos registrados.")+bloque("EPP entregado",c.slice(0,8).map(e=>fila(esc(UI.corta(e.fecha))+" · "+esc(e.resumen.motivo||"Entrega"),esc(e.resumen.reposicionTexto||e.resumen.elementosTexto||"")+(e.resumen.reponer?" · reponer "+esc(UI.corta(e.resumen.reponer)):""),e.resumen.reponer&&e.resumen.reponer<s?["mal","Vida útil vencida"]:null)),"Sin entregas de EPP.",t.length?'<div class="aviso mal u-mt8">Por entregar (inspección de EPP): '+esc(t.map(e=>e.resumen.elementosTexto).join(" · "))+' <a href="entrega-epp.html">Entregar →</a></div>':"")+bloque("Inspecciones de EPP",l.slice(0,6).map(e=>fila(esc(e.fechaInspeccion||""),e.malos?"En mal estado: "+esc(e.malos):"Todo en buen estado",e.malos?["mal","Con elementos malos"]:["ok","OK"])),"Sin inspecciones de EPP.")+bloque("Dotación",d.slice(0,6).map(e=>fila(esc(e.resumen.periodoNombre||UI.corta(e.fecha)),esc(e.resumen.itemsTexto||""))),"Sin entregas de dotación.")+bloque("Inducción y reinducción",m.slice(0,4).map(e=>fila(esc(e.resumen.tipoInduccion||"Inducción")+" · "+esc(UI.corta(e.fecha)),esc(e.resumen.resultado||"")+(e.resumen.vence?" · vence "+esc(UI.corta(e.resumen.vence)):""))),"Sin inducción registrada.")+bloque("Accidentes e incidentes donde fue el lesionado",u.map(e=>fila(esc(e.resumen.clase)+" · "+esc(UI.corta(e.resumen.fecha)),esc(e.resumen.descripcion||"")+(e.resumen.diasIncapacidad?" · "+e.resumen.diasIncapacidad+" días de incapacidad":""))),"Ninguno.")+p+'<button type="button" class="btn ghost" id="fxPdf">🖨️ Imprimir la ficha</button>',$("fxPdf").addEventListener("click",()=>{const e=$("fx").cloneNode(!0);e.querySelectorAll("a, button").forEach(e=>e.remove()),UI.imprimir([UI.cabecera("SG-FICHA-TRABAJADOR","FICHA DEL TRABAJADOR: "+String(r.nombre).toUpperCase(),"CC "+r.cedula+" · "+(r.cargo||"")+" · corte "+UI.corta(s))+'<div class="hp-ficha">'+e.innerHTML+"</div>"],!1)})}cargar();</script>
+</body>
+</html>
