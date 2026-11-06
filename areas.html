@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Departamentos y áreas · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Departamentos y áreas · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>.ar-it{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1.5px solid var(--n-300);border-radius:var(--r-m,10px);padding:10px 12px;margin:6px 0;background:var(--paper)}.ar-it .t{font-weight:700}.ar-it .m{font-size:var(--fs-menor);color:var(--n-600)}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="screen active">
+  <div class="hdr">
+    <a class="back" href="index.html">← Volver al portal</a>
+    <div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Estructura de la empresa</div>
+    <h1>Departamentos y áreas</h1>
+    <p>Los nombres que se usan en todo el portal</p></div></div>
+  </div>
+  <div id="avisoSrv"></div>
+  <div class="card">
+    <p class="ayuda">Escribe cada departamento o área de la empresa una sola vez. Al llenar «Área» en el personal, los equipos, los reportes, los ATS o la matriz de peligros, el portal los ofrece para que se escriban igual y los informes por área cuadren.</p>
+    <div class="grid2"><div class="field"><label for="arNom">Departamento o área *</label><input type="text" id="arNom" maxlength="60" placeholder="Ej: Producción"></div>
+    <div class="field"><label for="arResp">Responsable (opcional)</label><input type="text" id="arResp" maxlength="60" placeholder="Ej: Jefe de planta"></div></div>
+    <button type="button" class="btn amber" id="arAdd">+ Agregar</button>
+    <div class="fila-btn u-mt8"><button type="button" class="btn ghost mini" id="arSug">Sugerir los típicos</button><button type="button" class="btn ghost mini" id="arUsados">Traer las áreas ya escritas en el personal</button></div>
+    <div id="arMsg" class="status-msg"></div>
+  </div>
+  <div class="card"><h2>Departamentos y áreas <span id="arCuenta" class="chip gris"></span></h2><div id="arLista"><div class="empty">Cargando…</div></div></div>
+</div>
+</div>
+<script src="dialogo.js"></script>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script src="registros.js"></script>
+<script>OfflineBanner.init(),OutboxBadge.init(),"undefined"!=typeof UpdateManager&&UpdateManager.init();const $=UI.$,ID="EMPRESA-PERFIL";let perfil=null,areas=[];const TIPICOS=["Gerencia","Administrativa y financiera","Talento humano","SST","Calidad","Producción","Mantenimiento","Logística y bodega","Compras","Comercial","Operaciones en obra"];async function cargar(){UI.avisoServidor($("avisoSrv"))?$("arLista").innerHTML="":(perfil=await SGSST.doc(ID),areas=String(perfil&&perfil.areasTexto||"").split("\n").map(a=>{const e=a.split("|");return{nombre:e[0].trim(),resp:(e[1]||"").trim()}}).filter(a=>a.nombre),pintar())}function pintar(){$("arCuenta").textContent=areas.length,$("arLista").innerHTML=areas.length?areas.map((a,e)=>'<div class="ar-it"><div><div class="t">'+esc(a.nombre)+"</div>"+(a.resp?'<div class="m">Responsable: '+esc(a.resp)+"</div>":"")+'</div><div><button type="button" class="btn-mini" data-ed="'+e+'">✏️</button> <button type="button" class="btn-mini rojo" data-del="'+e+'">Quitar</button></div></div>').join(""):'<div class="empty">Aún no hay departamentos. Agrégalos arriba o pulsa «Sugerir los típicos».</div>'}async function guardar(){const a=$("arMsg");a.textContent="Guardando…";const e=areas.map(a=>a.nombre+(a.resp?" | "+a.resp:"")).join("\n"),r=perfil||Object.assign({nombre:"undefined"!=typeof EMPRESA&&EMPRESA.nombre||""},UI.perfilInstalacion()||{}),t=await Registros.guardar("empresa",ID,Object.assign({},r,{areasTexto:e}),perfil?perfil.version:0);return"string"==typeof t?(a.textContent=t,!1):(Areas.guardarLocal(areas.map(a=>a.nombre)),a.textContent="✓ Guardado",await cargar(),!0)}function agregar(a,e){return!!(a=String(a||"").trim().replace(/\s+/g," "))&&!areas.some(e=>UI.norm(e.nombre)===UI.norm(a))&&(areas.push({nombre:a.slice(0,60),resp:String(e||"").trim().slice(0,60)}),!0)}$("arAdd").addEventListener("click",async()=>{const a=$("arNom").value.trim();if(!a)return $("arMsg").textContent="Escribe el nombre del departamento o área.",void $("arNom").focus();agregar(a,$("arResp").value)?($("arNom").value="",$("arResp").value="",pintar(),await guardar(),$("arNom").focus()):$("arMsg").textContent="Ese departamento ya está."}),$("arNom").addEventListener("keydown",a=>{"Enter"===a.key&&(a.preventDefault(),$("arAdd").click())}),$("arSug").addEventListener("click",async()=>{let a=0;TIPICOS.forEach(e=>{agregar(e)&&a++}),a?(pintar(),await guardar(),UI.toast(a+" departamento(s) agregados. Quita los que no apliquen.")):$("arMsg").textContent="Ya están todos los típicos."}),$("arUsados").addEventListener("click",async()=>{const a=await SGSST.listar("trabajador,equipo");let e=0;[...new Set((a.rows||[]).map(a=>String(a.resumen.area||"").trim()).filter(Boolean))].forEach(a=>{agregar(a)&&e++}),e?(pintar(),await guardar(),UI.toast(e+" área(s) traídas.")):$("arMsg").textContent="No hay áreas nuevas escritas en el personal ni en los equipos."}),$("arLista").addEventListener("click",async a=>{const e=a.target.closest("[data-del]"),r=a.target.closest("[data-ed]");if(e){const a=areas[+e.dataset.del];if(!await Dialogo.confirmar("¿Quitar «"+a.nombre+"»? Los registros que ya la tienen no cambian."))return;areas.splice(+e.dataset.del,1),pintar(),await guardar()}if(r){const a=areas[+r.dataset.ed],e=await Dialogo.pedir("Nombre del departamento o área:",a.nombre);if(null===e||!e.trim())return;const t=await Dialogo.pedir("Responsable (opcional):",a.resp);a.nombre=e.trim().slice(0,60),a.resp=String(t||"").trim().slice(0,60),pintar(),await guardar()}}),cargar();</script>
+</body>
+</html>
