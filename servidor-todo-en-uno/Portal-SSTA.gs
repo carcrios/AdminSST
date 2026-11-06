@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v155';
+const VERSION_PORTAL = 'v156';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -4953,7 +4953,11 @@ function doPost(e) {
     const items = body.items || {};
     const unidades = body.unidades || {};
     const malos = [], regulares = [], faltantes = [];
-    formato.elementos.forEach(e => {
+    // v156: en EPP los elementos salen de la matriz de EPP y se eligen al inspeccionar: se revisan los que llegaron.
+    const elementos = tipo === 'epp'
+      ? Object.keys(items).filter(function (k) { return String(k).length <= 80; }).slice(0, 80).map(function (k) { const f = formato.elementos.find(function (x) { return x.nombre === k; }); return f || { nombre: k, cantidad: null }; })
+      : formato.elementos;
+    elementos.forEach(e => {
       const el = e.nombre;
       if (items[el] === 'M') malos.push(el);
       else if (items[el] === 'R') regulares.push(el);
@@ -5609,7 +5613,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v155';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v156';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -6581,7 +6585,7 @@ function resumen_(tipo, d) {
     const ven = {};
     Object.keys(d.vencimientos || {}).forEach(function (k) { ven[k] = texto_(d.vencimientos[k]); });
     const hec = {}; Object.keys(d.hechas || {}).forEach(function (k) { hec[k] = texto_(d.hechas[k]); });   // v154: p. ej. fecha en que se recargó el extintor
-    return { categoria: texto_(d.categoria), codigo: corto_(d.codigo, 40), nombre: corto_(d.nombre, 80), ubicacion: corto_(d.ubicacion, 80), subtipo: corto_(d.subtipo, 20), hechas: hec, area: corto_(d.area, 80),
+    return { categoria: texto_(d.categoria), codigo: corto_(d.codigo, 40), nombre: corto_(d.nombre, 80), ubicacion: corto_(d.ubicacion, 80), subtipo: corto_(d.subtipo, 20), hechas: hec, area: corto_(d.area, 80), mantTipo: corto_(d.mantTipo, 30), contenido: Array.isArray(d.contenido) ? d.contenido.slice(0, 80).map(function (x) { return { e: corto_(x && x.e, 80), u: corto_(x && x.u, 40), min: Number(x && x.min) || 0 }; }) : undefined, mantUltimo: texto_(d.mantUltimo).slice(0, 10), mantProximo: texto_(d.mantProximo).slice(0, 10),
              frecuencia: texto_(d.frecuencia), ultimaInspeccion: texto_(d.ultimaInspeccion), ultimoResultado: texto_(d.ultimoResultado),
              vencimientos: ven, activo: d.activo !== false };
   }
