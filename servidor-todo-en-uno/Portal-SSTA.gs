@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v158';
+const VERSION_PORTAL = 'v159';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5613,7 +5613,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v158';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v159';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -6140,7 +6140,7 @@ function autorizacionSalud_(tipo, d) {
  *  sin restricciones médicas, área, fecha de ingreso ni contacto de emergencia. */
 function trabajadorPublico_(r) {
   const req = {}; Object.keys(r.req || {}).forEach(function (k) { const x = r.req[k] || {}; req[k] = { fecha: x.fecha, vence: x.vence, apto: x.apto }; if (!x.apto && k !== 'medico' && x.soporte) req[k].soporte = x.soporte; });   // apto: lo usan los permisos en campo; v148: sin foto del concepto médico
-  const out = {}; Object.keys(r).forEach(function (k) { if (['area', 'fechaIngreso', 'emer', 'autorizacion'].indexOf(k) === -1) out[k] = r[k]; });
+  const out = {}; Object.keys(r).forEach(function (k) { if (['area', 'fechaIngreso', 'emer', 'autorizacion', 'celular'].indexOf(k) === -1) out[k] = r[k]; });
   out.req = req; return out;
 }
 function sinRestricciones_(req) {
@@ -6557,7 +6557,7 @@ function resumen_(tipo, d) {
       req[k] = { fecha: texto_(r.fecha), vence: texto_(r.vence), apto: texto_(r.apto), restricciones: corto_(r.restricciones, 120), soporte: !!r.soporte };
     });
     const aut = d.autorizacionDatos || null;
-    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), empresa: corto_(d.empresa, 60), activo: d.activo !== false, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
+    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), celular: texto_(d.celular).replace(/\D/g, '').slice(0, 15), empresa: corto_(d.empresa, 60), activo: d.activo !== false, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
              autorizacion: aut ? { general: aut.general === true, sensibles: aut.sensibles === true, fecha: texto_(aut.fecha) } : null };
   }
   if (tipo === 'reporte') {
@@ -6847,6 +6847,7 @@ function doPost(e) {
     if (body.action === 'restaurar') return jsonOut_(restaurar_(body));
     if (body.action === 'adjuntar') return jsonOut_(adjuntar_(body));
     if (body.action === 'paqueteCliente') return jsonOut_(paqueteCliente_(body));   // v153: documentación para un cliente, en un .zip
+    if (body.action === 'carpetaAuditoria') return jsonOut_(carpetaAuditoria_(body));   // v159: carpeta para el auditor, por numeral
     if (body.action === 'quitarAdjunto') return jsonOut_(quitarAdjunto_(body));
     if (body.action === 'entrar') return jsonOut_(entrar_(body));
     if (body.action === 'cambiarMiClave') return jsonOut_(cambiarMiClave_(body));
@@ -7040,6 +7041,7 @@ function guardar_(body) {
   }
   if (tipo === 'examen' && !body._sistema) { try { efectoExamen_(id, limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se pasó la restricción a Personal habilitado: ' + e.message, '', '', tipo); } }
   if (tipo === 'induccion' && !body._sistema) { try { efectoInduccion_(limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se actualizó Personal habilitado: ' + e.message, '', '', tipo); } }
+  if ((tipo === 'reporte' || tipo === 'preop') && !prev && !body._sistema) { try { efectoAccionAuto_(tipo, id, limpio); } catch (e) { registrarEvento_(id, 'ACCION', 'RECHAZADO', 'No se creó la acción automática: ' + e.message, '', '', tipo); } }
   if (tipo === 'encresp' && !prev) { try { efectoRespuestaEnc_(id, limpio); } catch (e) { registrarEvento_(id, 'ENCUESTA', 'RECHAZADO', 'No se marcó la encuesta como respondida: ' + e.message, '', '', tipo); } }
   return puedeLeer_(tipo) ? { ok: true, id: id, version: version, resumen: c.resumen, estado: c.estado } : { ok: true, id: id, version: version, estado: c.estado };   // v148: sin resumen si no lo puede leer
 }
@@ -7063,6 +7065,39 @@ function efectoExamen_(id, d) {
   const campos = { restriccionMed: { para: para, hasta: d.temporalidad === 'Temporales' ? texto_(d.venceRestriccion) : '', concepto: texto_(d.concepto), fecha: texto_(d.fecha), fuente: id } };
   const r = guardar_({ action: 'parche', tipo: 'trabajador', id: tid, campos: campos, opId: '', _interno: true, _sistema: true });
   if (!r.ok) throw new Error(r.error || 'error');
+}
+/* v159 · Acciones automáticas: un acto o condición insegura, un incidente o un preoperacional con novedad crean
+   SOLOS su acción en el plan de acción (id fijo ACC-<registro>, así nunca se duplica), con el responsable del área
+   (Departamentos y áreas: «Área | Responsable») y una fecha según el potencial. El accidente de trabajo no: ese
+   va por la investigación, que define sus propias acciones. */
+function efectoAccionAuto_(tipo, id, d) {
+  let origen = '', hallazgo = '', centro = texto_(d.centro), lugar = '', alta = false;
+  if (tipo === 'reporte') {
+    if (!/Acto|Condici|Incidente/i.test(texto_(d.clase))) return;
+    origen = /Incidente/i.test(texto_(d.clase)) ? 'Incidente' : 'Reporte de actos y condiciones';
+    hallazgo = texto_(d.clase) + (d.categoria ? ' · ' + texto_(d.categoria) : '') + ': ' + texto_(d.descripcion);
+    lugar = texto_(d.lugar); alta = d.potencial === 'Alto' || /Incidente/i.test(texto_(d.clase));
+  } else {
+    if (!(Number(d.malos) > 0)) return;
+    origen = 'Preoperacional';
+    hallazgo = texto_(d.nombreFormulario) + (d.codigoEquipo ? ' ' + texto_(d.codigoEquipo) : '') + ': ' + (d.hallazgos || []).map(function (x) { return texto_(x.p) + ' → ' + texto_(x.v) + (x.obs ? ' (' + texto_(x.obs) + ')' : ''); }).join('; ');
+    alta = true;
+  }
+  const aid = 'ACC-' + id;
+  if (filaDe_(aid) !== -1) return;
+  const responsable = responsableDeArea_([lugar, centro, texto_(d.area)].join(' '));
+  const hoy = hoyISO_();
+  const doc = { origen: origen, origenRef: id, hallazgo: hallazgo.slice(0, 1500), accion: 'Corregir y definir cómo evitar que se repita: ' + hallazgo.slice(0, 160), tipoAccion: 'Correctiva', prioridad: alta ? 'Alta' : 'Media',
+    responsable: responsable, fechaCompromiso: sumarDias_(hoy, alta ? 5 : 15), centro: centro, fotos: [], estado: 'ABIERTA', fecha: hoy, creadoPor: 'Portal (automática)', seguimiento: [], automatica: true };
+  const r = guardar_({ action: 'guardar', tipo: 'accion', id: aid, doc: doc, versionBase: 0, opId: '', _interno: true, _sistema: true });
+  if (!r.ok) throw new Error(r.error || 'error');
+}
+function responsableDeArea_(texto) {
+  const t = normalizar_(texto); if (!t.trim()) return '';
+  const perfil = filaDe_('EMPRESA-PERFIL') === -1 ? null : leerDoc_('EMPRESA-PERFIL', false);
+  const lineas = texto_(perfil && perfil.areasTexto).split('\n');
+  for (let i = 0; i < lineas.length; i++) { const p = lineas[i].split('|'), a = normalizar_(p[0]).trim(); if (a.length >= 3 && p[1] && t.indexOf(a) !== -1) return texto_(p[1]).trim(); }
+  return '';
 }
 function efectoInduccion_(d) {
   if (d.resultado !== 'APROBADA' || !d.cedula || d.tipoInduccion === 'Visitante' || !/^\d{4}-\d{2}-\d{2}$/.test(texto_(d.fecha))) return;
@@ -7516,6 +7551,41 @@ function paqueteCliente_(body) {
   registrarEvento_('PAQUETE', 'PAQUETE_CLIENTE', 'CREADO', cliente + ': ' + blobs.length + ' archivo(s), ' + Math.round(bytes.length / 1024) + ' KB' + (medico ? ' · con conceptos médicos' : '') + (compartido ? ' · compartido con enlace' : ''), body.opId || '', '', 'paquete');
   return { ok: true, nombre: nombre, archivos: blobs.length, tamano: bytes.length, omitidos: omitidos, url: archivo.getUrl(), id: archivo.getId(), compartido: compartido,
            base64: bytes.length <= MAX_PAQUETE_DIRECTO ? Utilities.base64Encode(bytes) : '' };
+}
+/* v159 · Carpeta de auditoría con un clic: un .zip con una carpeta por estándar de la Res. 0312 (numeral y nombre),
+   y adentro los soportes adjuntos de los registros del portal que lo evidencian y una lista de esos registros.
+   Nunca datos de salud. Solo Administrador y SST. */
+function esc_(t) { return texto_(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function carpetaAuditoria_(body) {
+  if (CTX_.modo && !sstConSesion_()) return CTX_.u ? errPermiso_('Solo el administrador y SST arman la carpeta de auditoría.') : errSesion_();
+  const hoy = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd'), blobs = [], omitidos = [], usados = {};
+  let total = 0;
+  const ruta = function (r) { let x = r, i = 2; while (usados[x]) { x = r.replace(/(\.[^.\/]+)?$/, ' (' + (i++) + ')$1'); } usados[x] = 1; return x; };
+  const meter = function (b, r) { const n = b.getBytes().length; if (total + n > MAX_PAQUETE) { omitidos.push(r + ' (la carpeta pasaría de 40 MB)'); return; } total += n; blobs.push(b.setName(ruta(r))); };
+  const carpetas = (Array.isArray(body.carpetas) ? body.carpetas : []).slice(0, 80);
+  carpetas.forEach(function (c) {
+    const nom = nombreArchivo_(corto_(c && c.nombre, 90) || 'Estándar'), lineas = [];
+    (Array.isArray(c && c.ids) ? c.ids : []).map(texto_).filter(Boolean).slice(0, 25).forEach(function (id) {
+      const f = filaDe_(id); if (f === -1) return; const r = leerFila_(f);
+      if (r.borrado || TIPOS_SALUD_.indexOf(r.tipo) !== -1) return;
+      lineas.push('<tr><td>' + esc_(id) + '</td><td>' + esc_(texto_(r.fecha).slice(0, 10)) + '</td><td>' + esc_(corto_(r.titulo, 160)) + '</td><td>' + esc_(texto_(r.estado)) + '</td></tr>');
+      const d = leerDoc_(id, true) || {};
+      (d.adjuntos || []).forEach(function (a) {
+        if (!a || a.retirado || !a.fileId || a.ref === 'medico') return;
+        try { meter(DriveApp.getFileById(a.fileId).getBlob(), nom + '/' + nombreArchivo_(a.nombre)); } catch (e) { omitidos.push(nom + '/' + a.nombre + ' (no está en Drive)'); }
+      });
+    });
+    const html = '<html><head><meta charset="utf-8"></head><body style="font-family:Arial;font-size:10pt;"><h3>' + esc_(corto_(c && c.nombre, 200)) + '</h3><p>' + esc_(corto_(c && c.evidencia, 1500)) + '</p>' +
+      (lineas.length ? '<table border="1" cellpadding="4" style="border-collapse:collapse;"><tr><th>Registro</th><th>Fecha</th><th>Detalle</th><th>Estado</th></tr>' + lineas.join('') + '</table>' : '<p>Sin registros en el portal para este estándar.</p>') + '</body></html>';
+    try { meter(Utilities.newBlob(html, 'text/html', 'x').getAs('application/pdf'), nom + '/00 Registros del portal.pdf'); } catch (e) { meter(Utilities.newBlob(html, 'text/html', 'x'), nom + '/00 Registros del portal.html'); }
+  });
+  const ind = String(body.indiceHtml || '');
+  if (ind) { try { const pdf = Utilities.newBlob(ind.slice(0, 900000), 'text/html', 'indice.html').getAs('application/pdf'); total += pdf.getBytes().length; blobs.unshift(pdf.setName('00 Índice de evidencias.pdf')); } catch (e) { blobs.unshift(Utilities.newBlob(ind, 'text/html', '00 Índice de evidencias.html')); } }
+  if (!blobs.length) return { ok: false, error: 'No hay nada para la carpeta.' };
+  const nombre = 'Carpeta de auditoria SG-SST ' + hoy + '.zip', zip = Utilities.zip(blobs, nombre);
+  const archivo = carpetaRaiz_('CARPETA_PAQUETES', 'Paquetes para clientes').createFile(zip), bytes = zip.getBytes();
+  registrarEvento_('AUDITORIA', 'CARPETA_AUDITORIA', 'CREADO', carpetas.length + ' estándar(es), ' + blobs.length + ' archivo(s), ' + Math.round(bytes.length / 1024) + ' KB', body.opId || '', '', 'paquete');
+  return { ok: true, nombre: nombre, archivos: blobs.length, tamano: bytes.length, omitidos: omitidos, url: archivo.getUrl(), id: archivo.getId(), base64: bytes.length <= MAX_PAQUETE_DIRECTO ? Utilities.base64Encode(bytes) : '' };
 }
 function quitarAdjunto_(body) {
   const id = texto_(body.id), fila = filaDe_(id);
@@ -8432,12 +8502,58 @@ function responsables_() {
 
 /** Lo que vence: requisitos del personal, equipos, acciones, FURAT e investigaciones,
  *  periodos y reuniones de los comités, plazos de quejas (solo el código) y auditorías. */
+/* v159 · Informe del mes automático: el día 1 (con el aviso diario) sale a gerencia y SST el resumen del mes que
+   terminó: accidentalidad, reportes, inspecciones, preoperacionales, acciones y lo que vence, con el enlace al
+   informe gerencial completo del portal. Se puede ejecutar a mano («informeMensual») para probarlo. */
+function datosMes_(mes) {
+  const reg = regSheet_(), last = reg.getLastRow(), o = { at: 0, dias: 0, inc: 0, actos: 0, insp: 0, nc: 0, preop: 0, preopNov: 0, accNuevas: 0, accCerradas: 0, accAbiertas: 0, accVencidas: 0, charlas: 0, pct0312: '' };
+  if (last < 2) return o;
+  const hoy = hoyISO_();
+  reg.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v) {
+    if (!v[0] || v[11]) return;
+    let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
+    const tipo = v[1], f = texto_(r.fecha || (v[4] instanceof Date ? Utilities.formatDate(v[4], 'America/Bogota', 'yyyy-MM-dd') : v[4])).slice(0, 10), en = f.slice(0, 7) === mes;
+    if (tipo === 'reporte' && en) { if (r.clase === 'Accidente de trabajo') { o.at++; o.dias += Number(r.diasIncapacidad) || 0; } else if (/Incidente/.test(texto_(r.clase))) o.inc++; else o.actos++; }
+    if (tipo === 'inspeccion' && en) { o.insp++; if (r.resultado === 'NO CONFORME') o.nc++; }
+    if (tipo === 'preop' && en) { o.preop++; if (Number(r.malos) > 0) o.preopNov++; }
+    if (tipo === 'accion') {
+      if (en) o.accNuevas++;
+      if (v[3] === 'CERRADA' && texto_(r.fechaCierre).slice(0, 7) === mes) o.accCerradas++;
+      if (v[3] !== 'CERRADA') { o.accAbiertas++; if (r.fechaCompromiso && texto_(r.fechaCompromiso) < hoy) o.accVencidas++; }
+    }
+    if (tipo === 'mes' && texto_(r.mes) === mes && r.pct0312 !== undefined && r.pct0312 !== '') o.pct0312 = r.pct0312;
+  });
+  return o;
+}
+function informeMensual() {
+  const hoy = hoyISO_(), mes = sumarDias_(hoy.slice(0, 8) + '01', -1).slice(0, 7);
+  const perfil = perfilEmpresa_(), emp = nombreEmpresa_(perfil), sitio = texto_(perfil.sitio);
+  const dest = {}; correos_().forEach(function (c) { dest[c] = 1; }); const cs = correoValido_(perfil.correoSST); if (cs) dest[cs] = 1;
+  try { if (modoUsuarios_()) leerUsuarios_().forEach(function (u) { if (u.correo && u.activo === 'Sí' && (u.rol === 'admin' || u.rol === 'sst' || u.rol === 'gerencia')) { const c = correoValido_(u.correo); if (c) dest[c] = 1; } }); } catch (e) {}
+  const para = Object.keys(dest); if (!para.length) return 'Sin correos para el informe.';
+  const p = PropertiesService.getScriptProperties(); if (p.getProperty('INFORME_MES_ENVIADO') === mes) return 'Ya se envió el informe de ' + mes + '.';
+  const d = datosMes_(mes), pend = pendientes_().items, venc = pend.filter(function (x) { return x.nivel === 'vencido'; }).length;
+  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'], nom = MESES[Number(mes.slice(5, 7)) - 1] + ' de ' + mes.slice(0, 4);
+  const cuerpo = 'Informe SG-SST de ' + emp + ' — ' + nom + '\n\n' +
+    'ACCIDENTALIDAD\n· Accidentes de trabajo: ' + d.at + (d.at ? ' (' + d.dias + ' días de incapacidad)' : '') + '\n· Incidentes: ' + d.inc + '\n· Actos y condiciones reportados: ' + d.actos + '\n\n' +
+    'PREVENCIÓN\n· Inspecciones: ' + d.insp + (d.insp ? ' (' + d.nc + ' no conformes)' : '') + '\n· Preoperacionales: ' + d.preop + (d.preop ? ' (' + d.preopNov + ' con novedad)' : '') + '\n\n' +
+    'PLAN DE ACCIÓN\n· Acciones nuevas: ' + d.accNuevas + '\n· Cerradas en el mes: ' + d.accCerradas + '\n· Abiertas hoy: ' + d.accAbiertas + (d.accVencidas ? ' (' + d.accVencidas + ' vencidas)' : '') + '\n\n' +
+    (d.pct0312 !== '' ? 'ESTÁNDARES MÍNIMOS (Res. 0312)\n· Avance estimado: ' + d.pct0312 + ' %\n\n' : '') +
+    'PENDIENTES DEL SISTEMA\n· ' + pend.length + ' en total, ' + venc + ' vencidos.\n\n' +
+    'Informe gerencial completo con gráficas: Portal SSTA → Informes' + (sitio ? '\n' + sitio.replace(/\/?$/, '/') + 'informe.html?p=mes&v=' + mes : '') + '\n\nCorreo automático del Portal SSTA (sale el día 1 de cada mes).';
+  if (typeof puedeEnviarCorreo_ === 'function' && !puedeEnviarCorreo_('baja')) return 'Sin cupo de correos hoy.';
+  MailApp.sendEmail(para.join(','), 'Informe SG-SST ' + nom + ' — ' + emp, cuerpo);
+  p.setProperty('INFORME_MES_ENVIADO', mes);
+  registrarEvento_('', 'CORREO', 'APLICADO', 'Informe del mes ' + mes + ' a ' + para.join(', '), '', '', 'informe');
+  return 'Informe de ' + mes + ' enviado a ' + para.join(', ') + '.';
+}
 function avisoDiario() {
   // Servidores actualizados desde una versión anterior: el resumen del lunes se programa solo la primera vez.
   try { if (!ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'avisoSemanal'; }))
     ScriptApp.newTrigger('avisoSemanal').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(7).inTimezone('America/Bogota').create(); } catch (e) { console.log('Resumen del lunes: ' + e.message); }
   let tareas = 0; try { tareas = avisoTareasAsesor_(); } catch (e) { console.log('Avisos de tareas del asesor: ' + e.message); }
   let personales = 0; try { personales = avisoPersonalDiario_(); } catch (e) { console.log('Avisos personales: ' + e.message); }
+  try { if (hoyISO_().slice(8) === '01') informeMensual(); } catch (e) { console.log('Informe del mes: ' + e.message); }
   const dest = correos_(); if (!dest.length) return 'Sin correos configurados.' + (tareas ? ' Avisos de tareas del asesor: ' + tareas + '.' : '');
   const hoy = hoyISO_();
   if (regSheet_().getLastRow() < 2) return 'Nada que revisar.';
@@ -8628,7 +8744,7 @@ function sinImagenesFalsas_(o, prof) {
       doGet: doGet,
       doPost: doPost,
       libro: __entorno.libro,
-      funciones: { verLibro: verLibro, revisarSesionObra: revisarSesionObra, codigoAdministrador: codigoAdministrador, respaldoSemanal: respaldoSemanal, probarRestauracion: probarRestauracion, restaurarDesdeRespaldo: restaurarDesdeRespaldo, instalarRespaldo: instalarRespaldo, vigilarClientes: vigilarClientes, instalarVigilancia: instalarVigilancia, instalarAvisosDiarios: instalarAvisosDiarios, avisoDiario: avisoDiario, archivoVistaPrevia: archivoVistaPrevia, archivoAnualVistaPrevia: archivoAnualVistaPrevia, archivarAniosAnteriores: archivarAniosAnteriores, avisoSemanal: avisoSemanal }
+      funciones: { verLibro: verLibro, revisarSesionObra: revisarSesionObra, codigoAdministrador: codigoAdministrador, respaldoSemanal: respaldoSemanal, probarRestauracion: probarRestauracion, restaurarDesdeRespaldo: restaurarDesdeRespaldo, instalarRespaldo: instalarRespaldo, vigilarClientes: vigilarClientes, instalarVigilancia: instalarVigilancia, instalarAvisosDiarios: instalarAvisosDiarios, informeMensual: informeMensual, avisoDiario: avisoDiario, archivoVistaPrevia: archivoVistaPrevia, archivoAnualVistaPrevia: archivoAnualVistaPrevia, archivarAniosAnteriores: archivarAniosAnteriores, avisoSemanal: avisoSemanal }
     };
   })();
   return __sgsst;
@@ -8646,6 +8762,7 @@ function sgsst__instalarRespaldo() { return modulo_sgsst_().funciones.instalarRe
 function sgsst__vigilarClientes() { return modulo_sgsst_().funciones.vigilarClientes.apply(null, arguments); }
 function sgsst__instalarVigilancia() { return modulo_sgsst_().funciones.instalarVigilancia.apply(null, arguments); }
 function sgsst__instalarAvisosDiarios() { return modulo_sgsst_().funciones.instalarAvisosDiarios.apply(null, arguments); }
+function sgsst__informeMensual() { return modulo_sgsst_().funciones.informeMensual.apply(null, arguments); }
 function sgsst__avisoDiario() { return modulo_sgsst_().funciones.avisoDiario.apply(null, arguments); }
 function sgsst__archivoVistaPrevia() { return modulo_sgsst_().funciones.archivoVistaPrevia.apply(null, arguments); }
 function sgsst__archivoAnualVistaPrevia() { return modulo_sgsst_().funciones.archivoAnualVistaPrevia.apply(null, arguments); }
