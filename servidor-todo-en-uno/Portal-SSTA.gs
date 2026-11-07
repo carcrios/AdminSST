@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v159';
+const VERSION_PORTAL = 'v160';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5613,7 +5613,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v159';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v160';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -6589,6 +6589,9 @@ function resumen_(tipo, d) {
     Object.keys(d.vencimientos || {}).forEach(function (k) { ven[k] = texto_(d.vencimientos[k]); });
     const hec = {}; Object.keys(d.hechas || {}).forEach(function (k) { hec[k] = texto_(d.hechas[k]); });   // v154: p. ej. fecha en que se recargó el extintor
     return { categoria: texto_(d.categoria), codigo: corto_(d.codigo, 40), nombre: corto_(d.nombre, 80), ubicacion: corto_(d.ubicacion, 80), subtipo: corto_(d.subtipo, 20), hechas: hec, area: corto_(d.area, 80), mantTipo: corto_(d.mantTipo, 30), contenido: Array.isArray(d.contenido) ? d.contenido.slice(0, 80).map(function (x) { return { e: corto_(x && x.e, 80), u: corto_(x && x.u, 40), min: Number(x && x.min) || 0 }; }) : undefined, mantUltimo: texto_(d.mantUltimo).slice(0, 10), mantProximo: texto_(d.mantProximo).slice(0, 10),
+             // v160: hoja de vida (datos técnicos e historial de mantenimientos)
+             marca: corto_(d.marca, 60), modelo: corto_(d.modelo, 60), serie: corto_(d.serie, 60), fechaCompra: texto_(d.fechaCompra).slice(0, 10), proveedor: corto_(d.proveedor, 80), caracteristicas: corto_(d.caracteristicas, 400),
+             mantHist: Array.isArray(d.mantHist) ? d.mantHist.slice(-60).map(function (m) { return { f: texto_(m && m.f).slice(0, 10), t: corto_(m && m.t, 20), d: corto_(m && m.d, 300), q: corto_(m && m.q, 80), c: corto_(m && m.c, 30) }; }) : undefined,
              frecuencia: texto_(d.frecuencia), ultimaInspeccion: texto_(d.ultimaInspeccion), ultimoResultado: texto_(d.ultimoResultado),
              vencimientos: ven, activo: d.activo !== false };
   }
