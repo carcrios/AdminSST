@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v161';
+const VERSION_PORTAL = 'v165';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -523,6 +523,23 @@ const SHEET_NAME = 'Permisos';
 const EVENTOS_SHEET_NAME = 'Eventos';
 // API_TOKEN, PERMISO_NOMBRE y PERMISO_CODIGO los define config-<tipo>.gs
 
+/* v162 · Ficha 360: ¿en qué registros de este módulo aparece esta cédula? Se busca con TextFinder en la columna
+   de datos (rápido aunque la hoja sea grande) y se confirma leyendo el JSON, para no confundir números parecidos. */
+function cedulaEnJson_(json, k) {
+  let o; try { o = JSON.parse(json); } catch (e) { return ''; }
+  let rol = '';
+  (function rec(x, campo, prof) {
+    if (rol || prof > 8 || x === null || x === undefined) return;
+    if (Array.isArray(x)) { x.forEach(function (y) { rec(y, campo, prof + 1); }); return; }
+    if (typeof x === 'object') { Object.keys(x).forEach(function (c) { rec(x[c], c, prof + 1); }); return; }
+    if (/^(cc|cedula|cédula|documento|doc|numId)$/i.test(campo || '') && String(x).replace(/\D/g, '') === k) rol = campo;
+  })(o, '', 0);
+  return rol;
+}
+function filasConCedula_(sheet, col, k) {
+  const last = sheet.getLastRow(); if (last < 2 || k.length < 5) return [];
+  return sheet.getRange(2, col, last - 1, 1).createTextFinder(k).findAll().map(function (r) { return r.getRow(); }).slice(0, 200);
+}
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
@@ -1143,6 +1160,12 @@ function doGet(e) {
   // Bitácora de un permiso: ?action=history&code=XXX&token=...
   // No lo usa el portal todavía; sirve para auditar un permiso puntual desde el
   // navegador sin tener que abrir la hoja de cálculo.
+  if (e.parameter.action === 'porCedula') {
+    const k = String(e.parameter.cedula || '').replace(/\D/g, ''), sh = getSheet_(), out = [];
+    filasConCedula_(sh, 3, k).forEach(function (n) { const f = sh.getRange(n, 1, 1, 9).getValues()[0]; const rol = cedulaEnJson_(f[2], k); if (!rol) return;
+      out.push({ code: f[0], status: f[1], abierto: f[4] || f[3], sitio: f[6] || '', responsable: f[5] || '', hasta: f[7] || '' }); });
+    return jsonOut_({ ok: true, rows: out });
+  }
   if (e.parameter.action === 'history') {
     if (!code) return jsonOut_({ ok: false, error: 'code requerido' });
     const hojaEv = getEventosSheet_();
@@ -3048,6 +3071,23 @@ function hoja_(nombre, encabezado) {
   }
   return sheet;
 }
+/* v162 · Ficha 360: ¿en qué registros de este módulo aparece esta cédula? Se busca con TextFinder en la columna
+   de datos (rápido aunque la hoja sea grande) y se confirma leyendo el JSON, para no confundir números parecidos. */
+function cedulaEnJson_(json, k) {
+  let o; try { o = JSON.parse(json); } catch (e) { return ''; }
+  let rol = '';
+  (function rec(x, campo, prof) {
+    if (rol || prof > 8 || x === null || x === undefined) return;
+    if (Array.isArray(x)) { x.forEach(function (y) { rec(y, campo, prof + 1); }); return; }
+    if (typeof x === 'object') { Object.keys(x).forEach(function (c) { rec(x[c], c, prof + 1); }); return; }
+    if (/^(cc|cedula|cédula|documento|doc|numId)$/i.test(campo || '') && String(x).replace(/\D/g, '') === k) rol = campo;
+  })(o, '', 0);
+  return rol;
+}
+function filasConCedula_(sheet, col, k) {
+  const last = sheet.getLastRow(); if (last < 2 || k.length < 5) return [];
+  return sheet.getRange(2, col, last - 1, 1).createTextFinder(k).findAll().map(function (r) { return r.getRow(); }).slice(0, 200);
+}
 function getAtsSheet_() {
   const sheet = hoja_(ATS_SHEET, COLS_ATS);
   // Una hoja creada con la versión anterior del backend no tiene las columnas
@@ -3634,6 +3674,16 @@ function doGet(e) {
   if (!checkToken_(p.token)) return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
 
   if (p.action === 'ping') return jsonOut_({ ok: true, servicio: 'ATS SSTA-F-007' });
+  if (p.action === 'porCedula') {
+    // La cédula vive en el JSON del ATS (hoja «Datos», en trozos); el resumen sale de la hoja «ATS».
+    const k = String(p.cedula || '').replace(/\D/g, ''), dat = getDatosSheet_(), sh = getAtsSheet_(), out = [], codigos = {};
+    filasConCedula_(dat, 3, k).forEach(function (n) { const f = dat.getRange(n, 1, 1, 3).getValues()[0], re = /"(cedula|cc)":"([^"]*)"/g; let m;
+      while ((m = re.exec(String(f[2])))) if (m[2].replace(/\D/g, '') === k) { codigos[f[0]] = 1; break; } });
+    const last = sh.getLastRow();
+    if (last >= 2 && Object.keys(codigos).length) sh.getRange(2, 1, last - 1, COLS_ATS.length).getValues().forEach(function (f) { if (!codigos[f[0]]) return;
+      out.push({ code: f[0], desde: f[2], hasta: f[3], area: f[5], trabajo: String(f[6] || '').slice(0, 160), estado: f[COLS_ATS.indexOf('estado')] || 'ABIERTO' }); });
+    return jsonOut_({ ok: true, rows: out });
+  }
   // v148: enlace para que cada participante firme desde SU celular, sin usuario (solo sirve para ESE ATS y para agregarse).
   if (p.action === 'enlaceFirma') return jsonOut_({ ok: true, code: texto_(p.code), clave: claveFirmaAts_(p.code) });
 
@@ -3933,6 +3983,23 @@ function hoja_(nombre, encabezado) {
     SpreadsheetApp.flush();
   }
   return sheet;
+}
+/* v162 · Ficha 360: ¿en qué registros de este módulo aparece esta cédula? Se busca con TextFinder en la columna
+   de datos (rápido aunque la hoja sea grande) y se confirma leyendo el JSON, para no confundir números parecidos. */
+function cedulaEnJson_(json, k) {
+  let o; try { o = JSON.parse(json); } catch (e) { return ''; }
+  let rol = '';
+  (function rec(x, campo, prof) {
+    if (rol || prof > 8 || x === null || x === undefined) return;
+    if (Array.isArray(x)) { x.forEach(function (y) { rec(y, campo, prof + 1); }); return; }
+    if (typeof x === 'object') { Object.keys(x).forEach(function (c) { rec(x[c], c, prof + 1); }); return; }
+    if (/^(cc|cedula|cédula|documento|doc|numId)$/i.test(campo || '') && String(x).replace(/\D/g, '') === k) rol = campo;
+  })(o, '', 0);
+  return rol;
+}
+function filasConCedula_(sheet, col, k) {
+  const last = sheet.getLastRow(); if (last < 2 || k.length < 5) return [];
+  return sheet.getRange(2, col, last - 1, 1).createTextFinder(k).findAll().map(function (r) { return r.getRow(); }).slice(0, 200);
 }
 function getSemanasSheet_() { return hoja_(SEMANAS_SHEET, COLS_SEMANAS); }
 function getDatosSheet_() { return hoja_(DATOS_SHEET, ['code', 'parte', 'texto', 'updatedAt']); }
@@ -4343,6 +4410,13 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (!checkToken_(p.token)) return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
 
+  if (p.action === 'porCedula') {
+    const k = String(p.cedula || '').replace(/\D/g, ''), sh = getSemanasSheet_(), out = [], cA = COLS_SEMANAS.indexOf('asistentes') + 1;
+    filasConCedula_(sh, cA, k).forEach(function (n) { const f = sh.getRange(n, 1, 1, COLS_SEMANAS.length).getValues()[0]; if (!cedulaEnJson_(f[cA - 1], k)) return;
+      let temas = ''; try { const t = JSON.parse(f[COLS_SEMANAS.indexOf('temas')] || '{}'); temas = Object.keys(t).map(function (d) { return t[d]; }).filter(Boolean).join(' · ').slice(0, 200); } catch (e) {}
+      out.push({ code: f[0], del: f[1], al: f[2], lugar: f[3], temas: temas }); });
+    return jsonOut_({ ok: true, rows: out });
+  }
   if (p.list) {
     const sheet = getSemanasSheet_(), last = sheet.getLastRow(), rows = [];
     if (last >= 2) {
@@ -5613,7 +5687,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v161';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v165';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5738,7 +5812,7 @@ const TIPOS_GEN = {
   cliente: { hoja: 'Clientes del asesor', titulo: 'nombre', fecha: 'ultimaVisita', estado: 'estado', responsable: 'contacto', vence: 'proximaVisita',
     campos: ['nombre', 'nit', 'ciudad', 'actividad', 'trabajadores', 'claseRiesgo', 'grupo0312', 'contacto', 'correo', 'telefono', 'sitio', 'codigo', 'ultimaVisita', 'proximaVisita', 'puntaje', 'tareasAbiertas', 'tareasVencidas', 'sincronizado', 'versionServidor', 'estado', 'tareasCerradas',
       // v116: configuración publicada desde la consola y vigilancia diaria de su servidor
-      'publicado', 'modulosOn', 'modulosTotal', 'estadoServidor', 'detalleServidor', 'revisadoServidor', 'apagadosServidor'] },
+      'publicado', 'modulosOn', 'modulosTotal', 'plan', 'estadoServidor', 'detalleServidor', 'revisadoServidor', 'apagadosServidor'] },
   plantillainsp: { hoja: 'Listas de chequeo', titulo: 'nombre', fecha: '', estado: 'activa', responsable: 'reemplaza', vence: '',
     campos: ['nombre', 'icono', 'frecuencia', 'preoperacional', 'reemplaza', 'activa', 'vencimientosTexto', 'itemsTexto'], largos: ['vencimientosTexto', 'itemsTexto'], largoMax: 6000, saltos: true },
   proginsp: { hoja: 'Programa de inspecciones', titulo: 'titulo', fecha: '', estado: 'tipoInspeccion', responsable: 'responsable', vence: '',
@@ -5780,6 +5854,9 @@ const TIPOS_GEN = {
     campos: ['sistema', 'objetivo', 'indicador', 'formula', 'meta', 'sentido', 'unidad', 'frecuencia', 'responsable', 'ultimoValor', 'ultimoPeriodo', 'cumple', 'estado'] },
   pnc: { hoja: 'Producto o servicio no conforme', titulo: 'producto', fecha: 'fecha', estado: 'estado', responsable: 'responsable', vence: '',
     campos: ['fecha', 'producto', 'cliente', 'descripcion', 'detectadoEn', 'cantidad', 'tratamiento', 'responsable', 'costo', 'requiereAC', 'accionId', 'estado', 'fechaCierre'] },
+  // v162 · Derechos del titular (Ley 1581 de 2012, arts. 8, 14 y 15): consulta 10 días hábiles, reclamo 15.
+  habeas: { hoja: 'Solicitudes de datos personales', titulo: 'nombre', fecha: 'fecha', estado: 'estado', responsable: 'responsable', vence: 'vence',
+    campos: ['fecha', 'radicado', 'clase', 'derecho', 'nombre', 'cedula', 'contacto', 'detalle', 'estado', 'vence', 'responsable', 'respuesta', 'fechaRespuesta', 'verificacion'], largos: ['detalle', 'respuesta'], largoMax: 1500 },
   pqrs: { hoja: 'PQRS de clientes', titulo: 'cliente', fecha: 'fecha', estado: 'estado', responsable: 'responsable', vence: 'fechaLimite',
     campos: ['fecha', 'cliente', 'tipoPQRS', 'canal', 'descripcion', 'responsable', 'fechaLimite', 'respuesta', 'fechaRespuesta', 'procede', 'accionId', 'estado', 'presenta', 'contacto', 'area', 'origen', 'nFotos'], largos: ['descripcion'], largoMax: 400 },   // v109: también llegan desde «Reportar un evento» (sin usuario, ver limpiarPqrsPublica_)
   encuesta: { hoja: 'Satisfacción del cliente', titulo: 'cliente', fecha: 'fecha', estado: '', responsable: 'encuestado', vence: '',
@@ -5813,7 +5890,7 @@ const TIPOS_GEN = {
     campos: ['nombre', 'pagina', 'grupo', 'datos'], largos: ['datos'], largoMax: 6000 }
 };
 /* Qué dice el correo diario cuando vence algo de estos tipos. */
-const AVISO_GEN = { sustancia: 'Hoja de seguridad', medicion: 'Medición ambiental', emergencia: 'Actualizar el plan de emergencias', examen: 'Examen médico', psico: 'Aplicar la batería psicosocial',
+const AVISO_GEN = { habeas: 'Responder solicitud de datos personales (Ley 1581)', sustancia: 'Hoja de seguridad', medicion: 'Medición ambiental', emergencia: 'Actualizar el plan de emergencias', examen: 'Examen médico', psico: 'Aplicar la batería psicosocial',
   politica: 'Revisar la política de SST', legal: 'Revisar la norma', documento: 'Revisar el documento', proveedor: 'Reevaluar al proveedor', cambio: 'Implementar el cambio',
   contratista: 'Documentos del contratista', induccion: 'Reinducción en SST', programa: 'Revisar el programa', pesv: 'PESV: auditoría anual',
   vehiculo: 'Documentos del vehículo (SOAT, revisión técnico-mecánica, mantenimiento)', conductor: 'Requisitos del conductor (licencia, capacitación)',
@@ -5927,16 +6004,46 @@ function registrarEvento_(id, accion, resultado, detalle, opId, version, tipo) {
   try {
     const fila = [new Date(), celda_(String(id || '').slice(0, 120)), accion, resultado, celda_(String(detalle || '').slice(0, 2000)), celda_(String(opId || '').slice(0, 120)), version || '', celda_(String(tipo || '').slice(0, 40))];   // v145: nada sin limpiar en la bitácora
     const quien = etiquetaUsuario_();
-    if (quien) {
-      const s = eventosSheet_();
-      // Bitácoras creadas antes de los usuarios: se agrega el título de la columna.
-      if (!CTX_.colUsuario && s.getRange(1, 9).getValue() !== 'usuario') s.getRange(1, 9).setValue('usuario');
-      CTX_.colUsuario = true;
-      fila.push(celda_(quien));
+    const s = eventosSheet_();
+    // Bitácoras creadas antes de los usuarios o de la cadena: se agregan los títulos de las columnas.
+    if (!CTX_.colUsuario) { if (s.getRange(1, 9).getValue() !== 'usuario') s.getRange(1, 9, 1, 3).setValues([['usuario', 'hash', 'hashAnterior']]); else if (s.getRange(1, 10).getValue() !== 'hash') s.getRange(1, 10, 1, 2).setValues([['hash', 'hashAnterior']]); CTX_.colUsuario = true; }
+    fila.push(quien ? celda_(quien) : '');
+    // v162 · Bitácora encadenada: cada fila lleva SHA-256(hash de la fila anterior + la fila). Si alguien edita,
+    // borra o mete una fila a mano en la hoja, «verificarBitacora» dice desde cuál se rompió la cadena.
+    // v163: si quien llama YA tiene el candado (doPost, restaurar, archivar) no se pide otra vez: en Apps Script el
+    // candado del script no se anida, y soltarlo aquí dejaba sin protección el resto del guardado.
+    const yaBloqueado = LOCK_TOMADO_ > 0;
+    const lock = yaBloqueado ? null : LockService.getScriptLock(); let tengo = false;
+    if (!yaBloqueado) try { lock.waitLock(10000); tengo = true; } catch (e) {}
+    try {
+      const ult = s.getLastRow(), ant = ult >= 2 ? String(s.getRange(ult, 10).getValue() || '') : '';
+      fila.push(hashEvento_(ant, fila), ant);
       s.appendRow(fila);
-    } else eventosSheet_().appendRow(fila);
+    } finally { if (tengo) lock.releaseLock(); }
   } catch (e) {}
 }
+/** La fila tal como se encadena: fecha al segundo en UTC y las columnas 2 a 9 como texto. */
+function textoEvento_(fila) {
+  const ts = fila[0] instanceof Date ? Utilities.formatDate(fila[0], 'UTC', "yyyy-MM-dd'T'HH:mm:ss") : String(fila[0] || '');
+  return [ts].concat(fila.slice(1, 9).map(function (v) { return v instanceof Date ? Utilities.formatDate(v, 'UTC', "yyyy-MM-dd'T'HH:mm:ss") : String(v === null || v === undefined ? '' : v); })).join('\u241f');
+}
+function hashEvento_(anterior, fila) { return hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(anterior || '') + '\u241e' + textoEvento_(fila), Utilities.Charset.UTF_8)); }
+/** Revisa la cadena de la bitácora. Devuelve {ok, filas, sinCadena, primeraRota (fila de la hoja), motivo}. */
+function verificarBitacora_() {
+  const s = eventosSheet_(), n = s.getLastRow() - 1; if (n < 1) return { ok: true, filas: 0, sinCadena: 0 };
+  const v = s.getRange(2, 1, n, 11).getValues();
+  let previo = null, sinCadena = 0, revisadas = 0;
+  for (let i = 0; i < v.length; i++) {
+    const h = String(v[i][9] || ''), ant = String(v[i][10] || '');
+    if (!h) { if (previo === null) { sinCadena++; continue; } return { ok: false, filas: revisadas, sinCadena: sinCadena, primeraRota: i + 2, motivo: 'fila sin huella en medio de la cadena (agregada a mano)' }; }
+    if (previo !== null && ant !== previo) return { ok: false, filas: revisadas, sinCadena: sinCadena, primeraRota: i + 2, motivo: 'no sigue a la fila anterior (se borró o se movió una fila)' };
+    if (hashEvento_(ant, v[i]) !== h) return { ok: false, filas: revisadas, sinCadena: sinCadena, primeraRota: i + 2, motivo: 'el contenido de la fila cambió después de escrita' };
+    previo = h; revisadas++;
+  }
+  return { ok: true, filas: revisadas, sinCadena: sinCadena };
+}
+/** Para ejecutar a mano desde el editor de Apps Script. */
+function verificarBitacora() { const r = verificarBitacora_(); console.log(JSON.stringify(r)); return r.ok ? 'Bitácora íntegra: ' + r.filas + ' fila(s) encadenadas' + (r.sinCadena ? ' (' + r.sinCadena + ' anteriores a la cadena)' : '') + '.' : 'BITÁCORA ALTERADA desde la fila ' + r.primeraRota + ': ' + r.motivo + '.'; }
 function opIdYaAplicado_(opId) {
   if (!opId) return false;
   const sheet = eventosSheet_();
@@ -5960,14 +6067,52 @@ const ESCRIBE_ROL = {
   comite: ['reunion', 'queja', 'buzon', 'comite', 'informecc', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
   consulta: ['revision', 'aprobrec']   // v148: la alta dirección firma su revisión y aprueba recursos (Dec. 1072, art. 2.2.4.6.31; estándar 1.1.3)
 };
-const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs', 'buzon'];   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
-const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'pvecaso', 'psico', 'preopsalud', 'cliente'];   // salud individual y conexiones a clientes
+const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs', 'buzon', 'habeas'];   // v162: habeas = solicitudes de derechos del titular   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
+const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'pvecaso', 'psico', 'preopsalud', 'cliente', 'habeas'];   // salud individual y conexiones a clientes
 const ITER_USUARIO = 150000;
 const USR_COLS = ['usuario', 'nombre', 'cedula', 'cargo', 'rol', 'correo', 'activo', 'salt', 'iter', 'hash', 'debeCambiar', 'sesionDesde', 'intentos', 'bloqueadoHasta', 'ultimoIngreso', 'creado', 'actualizado', 'comites'];   // v148: comites al final (las hojas viejas la ganan sola)
 const HORAS_SESION = { personal: 24 * 30, compartido: 12, sensible: 12 };   // v142: admin y SST (ven salud) 12 h
 
 /* Contexto de la petición en curso (se reinicia en cada doGet/doPost). */
 var CTX_ = { modo: false, u: null, colUsuario: false };
+// v163: cuántas veces tiene ESTA ejecución el candado del script (para no pedirlo dos veces).
+var LOCK_TOMADO_ = 0;
+/* v162 · ENLACES PARA AUDITORES (ARL, Ministerio, consultor, cliente): el administrador crea un enlace con nombre,
+   vencimiento y los módulos que puede ver. Quien lo abre entra sin usuario, SOLO a leer esos módulos (nunca salud ni
+   quejas de convivencia) y cada consulta queda en la bitácora con su nombre. Se puede revocar en cualquier momento.
+   En las propiedades solo se guarda la huella del enlace, no el enlace. */
+const GRUPOS_AUDITOR_ = { personal: ['trabajador', 'induccion'], inspecciones: ['inspeccion', 'equipo', 'proginsp'], reportes: ['reporte', 'accion'], plan: ['plananual', 'mes', 'politica'],
+  peligros: ['peligro', 'revmatriz', 'legal'], comites: ['comite', 'reunion'], epp: ['entrega', 'eppcargo'], emergencias: ['emergencia', 'simulacro'], documentos: ['documento'], auditorias: ['auditoria', 'revision', 'evid0312'], contratistas: ['contratista', 'proveedor'] };
+function enlacesAuditor_() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('ENLACES_AUDITOR') || '[]'); } catch (e) { return []; } }
+function guardarEnlacesAuditor_(l) { PropertiesService.getScriptProperties().setProperty('ENLACES_AUDITOR', JSON.stringify(l.slice(-40))); }
+function huellaAuditor_(t) { return hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 'aud|' + String(t), Utilities.Charset.UTF_8)); }
+function contextoAuditor_(p) {
+  const h = huellaAuditor_(texto_(p.auditor)), a = enlacesAuditor_().find(function (x) { return x.h === h; });
+  if (!a || a.revocado || a.vence < hoyISO_()) return { ok: false, codigoError: 'PERMISO', error: 'Este enlace de auditoría no existe, venció o fue revocado. Pídele uno nuevo a la empresa.' };
+  const tipos = [].concat.apply([], (a.grupos || []).map(function (g) { return GRUPOS_AUDITOR_[g] || []; })).filter(function (t) { return SOLO_SST.indexOf(t) === -1 && TIPOS_SALUD_.indexOf(t) === -1; });
+  CTX_.modo = true; CTX_.u = { usuario: 'auditor', nombre: 'Auditor: ' + a.nombre, rol: 'consulta', debeCambiar: 'No', auditor: true };
+  if (p.action === 'auditorInfo') return { ok: true, nombre: a.nombre, vence: a.vence, grupos: a.grupos, tipos: tipos, empresa: nombreEmpresa_(perfilEmpresa_()) };
+  const pide = p.action === 'list' || p.list ? texto_(p.tipo).split(',').filter(Boolean) : (p.action === 'doc' || p.id) ? [(function () { const f = filaDe_(texto_(p.id)); return f === -1 ? '' : leerFila_(f).tipo; })()] : null;
+  if (!pide || !pide.length || pide.some(function (t) { return tipos.indexOf(t) === -1; })) { registrarEvento_(texto_(p.id || p.tipo), 'AUDITOR', 'RECHAZADO', 'Fuera del alcance del enlace (' + a.nombre + ')', '', '', 'auditor'); return { ok: false, codigoError: 'PERMISO', error: 'Ese módulo no está en tu enlace de auditoría.' }; }
+  registrarEvento_(texto_(p.id || p.tipo), 'AUDITOR', 'APLICADO', 'Consulta de ' + a.nombre + (p.id ? ' · ' + texto_(p.id) : ' · lista'), '', '', 'auditor');
+  return null;   // sigue el camino normal de lectura, con rol de solo consulta
+}
+function crearEnlaceAuditor_(body) {
+  const no = soloAdmin_(); if (no) return no;
+  const nombre = corto_(body.nombre, 80), dias = Math.max(1, Math.min(30, Number(body.dias) || 7)), grupos = (Array.isArray(body.grupos) ? body.grupos : []).filter(function (g) { return GRUPOS_AUDITOR_[g]; });
+  if (nombre.length < 3 || !grupos.length) return { ok: false, error: 'Escribe quién es el auditor y elige al menos un módulo.' };
+  const t = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''), l = enlacesAuditor_();
+  const x = { id: 'AUD-' + Utilities.getUuid().slice(0, 8), h: huellaAuditor_(t), nombre: nombre, grupos: grupos, vence: sumarDias_(hoyISO_(), dias), creado: hoyISO_(), por: etiquetaUsuario_() };
+  l.push(x); guardarEnlacesAuditor_(l);
+  registrarEvento_(x.id, 'AUDITOR', 'CREADO', 'Enlace para ' + nombre + ' hasta el ' + x.vence + ': ' + grupos.join(', '), body.opId || '', '', 'auditor');
+  return { ok: true, token: t, enlace: { id: x.id, nombre: nombre, grupos: grupos, vence: x.vence } };
+}
+function revocarEnlaceAuditor_(body) {
+  const no = soloAdmin_(); if (no) return no;
+  const l = enlacesAuditor_(), x = l.find(function (y) { return y.id === texto_(body.id); }); if (!x) return { ok: false, error: 'No existe ese enlace.' };
+  x.revocado = hoyISO_(); guardarEnlacesAuditor_(l); registrarEvento_(x.id, 'AUDITOR', 'APLICADO', 'Enlace de ' + x.nombre + ' revocado', body.opId || '', '', 'auditor');
+  return { ok: true };
+}
 function iniciarContexto_(tokenSesion) {
   CTX_ = { modo: false, u: null, colUsuario: false, sesionVencida: false };
   CTX_.modo = modoUsuarios_();
@@ -6140,7 +6285,7 @@ function autorizacionSalud_(tipo, d) {
  *  sin restricciones médicas, área, fecha de ingreso ni contacto de emergencia. */
 function trabajadorPublico_(r) {
   const req = {}; Object.keys(r.req || {}).forEach(function (k) { const x = r.req[k] || {}; req[k] = { fecha: x.fecha, vence: x.vence, apto: x.apto }; if (!x.apto && k !== 'medico' && x.soporte) req[k].soporte = x.soporte; });   // apto: lo usan los permisos en campo; v148: sin foto del concepto médico
-  const out = {}; Object.keys(r).forEach(function (k) { if (['area', 'fechaIngreso', 'emer', 'autorizacion', 'celular'].indexOf(k) === -1) out[k] = r[k]; });
+  const out = {}; Object.keys(r).forEach(function (k) { if (['area', 'fechaIngreso', 'emer', 'autorizacion', 'celular', 'cedulasAnteriores'].indexOf(k) === -1) out[k] = r[k]; });
   out.req = req; return out;
 }
 function sinRestricciones_(req) {
@@ -6431,6 +6576,80 @@ function filaDe_(id) { const r = filasPorValor_(regSheet_(), 1, id); return r.le
    El secretario del comité comparte un enlace (WhatsApp o QR) por acta. Quien lo abre ve esa acta
    (fecha, número, comité; de Convivencia nada del contenido) y firma con su nombre y cédula. La clave
    es un HMAC del id del acta: sirve solo para ESA acta y solo para firmar. */
+/* v162 · PORTAL DEL CONTRATISTA: un enlace (o QR) por contratista con una clave HMAC de su id. Con él ve sus
+   documentos y vencimientos, sube los soportes y registra a su personal; todo queda «por revisar» hasta que SST
+   lo apruebe. No ve nada más de la empresa. Si SST cambia la clave (nuevo enlace), el anterior deja de servir. */
+function claveContratista_(id) {
+  const pr = PropertiesService.getScriptProperties();
+  let sec = pr.getProperty('ENLACES_CONTRATISTAS'); if (!sec) { sec = Utilities.getUuid() + Utilities.getUuid(); pr.setProperty('ENLACES_CONTRATISTAS', sec); }
+  const v = pr.getProperty('CTR_VER_' + id) || '1';
+  return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature('ctr:' + String(id || '') + ':' + v, sec)).slice(0, 24);
+}
+function contratistaDeEnlace_(id, k) {
+  id = texto_(id); if (!/^CTR-|^CON-|^[A-Z]{2,5}-/.test(id) || !k || texto_(k) !== claveContratista_(id)) return null;
+  const f = filaDe_(id); if (f === -1) return null; const r = leerFila_(f); if (r.borrado || r.tipo !== 'contratista') return null;
+  return { id: id, doc: leerDoc_(id, false) || {}, fila: r };
+}
+function contratistaPortal_(p) {
+  const c = contratistaDeEnlace_(p.id, p.k); if (!c) return { ok: false, codigoError: 'PERMISO', error: 'El enlace no es válido o fue cambiado. Pídele uno nuevo al área SST de la empresa.' };
+  const d = c.doc, nom = normalizar_(texto_(d.nombre)).trim(), reg = regSheet_(), last = reg.getLastRow(), tr = [];
+  if (last >= 2) reg.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v) {
+    if (v[1] !== 'trabajador' || v[11]) return; let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
+    if (normalizar_(texto_(r.empresa)).trim() !== nom || r.activo === false) return;
+    const req = {}; Object.keys(r.req || {}).forEach(function (q) { if (q !== 'medico' && q !== 'alimentos') req[q] = { vence: texto_((r.req[q] || {}).vence) }; });
+    tr.push({ nombre: texto_(r.nombre), cedula: '••••' + texto_(r.cedula).replace(/\D/g, '').slice(-4), cargo: texto_(r.cargo), req: req, porRevisar: !!r.porRevisar });
+  });
+  registrarEvento_(c.id, 'CONTRATISTA', 'APLICADO', 'Consulta del portal del contratista', '', '', 'contratista');
+  return { ok: true, empresa: nombreEmpresa_(perfilEmpresa_()), contratista: { id: c.id, nombre: texto_(d.nombre), nit: texto_(d.nit) }, documentos: d.documentos || {}, trabajadores: tr };
+}
+function contratistaEscribe_(body) {
+  const c = contratistaDeEnlace_(body.id, body.k); if (!c) return { ok: false, codigoError: 'PERMISO', error: 'El enlace no es válido o fue cambiado.' };
+  iniciarContexto_(''); const antes = CTX_.u;
+  CTX_.u = { usuario: 'contratista', nombre: 'Contratista ' + texto_(c.doc.nombre), rol: 'sst', debeCambiar: 'No' };   // solo para pasar por los caminos internos, ya validado el enlace
+  try {
+    if (body.action === 'contratistaSubir') {
+      const k = texto_(body.doc).replace(/[^a-z0-9_]/gi, '').slice(0, 30), fecha = texto_(body.fecha).slice(0, 10), meses = Math.max(0, Math.min(24, Number(body.meses) || 0));
+      if (!k || !/^\d{4}-\d{2}-\d{2}$/.test(fecha) || fecha > hoyISO_()) return { ok: false, error: 'Elige el documento y la fecha de expedición (no futura).' };
+      if (!body.base64) return { ok: false, error: 'Adjunta el archivo (PDF o foto).' };
+      const uid = 'ctr-' + k + '-' + Utilities.getUuid().slice(0, 8);
+      const ad = adjuntar_({ id: c.id, uid: uid, nombre: texto_(body.nombre).slice(0, 120) || (k + '.pdf'), mime: texto_(body.mime), base64: body.base64, ref: k, opId: texto_(body.opId) });
+      if (!ad.ok) return ad;
+      const docs = Object.assign({}, c.doc.documentos || {}), vence = meses ? (function () { const q = fecha.split('-').map(Number); return Utilities.formatDate(new Date(q[0], q[1] - 1 + meses, q[2]), 'America/Bogota', 'yyyy-MM-dd'); })() : '';
+      docs[k] = Object.assign({}, docs[k] || {}, { fecha: fecha, vence: vence, adjunto: uid, porRevisar: true, subido: hoyISO_() });
+      const r = guardar_({ action: 'parche', tipo: 'contratista', id: c.id, campos: { documentos: docs }, opId: texto_(body.opId) + '-d', _interno: true });
+      return r.ok ? { ok: true, documento: k, vence: vence } : r;
+    }
+    const ced = texto_(body.cedula).replace(/\D/g, ''), nombre = corto_(body.nombre, 120);
+    if (ced.length < 6 || ced.length > 10 || nombre.length < 5) return { ok: false, error: 'Escribe el nombre completo y la cédula (6 a 10 dígitos).' };
+    const id = 'TRB-' + ced, f = filaDe_(id);
+    if (f !== -1) { const prev = leerDoc_(id, false) || {}; if (normalizar_(texto_(prev.empresa)).trim() !== normalizar_(texto_(c.doc.nombre)).trim()) return { ok: false, error: 'Esa persona ya está registrada con otra empresa: pídele a SST que la cambie.' }; }
+    const campos = { nombre: nombre, cedula: ced, cargo: corto_(body.cargo, 80), empresa: texto_(c.doc.nombre), activo: true, porRevisar: true };
+    const r = f === -1 ? guardar_({ action: 'guardar', tipo: 'trabajador', id: id, doc: Object.assign({ req: {} }, campos), versionBase: 0, opId: texto_(body.opId), _interno: true })
+      : guardar_({ action: 'parche', tipo: 'trabajador', id: id, campos: { nombre: nombre, cargo: campos.cargo, porRevisar: true }, opId: texto_(body.opId), _interno: true });
+    return r.ok ? { ok: true, id: id } : r;
+  } finally { CTX_.u = antes; }
+}
+function enlaceContratista_(p) { if (CTX_.modo && !sstConSesion_()) return CTX_.u ? errPermiso_('El enlace del contratista lo crea SST.') : errSesion_();
+  const id = texto_(p.id); if (p.nuevo === '1') { const pr = PropertiesService.getScriptProperties(); pr.setProperty('CTR_VER_' + id, String(Number(pr.getProperty('CTR_VER_' + id) || '1') + 1)); registrarEvento_(id, 'CONTRATISTA', 'APLICADO', 'Enlace del contratista cambiado', '', '', 'contratista'); }
+  return { ok: true, k: claveContratista_(id) }; }
+/* v162 · Certificados de capacitación e inducción con QR: el QR lleva el id y una clave (HMAC del id). Quien lo
+   escanea ve, sin usuario, solo lo necesario para comprobar que es auténtico: curso, fecha, horas, resultado y el
+   nombre y la cédula a medias. Si alguien cambia el PDF, el QR sigue mostrando lo verdadero. */
+function claveCert_(id) {
+  const pr = PropertiesService.getScriptProperties();
+  let sec = pr.getProperty('CERTIFICADOS'); if (!sec) { sec = Utilities.getUuid() + Utilities.getUuid(); pr.setProperty('CERTIFICADOS', sec); }
+  return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature('cert:' + String(id || ''), sec)).slice(0, 22);
+}
+function verificarCertificado_(p) {
+  const id = texto_(p.c || p.id), k = texto_(p.k);
+  if (!id || !k || k !== claveCert_(id)) return { ok: true, valido: false, motivo: 'El código no corresponde a ningún certificado de esta empresa.' };
+  const f = filaDe_(id); if (f === -1) return { ok: true, valido: false, motivo: 'El certificado ya no existe.' };
+  const r = leerFila_(f); if (r.borrado || r.tipo !== 'induccion') return { ok: true, valido: false, motivo: 'El certificado fue anulado.' };
+  const d = leerDoc_(id, false) || {}, nom = texto_(d.nombre).trim().split(/\s+/), ced = texto_(d.cedula).replace(/\D/g, '');
+  return { ok: true, valido: d.resultado !== 'REPROBADA', empresa: nombreEmpresa_(perfilEmpresa_()), persona: nom.slice(0, 1).concat(nom.slice(1).map(function (x) { return x.charAt(0) + '.'; })).join(' '),
+    cedula: ced ? '••••' + ced.slice(-4) : '', curso: texto_(d.tipoInduccion) || 'Inducción en SST', temas: (d.temas || []).slice(0, 12), fecha: texto_(d.fecha).slice(0, 10), horas: texto_(d.intensidadHoras),
+    instructor: texto_(d.dicto), resultado: texto_(d.resultado), vence: texto_(d.vence).slice(0, 10), id: id };
+}
 function claveActa_(id) {
   const pr = PropertiesService.getScriptProperties();
   let sec = pr.getProperty('FIRMA_ACTAS'); if (!sec) { sec = Utilities.getUuid() + Utilities.getUuid(); pr.setProperty('FIRMA_ACTAS', sec); }
@@ -6557,7 +6776,7 @@ function resumen_(tipo, d) {
       req[k] = { fecha: texto_(r.fecha), vence: texto_(r.vence), apto: texto_(r.apto), restricciones: corto_(r.restricciones, 120), soporte: !!r.soporte };
     });
     const aut = d.autorizacionDatos || null;
-    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), celular: texto_(d.celular).replace(/\D/g, '').slice(0, 15), empresa: corto_(d.empresa, 60), activo: d.activo !== false, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
+    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), personaId: texto_(d.personaId), cedulasAnteriores: (Array.isArray(d.cedulasAnteriores) ? d.cedulasAnteriores : []).map(texto_).slice(0, 20), fusionadoCon: texto_(d.fusionadoCon), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), celular: texto_(d.celular).replace(/\D/g, '').slice(0, 15), empresa: corto_(d.empresa, 60), activo: d.activo !== false, porRevisar: d.porRevisar ? true : undefined, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
              autorizacion: aut ? { general: aut.general === true, sensibles: aut.sensibles === true, fecha: texto_(aut.fecha) } : null };
   }
   if (tipo === 'reporte') {
@@ -6824,6 +7043,8 @@ function doPost(e) {
   let body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return jsonOut_({ ok: false, error: 'Los datos llegaron incompletos. Vuelve a enviar el formulario.' }); }
   sinImagenesFalsas_(body);
+  // v162: el contratista sube sus documentos y su personal con su propio enlace (sin la clave del portal ni usuario).
+  if (body.action === 'contratistaSubir' || body.action === 'contratistaTrabajador') return jsonOut_(contratistaEscribe_(body));
   if (!checkToken_(body.token)) {
     registrarEvento_(body.id, body.action || 'GUARDAR', 'RECHAZADO', 'Token inválido', '', '', body.tipo);
     return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
@@ -6835,6 +7056,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   try { lock.waitLock(20000); }
   catch (err) { return jsonOut_({ ok: false, codigoError: 'TEMPORAL', error: 'El servidor está ocupado; se reintenta solo.' }); }
+  LOCK_TOMADO_++;
   try {
     iniciarContexto_(body.sesion);
     delete body._interno; delete body._sinVersion; delete body._sistema;   // solo los usa el propio servidor
@@ -6845,12 +7067,18 @@ function doPost(e) {
     }
     if (body.action === 'firmarActa') return jsonOut_(firmarActa_(body));   // v149: firma con el enlace del acta, sin usuario
     if (body.action === 'guardar' || body.action === 'parche') return jsonOut_(guardar_(body));
+    if (body.action === 'asegurarPersona') return jsonOut_(asegurarPersona_(body));   // v164: alta en el maestro desde el anexo de personal
     if (body.action === 'guardarLote') return jsonOut_(guardarLote_(body));
     if (body.action === 'borrar') return jsonOut_(borrar_(body));
     if (body.action === 'restaurar') return jsonOut_(restaurar_(body));
     if (body.action === 'adjuntar') return jsonOut_(adjuntar_(body));
     if (body.action === 'paqueteCliente') return jsonOut_(paqueteCliente_(body));   // v153: documentación para un cliente, en un .zip
-    if (body.action === 'carpetaAuditoria') return jsonOut_(carpetaAuditoria_(body));   // v159: carpeta para el auditor, por numeral
+    if (body.action === 'carpetaAuditoria') return jsonOut_(carpetaAuditoria_(body));
+    if (body.action === 'exportarTodo') return jsonOut_(exportarTodo_(body));
+    if (body.action === 'crearEnlaceAuditor') return jsonOut_(crearEnlaceAuditor_(body));
+    if (body.action === 'guardarMisAvisos') return jsonOut_(guardarMisAvisos_(body));
+    if (body.action === 'avisosPorRol') return jsonOut_(avisosPorRol_(body));
+    if (body.action === 'revocarEnlaceAuditor') return jsonOut_(revocarEnlaceAuditor_(body));   // v162: todo de la empresa, para irse o respaldar aparte   // v159: carpeta para el auditor, por numeral
     if (body.action === 'quitarAdjunto') return jsonOut_(quitarAdjunto_(body));
     if (body.action === 'entrar') return jsonOut_(entrar_(body));
     if (body.action === 'cambiarMiClave') return jsonOut_(cambiarMiClave_(body));
@@ -6862,7 +7090,7 @@ function doPost(e) {
     registrarEvento_(body.id, body.action, 'RECHAZADO', 'Error: ' + err.message, body.opId, '', body.tipo);
     return jsonOut_({ ok: false, error: 'Error en el servidor SG-SST: ' + err.message });
   } finally {
-    lock.releaseLock();
+    LOCK_TOMADO_--; lock.releaseLock();
   }
 }
 
@@ -6951,6 +7179,15 @@ function guardar_(body) {
     if (typeof lp === 'string') { registrarEvento_(id, 'GUARDAR', 'RECHAZADO', lp, body.opId, versionActual, tipo); return { ok: false, error: lp }; }
     body.doc = lp;
   }
+  if (tipo === 'habeas' && !body._sistema && !(esSst_() && prev)) {   // SST solo la actualiza (crearla siempre pasa por aquí)
+    // v162: la solicitud la arma el servidor (campos acotados, plazo legal y radicado); quien la presenta no puede cambiarla después.
+    if (body.action !== 'guardar' || prev || !/^HAB-[A-Za-z0-9-]{3,60}$/.test(id)) { registrarEvento_(id, 'GUARDAR', 'RECHAZADO', 'Solicitud inválida', body.opId, versionActual, tipo); return { ok: false, error: 'La solicitud ya fue recibida: la responde el área encargada.' }; }
+    const d = body.doc || {}, clase = /actualiz|correg|revoc|suprim|reclam/i.test(texto_(d.derecho)) ? 'Reclamo' : 'Consulta', hoy = hoyISO_();
+    const ced = texto_(d.cedula).replace(/\D/g, '');
+    if (texto_(d.nombre).trim().length < 5 || ced.length < 5 || texto_(d.contacto).trim().length < 6) return { ok: false, error: 'Escribe tu nombre, tu cédula y un correo o celular para responderte.' };
+    body.doc = { fecha: hoy, radicado: id, clase: clase, derecho: corto_(d.derecho, 80), nombre: corto_(d.nombre, 120), cedula: ced, contacto: corto_(d.contacto, 120), detalle: corto_(d.detalle, 1500),
+      estado: 'RECIBIDA', vence: sumarHabiles_(hoy, clase === 'Reclamo' ? 15 : 10), verificacion: 'Pendiente: confirmar la identidad antes de entregar o cambiar datos' };
+  }
   if ((tipo === 'encresp' || tipo === 'encuestacli') && !body._sistema) {
     // v107: la respuesta del cliente la arma el servidor (nunca se confía en lo que manda el navegador).
     const re = tipo === 'encresp' ? validarRespuestaEnc_(body, id, prev) : validarEncuestaCli_(body, prev);
@@ -6989,6 +7226,11 @@ function guardar_(body) {
   if (!body._interno) {
     const pa = prev && (prevResFallo || Number(prevRes._adjTotal) > 0) ? prevDoc().adjuntos : null;
     if (pa && pa.length) doc.adjuntos = pa; else delete doc.adjuntos;
+  }
+  // v164 · Maestro de personas: el personaId y las cédulas anteriores los pone el servidor, nunca el celular.
+  if (tipo === 'trabajador') {
+    const ef = identidadPersona_(doc, prev ? prevDoc() : null, !!body._interno, id);
+    if (ef) { registrarEvento_(id, body.action, 'RECHAZADO', ef, body.opId, versionActual, tipo); return { ok: false, error: ef }; }
   }
   // La clave del Comité de Convivencia: crearla, cambiarla y cerrar el cambio
   // tienen reglas estrictas (ver reglaCifradoComite_).
@@ -7042,6 +7284,7 @@ function guardar_(body) {
       else if (limpio.estado === 'CERRADA' && texto_(prev.estado) !== 'CERRADA') avisarTareaAsesor_(id, limpio, 'cerrada');
     } catch (e) { registrarEvento_(id, 'CORREO', 'RECHAZADO', 'No salió el aviso de la tarea: ' + e.message, '', '', tipo); }
   }
+  if (tipo === 'trabajador' && limpio.fusionadoCon && (!prev || texto_(prevDoc().fusionadoCon) !== texto_(limpio.fusionadoCon))) { try { efectoFusion_(id, limpio); } catch (e) { registrarEvento_(id, 'PERSONA', 'RECHAZADO', 'No se pasaron las cédulas a la ficha que queda: ' + e.message, '', '', tipo); } }
   if (tipo === 'examen' && !body._sistema) { try { efectoExamen_(id, limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se pasó la restricción a Personal habilitado: ' + e.message, '', '', tipo); } }
   if (tipo === 'induccion' && !body._sistema) { try { efectoInduccion_(limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se actualizó Personal habilitado: ' + e.message, '', '', tipo); } }
   if ((tipo === 'reporte' || tipo === 'preop') && !prev && !body._sistema) { try { efectoAccionAuto_(tipo, id, limpio); } catch (e) { registrarEvento_(id, 'ACCION', 'RECHAZADO', 'No se creó la acción automática: ' + e.message, '', '', tipo); } }
@@ -7058,8 +7301,8 @@ function guardar_(body) {
 const RESTRINGE_ = { 'Trabajo en alturas': 'alturas', 'Espacios confinados': 'confinados', 'Trabajo en caliente': 'caliente', 'Riesgo eléctrico': 'electrico', 'Izaje de cargas': 'izajes', 'Manipulación manual de cargas': 'cargas', 'Conducción de vehículos': 'conduccion' };
 function efectoExamen_(id, d) {
   if (!d.cedula || !/^\d{4}-\d{2}-\d{2}$/.test(texto_(d.fecha)) || d.tipoExamen === 'Egreso') return;
-  const tid = 'TRB-' + String(d.cedula).replace(/[^0-9A-Za-z]/g, '').toUpperCase();
-  if (tid.length < 7 || filaDe_(tid) === -1) return;
+  const tid = fichaDePersona_(d.cedula);   // v164: por el maestro (cédula corregida o ficha unificada)
+  if (clavePersonaCed_(d.cedula).length < 3 || filaDe_(tid) === -1) return;
   const actual = leerDoc_(tid, false) || {}, ya = actual.restriccionMed;
   if (ya && texto_(ya.fecha) > texto_(d.fecha) && ya.fuente !== id) return;   // hay un examen más reciente
   const lista = Array.isArray(d.restringePara) ? d.restringePara : String(d.restringePara || '').split(/\s*[,;|]\s*/);
@@ -7104,8 +7347,8 @@ function responsableDeArea_(texto) {
 }
 function efectoInduccion_(d) {
   if (d.resultado !== 'APROBADA' || !d.cedula || d.tipoInduccion === 'Visitante' || !/^\d{4}-\d{2}-\d{2}$/.test(texto_(d.fecha))) return;
-  const tid = 'TRB-' + String(d.cedula).replace(/[^0-9A-Za-z]/g, '').toUpperCase();
-  if (tid.length < 7) return;
+  const tid = fichaDePersona_(d.cedula);   // v164: por el maestro (cédula corregida o ficha unificada)
+  if (clavePersonaCed_(d.cedula).length < 3) return;
   const f = filaDe_(tid), actual = f === -1 ? null : (leerDoc_(tid, false) || {});
   const ya = actual && actual.requisitos && actual.requisitos.induccion;
   if (ya && texto_(ya.fecha) >= texto_(d.fecha)) return;   // ya tiene una más reciente
@@ -7590,6 +7833,47 @@ function carpetaAuditoria_(body) {
   registrarEvento_('AUDITORIA', 'CARPETA_AUDITORIA', 'CREADO', carpetas.length + ' estándar(es), ' + blobs.length + ' archivo(s), ' + Math.round(bytes.length / 1024) + ' KB', body.opId || '', '', 'paquete');
   return { ok: true, nombre: nombre, archivos: blobs.length, tamano: bytes.length, omitidos: omitidos, url: archivo.getUrl(), id: archivo.getId(), base64: bytes.length <= MAX_PAQUETE_DIRECTO ? Utilities.base64Encode(bytes) : '' };
 }
+/* v162 · Exportación completa (portabilidad): un .zip con TODOS los registros del SG-SST en JSON por tipo, un índice
+   CSV, la bitácora, un README con el esquema y, si se pide, los soportes adjuntos. Responde a «¿y si me quiero ir?»
+   y sirve de respaldo independiente de Google. Solo el administrador. */
+function exportarTodo_(body) {
+  const no = CTX_.modo ? soloAdmin_() : null; if (no) return no;
+  const hoy = hoyISO_(), blobs = [], omitidos = []; let total = 0;
+  const meter = function (b, r) { const n = b.getBytes().length; if (total + n > MAX_PAQUETE) { omitidos.push(r); return false; } total += n; blobs.push(b.setName(r)); return true; };
+  const csv = function (filas) { return '\ufeff' + filas.map(function (f) { return f.map(function (x) { const t = x instanceof Date ? Utilities.formatDate(x, 'America/Bogota', "yyyy-MM-dd'T'HH:mm:ss") : String(x === null || x === undefined ? '' : x); return /[",;\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }).join(','); }).join('\r\n'); };
+  // 1) Documentos completos: se lee la hoja «Datos» una sola vez y se arma cada registro.
+  const ds = datosSheet_(), dl = ds.getLastRow(), trozos = {};
+  if (dl >= 2) ds.getRange(2, 1, dl - 1, 3).getValues().forEach(function (f) { (trozos[f[0]] = trozos[f[0]] || []).push({ key: f[1], texto: String(f[2]).replace(/^'/, '') }); });
+  const reg = regSheet_(), rl = reg.getLastRow(), porTipo = {}, indice = [['id', 'tipo', 'estado', 'fecha', 'titulo', 'responsable', 'vence', 'version', 'actualizado', 'borrado']];
+  if (rl >= 2) reg.getRange(2, 1, rl - 1, COLS_REG.length).getValues().forEach(function (v) {
+    if (!v[0]) return; let res = {}, doc = null; try { res = JSON.parse(v[8] || '{}'); } catch (e) {}
+    try { const m = reensamblar_(trozos[v[0]] || []); doc = m.doc ? JSON.parse(m.doc) : null; } catch (e) {}
+    (porTipo[v[1]] = porTipo[v[1]] || []).push({ id: v[0], tipo: v[1], version: v[2], estado: v[3], fecha: v[4], titulo: v[5], responsable: v[6], vence: v[7], creado: v[9], actualizado: v[10], borrado: !!v[11], resumen: res, doc: doc });
+    indice.push([v[0], v[1], v[3], v[4], v[5], v[6], v[7], v[2], v[10], v[11] ? 'sí' : '']);
+  });
+  Object.keys(porTipo).sort().forEach(function (t) { meter(Utilities.newBlob(JSON.stringify(porTipo[t], null, 1), 'application/json', 'x'), 'registros/' + t + '.json'); });
+  meter(Utilities.newBlob(csv(indice), 'text/csv', 'x'), 'indice-registros.csv');
+  // 2) Bitácora
+  const ev = eventosSheet_(), el = ev.getLastRow();
+  if (el >= 1) meter(Utilities.newBlob(csv(ev.getRange(1, 1, el, Math.min(11, ev.getLastColumn())).getValues()), 'text/csv', 'x'), 'bitacora-eventos.csv');
+  // 3) README del esquema
+  const tipos = Object.keys(porTipo).sort().map(function (t) { const T = (typeof TIPOS_GEN !== 'undefined' && TIPOS_GEN[t]) || {}; return '- ' + t + ' (' + porTipo[t].length + ')' + (T.hoja ? ': ' + T.hoja : ''); });
+  meter(Utilities.newBlob(['EXPORTACIÓN COMPLETA DEL SG-SST — ' + nombreEmpresa_(perfilEmpresa_()), 'Fecha: ' + hoy, '',
+    'registros/<tipo>.json  Un archivo por tipo de registro. Cada elemento: id, tipo, version, estado, fecha, titulo, responsable, vence,',
+    '                       creado, actualizado, borrado, resumen (lo que muestran las listas) y doc (el registro completo, sin firmas ni fotos).',
+    'indice-registros.csv   Una fila por registro (para abrir en Excel).',
+    'bitacora-eventos.csv   Quién hizo qué y cuándo, con la huella encadenada (columnas hash y hashAnterior).',
+    'adjuntos/<tipo>/<id>/  Los soportes subidos (si se pidieron al exportar).', '',
+    'Las fechas van en formato AAAA-MM-DD. Las cédulas, sin puntos. Las firmas y fotos quedan en la hoja «Imagenes» del libro de Google.', '',
+    'Tipos incluidos:'].concat(tipos).join('\r\n'), 'text/plain', 'x'), 'LEAME.txt');
+  // 4) Adjuntos (opcional)
+  if (body.adjuntos) Object.keys(porTipo).forEach(function (t) { porTipo[t].forEach(function (r) { ((r.doc && r.doc.adjuntos) || []).forEach(function (a) {
+    if (!a || a.retirado || !a.fileId) return; try { meter(DriveApp.getFileById(a.fileId).getBlob(), 'adjuntos/' + t + '/' + nombreArchivo_(r.id) + '/' + nombreArchivo_(a.nombre)); } catch (e) { omitidos.push('adjuntos/' + r.id + '/' + a.nombre + ' (no está en Drive)'); } }); }); });
+  const nombre = 'Exportacion SG-SST ' + hoy + '.zip', zip = Utilities.zip(blobs, nombre);
+  const archivo = carpetaRaiz_('CARPETA_RESPALDOS', 'Respaldos SG-SST').createFile(zip), bytes = zip.getBytes();
+  registrarEvento_('EXPORTACION', 'EXPORTAR', 'APLICADO', Object.keys(porTipo).length + ' tipo(s), ' + (indice.length - 1) + ' registro(s), ' + Math.round(bytes.length / 1024) + ' KB', body.opId || '', '', 'export');
+  return { ok: true, nombre: nombre, registros: indice.length - 1, tipos: Object.keys(porTipo).length, archivos: blobs.length, tamano: bytes.length, omitidos: omitidos, url: archivo.getUrl(), base64: bytes.length <= MAX_PAQUETE_DIRECTO ? Utilities.base64Encode(bytes) : '' };
+}
 function quitarAdjunto_(body) {
   const id = texto_(body.id), fila = filaDe_(id);
   if (fila === -1) return { ok: false, codigoError: 'TEMPORAL', error: 'El registro todavía no ha llegado al servidor.' };
@@ -7657,6 +7941,227 @@ function actividad_(p) {
     out.push({ ts: v[0] instanceof Date ? v[0].toISOString() : texto_(v[0]), ref: texto_(v[1]) + (v[7] ? ' (' + texto_(v[7]) + ')' : ''), accion: texto_(v[2]), resultado: texto_(v[3]), detalle: texto_(v[4]), version: texto_(v[6]), usuario: '' });
   });
   return { ok: true, eventos: out };
+}
+
+/* v162 · Búsqueda global (Ctrl/Cmd + K): busca en el título, el responsable y el resumen de todos los registros
+   que el usuario puede leer, y dice en qué módulo abrir cada uno. */
+function buscar_(p) {
+  const q = texto_(p.q).trim(); if (q.length < 3) return { ok: true, rows: [] };
+  const s = regSheet_(), last = s.getLastRow(); if (last < 2) return { ok: true, rows: [] };
+  const filas = {};
+  [COLS_REG.indexOf('id') + 1, COLS_REG.indexOf('titulo') + 1, COLS_REG.indexOf('responsable') + 1, COLS_REG.indexOf('resumen') + 1].forEach(function (c) {
+    s.getRange(2, c, last - 1, 1).createTextFinder(q).matchCase(false).findAll().slice(0, 200).forEach(function (r) { filas[r.getRow()] = (filas[r.getRow()] || 0) + (c === 6 || c === 1 ? 3 : 1); });
+  });
+  const out = [];
+  Object.keys(filas).map(Number).sort(function (a, b) { return filas[b] - filas[a] || b - a; }).some(function (n) {
+    const v = s.getRange(n, 1, 1, COLS_REG.length).getValues()[0]; if (v[11] || !puedeLeer_(texto_(v[1]))) return false;
+    let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) {}
+    if (actaReservada_(texto_(v[1]), r)) return false;
+    out.push({ tipo: texto_(v[1]), id: texto_(v[0]), titulo: corto_(v[5], 120), estado: texto_(v[3]), fecha: v[4] instanceof Date ? Utilities.formatDate(v[4], 'America/Bogota', 'yyyy-MM-dd') : texto_(v[4]).slice(0, 10), modulo: MODULO_TIPO_[texto_(v[1])] || '' });
+    return out.length >= 25;
+  });
+  return { ok: true, rows: out };
+}
+/* v162 · Calendario (ICS) de vencimientos: cursos y requisitos del personal, recargas y mantenimientos de equipos,
+   reposiciones de EPP, compromisos del plan de acción y actividades del plan anual. Nunca datos de salud (ni
+   exámenes): un calendario se comparte fácil. La llave es aparte de la clave del portal y se puede cambiar. */
+function icsEnlace_(nuevo) {
+  const pr = PropertiesService.getScriptProperties(); let k = pr.getProperty('ICS_LLAVE');
+  if (!k || nuevo) { k = Utilities.getUuid().replace(/-/g, ''); pr.setProperty('ICS_LLAVE', k); registrarEvento_('ICS', 'CALENDARIO', 'APLICADO', nuevo ? 'Llave del calendario cambiada (el enlace anterior dejó de servir)' : 'Calendario activado', '', '', 'config'); }
+  return { ok: true, llave: k };
+}
+function calendarioIcs_(p) {
+  const k = PropertiesService.getScriptProperties().getProperty('ICS_LLAVE');
+  const txt = function (t) { return ContentService.createTextOutput(t).setMimeType(ContentService.MimeType.ICAL || ContentService.MimeType.TEXT); };
+  if (!k || texto_(p.k) !== k) return txt('BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Portal SSTA//ES\r\nX-WR-CALNAME:Enlace vencido\r\nEND:VCALENDAR\r\n');
+  const ev = [], hoy = hoyISO_(), desde = sumarDias_(hoy, -30), hasta = sumarDias_(hoy, 400);
+  const add = function (f, titulo, desc, uid) { f = texto_(f).slice(0, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(f) || f < desde || f > hasta) return; ev.push({ f: f, t: titulo, d: desc || '', u: uid }); };
+  const reg = regSheet_(), last = reg.getLastRow();
+  if (last >= 2) reg.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v) {
+    if (!v[0] || v[11]) return; const tipo = v[1]; if (TIPOS_SALUD_.indexOf(tipo) !== -1 || SOLO_SST.indexOf(tipo) !== -1) return;
+    let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
+    if (tipo === 'trabajador' && r.activo !== false) Object.keys(r.req || {}).forEach(function (q) { if (q === 'medico' || q === 'alimentos') return; add((r.req[q] || {}).vence, 'Vence ' + q.replace(/_/g, ' ') + ': ' + texto_(r.nombre), 'Personal habilitado', v[0] + '-' + q); });
+    if (tipo === 'equipo' && r.activo !== false) { Object.keys(r.vencimientos || {}).forEach(function (q) { add(r.vencimientos[q], q + ': ' + texto_(r.codigo || r.nombre), 'Inventario de equipos', v[0] + '-' + q); }); if (r.mantTipo && r.mantTipo !== 'No aplica') add(r.mantProximo, 'Mantenimiento ' + texto_(r.mantTipo).toLowerCase() + ': ' + texto_(r.codigo || r.nombre), 'Inventario de equipos', v[0] + '-mant'); }
+    if (tipo === 'accion' && v[3] !== 'CERRADA') add(r.fechaCompromiso, 'Acción: ' + corto_(r.accion || v[5], 80), 'Plan de acción · ' + texto_(r.responsable), v[0]);
+    if (tipo === 'entrega') texto_(r.vencimientos).split(/\s*;\s*/).forEach(function (x, i) { const q = x.split('|'); if (q[1]) add(q[1], 'Reponer ' + q[0] + ': ' + texto_(r.nombre), 'EPP por vida útil', v[0] + '-' + i); });
+    if (tipo === 'contratista') add(r.venceDocs, 'Vencen documentos: ' + texto_(r.nombre), 'Contratistas', v[0] + '-docs');
+  });
+  const esc = function (t) { return String(t).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); };
+  const sello = Utilities.formatDate(new Date(), 'UTC', "yyyyMMdd'T'HHmmss'Z'"), nom = nombreEmpresa_(perfilEmpresa_());
+  const lin = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Portal SSTA//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + esc('SG-SST ' + nom), 'X-WR-TIMEZONE:America/Bogota', 'REFRESH-INTERVAL;VALUE=DURATION:PT12H'];
+  ev.forEach(function (x) { const d = x.f.replace(/-/g, ''), d2 = sumarDias_(x.f, 1).replace(/-/g, '');
+    lin.push('BEGIN:VEVENT', 'UID:' + esc(x.u) + '@portal-ssta', 'DTSTAMP:' + sello, 'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + d2, 'SUMMARY:' + esc(x.t), 'DESCRIPTION:' + esc(x.d), 'BEGIN:VALARM', 'TRIGGER:-P7D', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc(x.t), 'END:VALARM', 'END:VEVENT'); });
+  lin.push('END:VCALENDAR');
+  return txt(lin.map(function (l) { return l.length > 74 ? l.match(/.{1,74}/g).join('\r\n ') : l; }).join('\r\n') + '\r\n');
+}
+/* v162 · Índice de vínculos de una persona: en qué registros del SG-SST aparece (por su cédula en cualquier campo de
+   cédula, o por su nombre como responsable), con el ROL que tuvo y el registro tal como quedó (su «foto» de ese día).
+   Se busca con TextFinder sobre el resumen; cada tipo respeta quién lo puede leer (salud, solo SST). */
+const ROL_CAMPO_ = { cedula: 'titular', lesionadoCc: 'lesionado', cedulaInstructor: 'instructor', responsableCc: 'responsable', inspectorCc: 'inspector', cedulas: 'participante', participantes: 'participante', asistentes: 'asistente', integrantes: 'integrante', miembros: 'integrante' };
+/* ============================================================
+   v164 · MAESTRO ÚNICO DE PERSONAS
+   ------------------------------------------------------------
+   Cada persona (tipo «trabajador», Personal habilitado) tiene un personaId que no cambia nunca: ni si
+   le corrigen la cédula (la vieja queda en «cedulasAnteriores» y se sigue encontrando por ella), ni si
+   se unifica con una ficha repetida (la que queda recoge las cédulas y el personaId de la otra en
+   «personasFusionadas»). Es la llave para integrar con nómina o PILA: personas_() la entrega.
+   Los demás módulos (permisos, ATS, charlas, anexo) siguen guardando la cédula del día; la ficha 360
+   los cruza con TODAS las cédulas de la persona.
+   ============================================================ */
+const RE_PERSONA_ID_ = /^P-[0-9A-Z]{12}$/;
+function nuevoPersonaId_() { return 'P-' + (Utilities.getUuid().replace(/[^0-9A-Za-z]/g, '') + Utilities.getUuid().replace(/[^0-9A-Za-z]/g, '')).slice(0, 12).toUpperCase(); }
+function clavePersonaCed_(x) { return texto_(x).replace(/[^0-9A-Za-z]/g, '').toUpperCase(); }
+function unicos_(l) { const v = {}; return l.filter(function (x) { if (!x || v[x]) return false; v[x] = 1; return true; }); }
+/** Pone y protege la identidad de la persona en el documento que se va a guardar. Devuelve un error o ''. */
+function identidadPersona_(doc, prev, interno, id) {
+  const ced = clavePersonaCed_(doc.cedula);
+  if (prev) {
+    if (!interno || !RE_PERSONA_ID_.test(texto_(doc.personaId))) doc.personaId = prev.personaId;
+    if (!interno) { doc.cedulasAnteriores = (prev.cedulasAnteriores || []).slice(); doc.personasFusionadas = (prev.personasFusionadas || []).slice(); }
+    const pc = clavePersonaCed_(prev.cedula);
+    if (pc && ced && pc !== ced) doc.cedulasAnteriores = (doc.cedulasAnteriores || []).concat([pc]);   // corrigieron la cédula: la vieja sigue siendo de ella
+  } else if (!interno) { delete doc.personaId; delete doc.cedulasAnteriores; delete doc.personasFusionadas; }
+  if (!RE_PERSONA_ID_.test(texto_(doc.personaId))) doc.personaId = nuevoPersonaId_();
+  if (doc.cedulasAnteriores) doc.cedulasAnteriores = unicos_(doc.cedulasAnteriores.map(clavePersonaCed_)).filter(function (c) { return c !== ced; }).slice(-20);
+  if (doc.personasFusionadas) doc.personasFusionadas = unicos_(doc.personasFusionadas.map(texto_)).filter(function (x) { return RE_PERSONA_ID_.test(x) && x !== doc.personaId; }).slice(-20);
+  if (doc.fusionadoCon !== undefined && doc.fusionadoCon !== '' && doc.fusionadoCon !== null) {
+    const dest = texto_(doc.fusionadoCon);
+    if (dest === id || !/^[A-Za-z0-9_.:-]{3,80}$/.test(dest)) return 'No se puede unificar una ficha consigo misma.';
+    const f = filaDe_(dest), fila = f === -1 ? null : leerFila_(f);
+    if (!fila || fila.tipo !== 'trabajador' || fila.borrado) return 'La ficha con la que se unifica no existe en Personal habilitado.';
+    doc.activo = false;
+  }
+  return '';
+}
+/** La ficha que queda recoge las cédulas y el personaId de la que se unificó con ella (así se sigue encontrando). */
+function efectoFusion_(id, d) {
+  const dest = texto_(d.fusionadoCon), destino = leerDoc_(dest, false); if (!destino) return;
+  const ceds = (destino.cedulasAnteriores || []).concat([clavePersonaCed_(d.cedula)], d.cedulasAnteriores || []);
+  const pers = (destino.personasFusionadas || []).concat([texto_(d.personaId)], d.personasFusionadas || []);
+  guardar_({ action: 'parche', tipo: 'trabajador', id: dest, campos: { cedulasAnteriores: ceds, personasFusionadas: pers }, agregar: { historial: { fecha: hoyISO_(), texto: 'Se unificó con ' + id + ' (' + texto_(d.nombre) + ')' } }, opId: '', _interno: true, _sistema: true });
+}
+/** Filas de personas del registro: [{ fila, id, r (resumen) }]. */
+function filasPersonas_() {
+  const s = regSheet_(), last = s.getLastRow(), out = []; if (last < 2) return out;
+  s.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v, i) {
+    if (v[1] !== 'trabajador' || v[11]) return; let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
+    out.push({ fila: i + 2, id: texto_(v[0]), r: r });
+  });
+  return out;
+}
+/** Encuentra a la persona por personaId (también uno ya unificado), por su cédula de hoy o por una anterior.
+ *  Si la ficha se unificó con otra, devuelve la que quedó. */
+function personaDe_(p, filas) {
+  const pid = texto_(p.personaId).toUpperCase(), ced = clavePersonaCed_(p.cedula); if (!pid && ced.length < 5) return null;
+  const l = filas || filasPersonas_(), porId = {}; l.forEach(function (x) { porId[x.id] = x; });
+  let x = l.filter(function (y) { return pid ? (texto_(y.r.personaId) === pid || (y.r.personasFusionadas || []).indexOf(pid) !== -1) : (clavePersonaCed_(y.r.cedula) === ced || (y.r.cedulasAnteriores || []).indexOf(ced) !== -1); })
+    .sort(function (a, b) { return (a.r.fusionadoCon ? 1 : 0) - (b.r.fusionadoCon ? 1 : 0) || (b.r.activo === false ? -1 : 0) - (a.r.activo === false ? -1 : 0); })[0];
+  for (let n = 0; x && x.r.fusionadoCon && porId[x.r.fusionadoCon] && n < 5; n++) x = porId[x.r.fusionadoCon];
+  if (!x) return null;
+  const ceds = unicos_([clavePersonaCed_(x.r.cedula)].concat(x.r.cedulasAnteriores || []));
+  l.forEach(function (y) { if (y.r.fusionadoCon === x.id) ceds.push(clavePersonaCed_(y.r.cedula)); });   // unificadas antes de v164
+  return { personaId: texto_(x.r.personaId), id: x.id, nombre: texto_(x.r.nombre), cedula: texto_(x.r.cedula), cedulas: unicos_(ceds), activo: x.r.activo !== false };
+}
+/** Les da personaId a las personas que no lo tienen todavía (las de antes de v164) y pasa las cédulas de las
+ *  unificadas a la ficha que quedó. Se puede correr las veces que sea: solo toca a quien le falta. */
+function asegurarPersonaIds_(max) {
+  let n = 0; const l = filasPersonas_();
+  l.forEach(function (x) {
+    if (n >= (max || 400)) return;
+    if (!RE_PERSONA_ID_.test(texto_(x.r.personaId))) { const r = guardar_({ action: 'parche', tipo: 'trabajador', id: x.id, campos: {}, opId: '', _interno: true, _sistema: true, _sinVersion: true }); if (r.ok) n++; }
+  });
+  filasPersonas_().forEach(function (x) {
+    if (n >= (max || 400) || !x.r.fusionadoCon) return;
+    const dest = l.filter(function (y) { return y.id === x.r.fusionadoCon; })[0]; if (!dest) return;
+    const ya = filasPersonas_().filter(function (y) { return y.id === dest.id; })[0];
+    if (ya && (ya.r.cedulasAnteriores || []).indexOf(clavePersonaCed_(x.r.cedula)) !== -1) return;
+    efectoFusion_(x.id, leerDoc_(x.id, false) || {}); n++;
+  });
+  return n;
+}
+/** La ficha (id) donde va lo de esta cédula: la de la persona en el maestro (aunque sea una cédula anterior o
+ *  una ficha unificada); si no está, la de siempre «TRB-<cédula>». */
+function fichaDePersona_(ced) { const k = clavePersonaCed_(ced); try { const per = k.length >= 5 ? personaDe_({ cedula: k }) : null; if (per) return per.id; } catch (e) {} return 'TRB-' + k; }
+/** Para correr a mano una vez después de actualizar (también se hace sola al abrir el maestro). */
+function asignarPersonaIds() { const n = asegurarPersonaIds_(5000); return n ? '✓ ' + n + ' persona(s) recibieron su personaId o sus cédulas unificadas.' : '✓ Todas las personas ya tienen su personaId.'; }
+/** El maestro de personas: una fila por persona (sin las unificadas), sin datos de salud. Para SST y para
+ *  integrar con nómina o PILA. */
+function personas_(p) {
+  if (CTX_.modo && !CTX_.u) return errSesion_();
+  if (CTX_.modo && !sstConSesion_()) return errPermiso_('El maestro de personas lo ven el administrador y SST.');
+  const l = filasPersonas_();
+  if (l.some(function (x) { return !RE_PERSONA_ID_.test(texto_(x.r.personaId)); })) {
+    const lock = LockService.getScriptLock(); if (lock.tryLock(5000)) { LOCK_TOMADO_++; try { asegurarPersonaIds_(400); } finally { LOCK_TOMADO_--; lock.releaseLock(); } }
+  }
+  const rows = filasPersonas_().filter(function (x) { return !x.r.fusionadoCon && (p.todos === '1' || x.r.activo !== false); }).map(function (x) {
+    return { personaId: texto_(x.r.personaId), id: x.id, cedula: texto_(x.r.cedula), cedulasAnteriores: x.r.cedulasAnteriores || [], nombre: texto_(x.r.nombre), cargo: texto_(x.r.cargo), area: texto_(x.r.area),
+             empresa: texto_(x.r.empresa), fechaIngreso: texto_(x.r.fechaIngreso), activo: x.r.activo !== false };
+  });
+  return { ok: true, rows: rows };
+}
+/** Alta en el maestro desde el anexo de personal u otro módulo: si la persona ya está (por cualquiera de sus
+ *  cédulas) devuelve su personaId; si no, la crea con lo mínimo y «por revisar» para SST. */
+function asegurarPersona_(body) {
+  if (CTX_.modo && !CTX_.u) return errSesion_();
+  if (CTX_.modo && ['admin', 'sst', 'supervisor'].indexOf(CTX_.u.rol) === -1) return errPermiso_('Tu usuario no puede agregar personas.');
+  const ced = clavePersonaCed_(body.cedula), nombre = corto_(body.nombre, 120);
+  if (ced.length < 5 || ced.length > 15 || nombre.trim().length < 5) return { ok: false, error: 'Escribe el nombre completo y la cédula.' };
+  const ya = personaDe_({ cedula: ced }); if (ya) return { ok: true, existia: true, personaId: ya.personaId, id: ya.id, nombre: ya.nombre };
+  let id = 'TRB-' + ced; if (filaDe_(id) !== -1) id = 'TRB-' + ced + '-' + Utilities.getUuid().slice(0, 4);
+  const r = guardar_({ action: 'guardar', tipo: 'trabajador', id: id, versionBase: 0, opId: texto_(body.opId), _interno: true, _sistema: true,
+    doc: { nombre: nombre, cedula: ced, cargo: corto_(body.cargo, 80), empresa: corto_(body.empresa, 120), activo: true, porRevisar: true, origen: corto_(body.origen || 'Anexo de personal autorizado', 80), req: {} } });
+  if (!r.ok) return r;
+  return { ok: true, creado: true, personaId: texto_((leerDoc_(id, false) || {}).personaId), id: id, nombre: nombre };
+}
+function vinculos_(p) {
+  const k = texto_(p.cedula).replace(/\D/g, ''), nom = normalizar_(texto_(p.nombre)).replace(/\s+/g, ' ').trim();
+  // v164: con el maestro de personas se busca por TODAS sus cédulas (la de hoy, las corregidas y las de fichas unificadas).
+  const per = (k.length >= 5 || texto_(p.personaId)) ? personaDe_(p) : null;
+  const cedulas = per ? per.cedulas.map(function (c) { return c.replace(/\D/g, ''); }).filter(function (c) { return c.length >= 5; }) : (k.length >= 5 ? [k] : []), esSuya = {};
+  cedulas.forEach(function (c) { esSuya[c] = 1; });
+  if (!cedulas.length && nom.length < 6) return { ok: false, error: 'Falta la cédula.' };
+  const s = regSheet_(), last = s.getLastRow(); if (last < 2) return { ok: true, rows: [], persona: per };
+  const col = COLS_REG.indexOf('resumen') + 1, filas = {};
+  // La cédula puede estar escrita con puntos (1.023.456.789): se buscan las dos formas.
+  cedulas.forEach(function (kc) { [kc, kc.replace(/\B(?=(\d{3})+(?!\d))/g, '.')].forEach(function (q) { s.getRange(2, col, last - 1, 1).createTextFinder(q).findAll().forEach(function (r) { filas[r.getRow()] = 1; }); }); });
+  if (nom.length >= 6) { const cr = COLS_REG.indexOf('responsable') + 1; s.getRange(2, cr, last - 1, 1).createTextFinder(texto_(p.nombre).trim()).matchCase(false).findAll().forEach(function (r) { filas[r.getRow()] = 1; }); }
+  const out = [];
+  Object.keys(filas).map(Number).sort(function (a, b) { return b - a; }).slice(0, 400).forEach(function (n) {
+    const v = s.getRange(n, 1, 1, COLS_REG.length).getValues()[0]; if (v[11]) return;
+    const tipo = texto_(v[1]); if (!puedeLeer_(tipo)) return;
+    let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
+    let rol = '';
+    (function rec(x, campo, prof) {
+      if (rol || prof > 6 || x === null || x === undefined) return;
+      if (Array.isArray(x)) { x.forEach(function (y) { rec(y, campo, prof + 1); }); return; }
+      if (typeof x === 'object') { Object.keys(x).forEach(function (c) { rec(x[c], c, prof + 1); }); return; }
+      if (/c[eé]dula|cc$|^cc|documento|^doc$/i.test(campo || '') && esSuya[String(x).replace(/\D/g, '')]) rol = ROL_CAMPO_[campo] || 'aparece';
+      else if (/^(cedulas|participantes|asistentes|integrantes|miembros|cedulasAnteriores)$/.test(campo || '') && String(x).replace(/[^\d,;]/g, '').split(/[,;]/).some(function (c) { return esSuya[c]; })) rol = ROL_CAMPO_[campo] || 'aparece';
+    })(r, '', 0);
+    if (!rol && nom && normalizar_(texto_(v[6])).replace(/\s+/g, ' ').trim() === nom) rol = 'responsable';
+    if (!rol) return;
+    out.push({ tipo: tipo, id: texto_(v[0]), titulo: corto_(v[5], 160), estado: texto_(v[3]), fecha: v[4] instanceof Date ? Utilities.formatDate(v[4], 'America/Bogota', 'yyyy-MM-dd') : texto_(r.fecha || v[4]).slice(0, 10), rol: rol, vence: v[7] instanceof Date ? Utilities.formatDate(v[7], 'America/Bogota', 'yyyy-MM-dd') : texto_(v[7]).slice(0, 10) });
+  });
+  return { ok: true, rows: out, persona: per };
+}
+/* v162 · Visor de la bitácora dentro del portal: lo último primero, con filtros por usuario, acción, resultado,
+   fechas y texto, y la verificación de la cadena de huellas. Solo administrador y SST. */
+function puedeVerBitacora_() { if (!CTX_.modo) return null; if (!CTX_.u) return errSesion_(); return sstConSesion_() ? null : errPermiso_('La bitácora la ven el administrador y SST.'); }
+function bitacora_(p) {
+  const no = puedeVerBitacora_(); if (no) return no;
+  const s = eventosSheet_(), last = s.getLastRow(); if (last < 2) return { ok: true, eventos: [], total: 0 };
+  const n = Math.min(last - 1, 6000), ini = last - n + 1, v = s.getRange(ini, 1, n, Math.max(9, Math.min(11, s.getLastColumn()))).getValues();
+  const q = normalizar_(texto_(p.q)), usu = normalizar_(texto_(p.usuario)), acc = texto_(p.accion), res = texto_(p.resultado), desde = texto_(p.desde).slice(0, 10), hasta = texto_(p.hasta).slice(0, 10);
+  const out = [];
+  for (let i = v.length - 1; i >= 0 && out.length < 300; i--) {
+    const r = v[i], f = r[0] instanceof Date ? Utilities.formatDate(r[0], 'America/Bogota', 'yyyy-MM-dd HH:mm:ss') : texto_(r[0]);
+    if (desde && f.slice(0, 10) < desde) continue; if (hasta && f.slice(0, 10) > hasta) continue;
+    if (acc && texto_(r[2]) !== acc) continue; if (res && texto_(r[3]) !== res) continue;
+    if (usu && normalizar_(texto_(r[8])).indexOf(usu) === -1) continue;
+    if (q && normalizar_([r[1], r[2], r[4], r[7], r[8]].join(' ')).indexOf(q) === -1) continue;
+    out.push({ fila: ini + i, ts: f, ref: texto_(r[1]), accion: texto_(r[2]), resultado: texto_(r[3]), detalle: corto_(r[4], 400), version: texto_(r[6]), tipo: texto_(r[7]), usuario: texto_(r[8]), sellada: !!r[9] });
+  }
+  return { ok: true, eventos: out, total: last - 1, revisadas: n };
 }
 
 /* ================= RESPALDO SEMANAL ================= */
@@ -7761,13 +8266,13 @@ function depurarRespaldos_(carpeta, hoy) {
    (hoja «Eventos»), en tandas de 20.000 filas. Corre con el respaldo semanal. */
 function rotarEventos_() {
   const sh = eventosSheet_(), n = sh.getLastRow() - 1; if (n < 50000) return 0;
-  const lim = new Date(Date.now() - 365 * 864e5), cuantas = Math.min(n, 20000), vals = sh.getRange(2, 1, cuantas, 8).getValues();
+  const lim = new Date(Date.now() - 365 * 864e5), cuantas = Math.min(n, 20000), vals = sh.getRange(2, 1, cuantas, 11).getValues();   // v162: con usuario y la cadena de huellas
   let k = 0; while (k < vals.length && vals[k][0] instanceof Date && vals[k][0] < lim) k++;
   if (!k) return 0;
   const lib = libroArchivo_(), h = lib.getSheetByName('Eventos') || lib.insertSheet('Eventos');
-  if (h.getLastRow() === 0) h.appendRow(['ts', 'id', 'accion', 'resultado', 'detalle', 'opId', 'version', 'tipo']);
+  if (h.getLastRow() === 0) h.appendRow(['ts', 'id', 'accion', 'resultado', 'detalle', 'opId', 'version', 'tipo', 'usuario', 'hash', 'hashAnterior']);
   const antes = h.getLastRow();
-  h.getRange(antes + 1, 1, k, 8).setValues(vals.slice(0, k)); SpreadsheetApp.flush();
+  h.getRange(antes + 1, 1, k, 11).setValues(vals.slice(0, k)); SpreadsheetApp.flush();
   if (h.getLastRow() - antes !== k) throw new Error('la copia de la bitácora no se verificó');   // v145: se cuenta lo que se agregó
   sh.deleteRows(2, k);
   return k;
@@ -7822,6 +8327,7 @@ function probarRestauracion() {
 function restaurarDesdeRespaldo(idRespaldo) {
   if (!idRespaldo) { const r = respaldoMasReciente_(); if (!r) throw new Error('No hay respaldos.'); idRespaldo = r.f.getId(); }
   const lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw new Error('El portal está ocupado guardando; intenta en un minuto.');
+  LOCK_TOMADO_++;
   try {
     const origen = SpreadsheetApp.openById(idRespaldo), destino = libro_(), sello = Utilities.formatDate(new Date(), zonaHoraria_(), 'yyyy-MM-dd HHmm');
     const comp = compararLibros_(origen, destino); if (!comp.every(function (c) { return c.ok; })) throw new Error('El respaldo no coincide con este libro: ' + JSON.stringify(comp));
@@ -7835,7 +8341,7 @@ function restaurarDesdeRespaldo(idRespaldo) {
     registrarEvento_('', 'RESTAURAR RESPALDO', 'APLICADO', origen.getName(), '', '', 'respaldo');
     console.log('✓ Restaurado desde «' + origen.getName() + '». Las hojas anteriores quedaron con «(antes de restaurar ' + sello + ')»: bórralas cuando confirmes que todo está bien.');
     return { ok: true, desde: origen.getName() };
-  } finally { lock.releaseLock(); }
+  } finally { LOCK_TOMADO_--; lock.releaseLock(); }
 }
 /** v142: cuota de correos de Google (100 al día con Gmail gratis). Lo importante primero. */
 function puedeEnviarCorreo_(prioridad) {
@@ -7948,12 +8454,29 @@ function doGet(e) {
   // v116: los celulares de cada cliente leen aquí su configuración por su código, sin la clave de
   // ESTE servidor (no la tienen). Es lo mismo que antes estaba público en empresas/<código>.json.
   if (p.action === 'empresaPublica') return jsonOut_(empresaPublica_(p.codigo));
+  // v162: calendario de vencimientos para Google Calendar / Outlook (lo pide el calendario, sin sesión: la llave va en el enlace).
+  if (p.action === 'ics') return calendarioIcs_(p);
+  if (p.action === 'verificarCertificado') return jsonOut_(verificarCertificado_(p));
+  if (p.action === 'contratistaPortal') return jsonOut_(contratistaPortal_(p));   // v162: el contratista ve lo suyo con su enlace   // v162: el QR del certificado, sin usuario
   if (!checkToken_(p.token)) return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
   iniciarContexto_(p.sesion);
+  // v162 · Modo auditor: un enlace con vencimiento, solo lectura y solo de los módulos que se le dieron.
+  if (p.auditor) { const ra = contextoAuditor_(p); if (ra) return jsonOut_(ra); }
   if (p.action === 'ping') return jsonOut_({ ok: true, servicio: 'SG-SST', version: VERSION_SGSST, usuarios: CTX_.modo, yo: yo_() });
   if (p.action === 'sal') return jsonOut_(Object.assign({ ok: true }, salDe_(p.usuario)));
   if (p.action === 'historial') return jsonOut_(historial_(p));
   if (p.action === 'actividad') return jsonOut_(actividad_(p));
+  if (p.action === 'bitacora') return jsonOut_(bitacora_(p));
+  if (p.action === 'buscar') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_(buscar_(p)); }   // v162: búsqueda global
+  if (p.action === 'misAvisos') { if (!CTX_.modo || !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_({ ok: true, pref: prefAvisos_(CTX_.u), roles: CTX_.u.rol === 'admin' ? prefsAvisos_('AVISOS_ROL') : undefined, correo: !!CTX_.u.correo }); }
+  if (p.action === 'enlacesAuditor') { const no = soloAdmin_(); if (no) return jsonOut_(no); return jsonOut_({ ok: true, enlaces: enlacesAuditor_().map(function (x) { return { id: x.id, nombre: x.nombre, grupos: x.grupos, vence: x.vence, creado: x.creado, revocado: x.revocado || '' }; }).reverse() }); }
+  if (p.action === 'enlaceContratista') return jsonOut_(enlaceContratista_(p));
+  if (p.action === 'certificadoClave') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); if (!puedeLeer_('induccion')) return jsonOut_(errPermiso_('Tu usuario no puede ver inducciones.')); return jsonOut_({ ok: true, k: claveCert_(texto_(p.id)) }); }
+  if (p.action === 'icsEnlace') { if (CTX_.modo && !sstConSesion_()) return jsonOut_(CTX_.u ? errPermiso_('El calendario lo activa SST.') : errSesion_()); return jsonOut_(icsEnlace_(p.nuevo === '1')); }
+  if (p.action === 'personas') return jsonOut_(personas_(p));   // v164: el maestro de personas (SST)
+  if (p.action === 'persona') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); const per = personaDe_(p); return jsonOut_(per ? { ok: true, persona: per } : { ok: false, error: 'No está en el maestro de personas.' }); }
+  if (p.action === 'vinculos') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_(vinculos_(p)); }   // v162: ficha 360   // v162: visor de la bitácora (administrador y SST)
+  if (p.action === 'verificarBitacora') { const no = puedeVerBitacora_(); if (no) return jsonOut_(no); return jsonOut_(Object.assign({ ok: true }, { resultado: verificarBitacora_() })); }
   if (p.action === 'adjunto') return jsonOut_(leerAdjunto_(p));
   if (p.action === 'encuestaPublica') return jsonOut_(encuestaPublica_(p));
   if (p.action === 'buzonPublico') return jsonOut_(buzonPublico_());   // v128: llave pública y correo del comité (sin usuario)   // v107: el cliente responde sin usuario (solo ESA encuesta, con su clave)
@@ -8280,7 +8803,7 @@ function instalarAvisosDiarios() {
    pendientes del inicio. Cada pendiente:
    {nivel: 'vencido'|'pronto', texto, fecha, responsable, modulo, tipo, id, diario}
    (diario: false → no va en el correo diario; son tareas del mes, no vencimientos). */
-const MODULO_TIPO_ = { solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
+const MODULO_TIPO_ = { habeas: 'habeas.html', solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
   auditoria: 'auditorias.html', sustancia: 'quimicos.html', gestquim: 'quimicos.html', lugarquim: 'quimicos.html', respel: 'ambiental.html#residuos', medicion: 'peligros.html', emergencia: 'emergencias.html', examen: 'salud.html', psico: 'salud.html',
   politica: 'documental.html', legal: 'documental.html', documento: 'documental.html', proveedor: 'proveedores.html', compraprov: 'proveedores.html', cambio: 'documental.html', contratista: 'contratistas.html',
   induccion: 'induccion.html', programa: 'programas.html', pesv: 'pesv.html', vehiculo: 'pesv.html', conductor: 'pesv.html', cliente: 'asesor.html', pqrs: 'calidad.html',
@@ -8359,6 +8882,8 @@ function pendientes_(dias) {
       anotar(r.venceTotal, 'Convivencia ' + r.codigo + ' — límite de 65 días');
     }
     if (tipo === 'auditoria' && r.estado === 'PROGRAMADA') anotar(r.fechaPlan, 'Auditoría: ' + r.titulo);
+    // v162: una solicitud de datos personales es pendiente desde que llega (plazo legal corto), no solo 15 días antes.
+    if (tipo === 'habeas' && r.estado !== 'RESPONDIDA') { add(r.vence < hoy ? 'vencido' : 'pronto', 'Responder ' + (r.clase || 'solicitud').toLowerCase() + ' de datos personales de ' + texto_(r.nombre) + ' (Ley 1581)', r.vence, base); return; }
     if (AVISO_GEN[tipo] && v[7]) gen.push({ tipo: tipo, r: r, v: v });
     if (tipo === 'reporteanual' && r.fechaRegistro) reportesAnuales[String(r.anio)] = true;
     if (tipo === 'inspeccion') inspHechas.push({ progId: r.progId || '', tipo: r.tipoInspeccion || '', plantilla: r.plantilla || '', equipo: r.equipoId || '', mes: texto_(r.fecha).slice(0, 7) });
@@ -8572,6 +9097,23 @@ function avisoDiario() {
  *  Los correos salen solo de la hoja Usuarios y de CORREOS_AVISO (nunca de lo que escribe alguien en un registro). */
 /** v136: cada mañana, a cada usuario con correo, SOLO si algo suyo vence hoy o mañana o venció ayer
  *  («Hoy te vence esto y tienes N atrasados»). Si no hay nada nuevo, no le llega nada: así no se vuelve spam. */
+const FREC_AVISOS_ = ['diario', 'semanal', 'criticos', 'no'];
+function prefsAvisos_(k) { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty(k) || '{}'); } catch (e) { return {}; } }
+/** Preferencia de una persona: la suya, si no la de su rol, si no «diario» sin fines de semana. */
+function prefAvisos_(u) { const mia = prefsAvisos_('AVISOS_USUARIOS')[String(u.usuario).toLowerCase()], rol = prefsAvisos_('AVISOS_ROL')[u.rol];
+  return Object.assign({ frec: 'diario', finde: false }, rol || {}, mia || {}); }
+function guardarMisAvisos_(body) {
+  if (!CTX_.modo || !CTX_.u) return errSesion_();
+  if (FREC_AVISOS_.indexOf(body.frec) === -1) return { ok: false, error: 'Frecuencia no válida.' };
+  const m = prefsAvisos_('AVISOS_USUARIOS'); m[String(CTX_.u.usuario).toLowerCase()] = { frec: body.frec, finde: !!body.finde };
+  PropertiesService.getScriptProperties().setProperty('AVISOS_USUARIOS', JSON.stringify(m));
+  return { ok: true, pref: prefAvisos_(CTX_.u) };
+}
+function avisosPorRol_(body) {
+  const no = soloAdmin_(); if (no) return no;
+  const r = {}; Object.keys(body.roles || {}).forEach(function (k) { if (ROLES[k] && FREC_AVISOS_.indexOf(body.roles[k]) !== -1) r[k] = { frec: body.roles[k] }; });
+  PropertiesService.getScriptProperties().setProperty('AVISOS_ROL', JSON.stringify(r)); return { ok: true, roles: r };
+}
 function avisoPersonalDiario_() {
   if (!modoUsuarios_() || regSheet_().getLastRow() < 2) return 0;
   const hoy = hoyISO_(), manana = sumarDias_(hoy, 1), ayer = sumarDias_(hoy, -1);
@@ -8581,8 +9123,12 @@ function avisoPersonalDiario_() {
   leerUsuarios_().filter(function (u) { return u.correo && u.activo === 'Sí' && u.debeCambiar !== 'Sí'; }).forEach(function (u) {
     const correo = correoValido_(u.correo); if (!correo || ya[correo]) return; ya[correo] = true;
     const sst = u.rol === 'admin' || u.rol === 'sst';
+    // v162 · Cada persona elige cómo le llegan los avisos (o lo define el administrador para su rol).
+    const pref = prefAvisos_(u), dia = new Date(hoy + 'T12:00:00').getDay();
+    if (pref.frec === 'no' || (!pref.finde && (dia === 0 || dia === 6)) || (pref.frec === 'semanal' && dia !== 1)) return;
     const suyos = items.filter(function (x) { if (SOLO_SST.indexOf(x.tipo) !== -1 && !sst) return false; return mismoNombre_(x.responsable, u.nombre) || (sst && !x.responsable); });
-    const nuevo = suyos.filter(function (x) { return x.fecha && (x.fecha === hoy || x.fecha === manana || (x.nivel === 'vencido' && x.fecha === ayer)); });
+    const en7 = sumarDias_(hoy, 7);
+    const nuevo = suyos.filter(function (x) { if (pref.frec === 'criticos') return x.nivel === 'vencido' && (x.fecha === ayer || dia === 1); if (pref.frec === 'semanal') return x.fecha && x.fecha <= en7; return x.fecha && (x.fecha === hoy || x.fecha === manana || (x.nivel === 'vencido' && x.fecha === ayer)); });
     if (!nuevo.length) return;
     const atras = suyos.filter(function (x) { return x.nivel === 'vencido'; }).length;
     const ln = function (x) { return '· ' + (x.fecha === hoy ? 'HOY: ' : x.fecha === manana ? 'Mañana: ' : 'Venció ayer: ') + x.texto; };
@@ -8650,7 +9196,7 @@ function archivoVistaPrevia() {
 }
 function archivoAnualVistaPrevia() { return archivoVistaPrevia(); }
 function archivarAniosAnteriores() {
-  const lock = LockService.getScriptLock(); lock.waitLock(30000);
+  const lock = LockService.getScriptLock(); lock.waitLock(30000); LOCK_TOMADO_++;
   try {
     const reg = regSheet_(), last = reg.getLastRow(), corte = archivoCorte_(); if (last < 2) return 'Nada que archivar.';
     const vals = reg.getRange(2, 1, last - 1, COLS_REG.length).getValues();
@@ -8692,7 +9238,7 @@ function archivarAniosAnteriores() {
     registrarEvento_('', 'ARCHIVO', 'APLICADO', t, '', '', 'archivo');
     console.log(t + (Object.keys(ids).length >= 1500 ? '\nQuedan más: vuelve a ejecutarlo.' : ''));
     return t;
-  } finally { lock.releaseLock(); }
+  } finally { LOCK_TOMADO_--; lock.releaseLock(); }
 }
 function avisoSemanal() {
   const hoy = hoyISO_(), en7 = sumarDias_(hoy, 7);
@@ -8747,7 +9293,7 @@ function sinImagenesFalsas_(o, prof) {
       doGet: doGet,
       doPost: doPost,
       libro: __entorno.libro,
-      funciones: { verLibro: verLibro, revisarSesionObra: revisarSesionObra, codigoAdministrador: codigoAdministrador, respaldoSemanal: respaldoSemanal, probarRestauracion: probarRestauracion, restaurarDesdeRespaldo: restaurarDesdeRespaldo, instalarRespaldo: instalarRespaldo, vigilarClientes: vigilarClientes, instalarVigilancia: instalarVigilancia, instalarAvisosDiarios: instalarAvisosDiarios, informeMensual: informeMensual, avisoDiario: avisoDiario, archivoVistaPrevia: archivoVistaPrevia, archivoAnualVistaPrevia: archivoAnualVistaPrevia, archivarAniosAnteriores: archivarAniosAnteriores, avisoSemanal: avisoSemanal }
+      funciones: { verLibro: verLibro, verificarBitacora: verificarBitacora, revisarSesionObra: revisarSesionObra, codigoAdministrador: codigoAdministrador, asignarPersonaIds: asignarPersonaIds, respaldoSemanal: respaldoSemanal, probarRestauracion: probarRestauracion, restaurarDesdeRespaldo: restaurarDesdeRespaldo, instalarRespaldo: instalarRespaldo, vigilarClientes: vigilarClientes, instalarVigilancia: instalarVigilancia, instalarAvisosDiarios: instalarAvisosDiarios, informeMensual: informeMensual, avisoDiario: avisoDiario, archivoVistaPrevia: archivoVistaPrevia, archivoAnualVistaPrevia: archivoAnualVistaPrevia, archivarAniosAnteriores: archivarAniosAnteriores, avisoSemanal: avisoSemanal }
     };
   })();
   return __sgsst;
@@ -8756,8 +9302,10 @@ function sinImagenesFalsas_(o, prof) {
 
 /* Funciones de mantenimiento de "sgsst" (menú ▶ Ejecutar del editor). */
 function sgsst__verLibro() { return modulo_sgsst_().funciones.verLibro.apply(null, arguments); }
+function sgsst__verificarBitacora() { return modulo_sgsst_().funciones.verificarBitacora.apply(null, arguments); }
 function sgsst__revisarSesionObra() { return modulo_sgsst_().funciones.revisarSesionObra.apply(null, arguments); }
 function sgsst__codigoAdministrador() { return modulo_sgsst_().funciones.codigoAdministrador.apply(null, arguments); }
+function sgsst__asignarPersonaIds() { return modulo_sgsst_().funciones.asignarPersonaIds.apply(null, arguments); }
 function sgsst__respaldoSemanal() { return modulo_sgsst_().funciones.respaldoSemanal.apply(null, arguments); }
 function sgsst__probarRestauracion() { return modulo_sgsst_().funciones.probarRestauracion.apply(null, arguments); }
 function sgsst__restaurarDesdeRespaldo() { return modulo_sgsst_().funciones.restaurarDesdeRespaldo.apply(null, arguments); }
