@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-xMuc0lfwh/XJGqExcB3eXulPxWLpFJSzQIRs3TsS8+0='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com https://drive.google.com; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; media-src 'self' data: blob:; worker-src 'self'; frame-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sin conexión · Portal SSTA</title>
 <meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
@@ -27,9 +28,9 @@
       <li>Si estabas llenando un permiso, tranquilo: lo que ya escribiste queda guardado como borrador en tu celular y no se pierde.</li>
       <li>En cuanto vuelva la señal, se puede guardar normalmente.</li>
     </ul>
-    <button onclick="location.href='./index.html'">Ir al inicio del portal</button>
+    <button type="button" id="irInicio">Ir al inicio del portal</button>
     <div class="sub">Reintentando conexión automáticamente…</div>
   </div>
-<script>window.addEventListener("online",()=>location.reload()),setInterval(()=>{navigator.onLine&&location.reload()},5e3);</script>
+<script>document.getElementById("irInicio").addEventListener("click",()=>{location.href="./index.html"}),window.addEventListener("online",()=>location.reload()),setInterval(()=>{navigator.onLine&&location.reload()},5e3);</script>
 </body>
 </html>

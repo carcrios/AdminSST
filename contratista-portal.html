@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-dkaDP3tvI77uTR3WXnSKbWc60cka0ls7WFcNZ7ATJtg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com https://drive.google.com; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; media-src 'self' data: blob:; worker-src 'self'; frame-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Portal del contratista · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Portal del contratista · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>.cp-l{margin:0;padding:0;list-style:none}.cp-l li{border-bottom:1px solid var(--n-150);padding:10px 0}.cp-l .t{font-weight:700}.cp-f{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:6px}@media (max-width:520px){.cp-f{grid-template-columns:1fr}}</style>
+</head>
+<body>
+<main class="wrap">
+<div class="screen active">
+  <div class="hdr"><div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Portal del contratista</div><h1 id="cpNom">Tus documentos</h1><p id="cpSub">Verificando el enlace…</p></div></div></div>
+  <div id="cpMsg"></div>
+  <div id="cpCuerpo" hidden>
+    <div class="card"><h2>Documentos de tu empresa</h2><p class="ayuda u-mtn4">Sube cada soporte (PDF o foto) con su fecha de expedición: el vencimiento se calcula solo. Quedan «por revisar» hasta que el área SST los apruebe.</p><ul class="cp-l" id="cpDocs"></ul></div>
+    <div class="card"><h2>Tu personal</h2><p class="ayuda u-mtn4">Registra a quienes van a trabajar en la empresa. SST revisa sus requisitos antes de habilitarlos.</p><ul class="cp-l" id="cpTrab"></ul>
+      <details class="u-mt8"><summary class="btn ghost mini">＋ Registrar una persona</summary>
+        <div class="cp-f"><div class="field"><label for="tNom">Nombre completo</label><input type="text" id="tNom" maxlength="120" data-no-ac></div><div class="field"><label for="tCed">Cédula</label><input type="text" id="tCed" inputmode="numeric" maxlength="12" data-no-ac></div>
+        <div class="field"><label for="tCar">Cargo</label><input type="text" id="tCar" maxlength="80" data-no-ac></div></div>
+        <button type="button" class="btn" id="tOk">Registrar</button><div class="status-msg" id="tMsg" role="status"></div></details></div>
+    <div class="card"><h2>Inducción</h2><p class="ayuda u-mtn4">Cada persona hace la inducción de contratista desde su celular antes de entrar.</p><a class="btn ghost" id="cpInd" href="induccion-responder.html">Abrir la inducción</a></div>
+  </div>
+</div>
+</main>
+<script src="dialogo.js"></script>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
+<script src="valida.js"></script>
+<script src="sgsst-ui.js"></script>
+<script src="contratistas-docs.js"></script>
+<script>const $=e=>document.getElementById(e),Q=new URLSearchParams(location.search),ID=Q.get("id")||"",K=Q.get("k")||"";let datos=null;const enviar=e=>fetchWithRetry(SGSST.url(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({id:ID,k:K,opId:"ctr-"+Date.now()},e))}).then(e=>e.json());async function cargar(){if(!ID||!K||!SGSST.url())return void($("cpSub").textContent="Enlace incompleto.");let e;try{e=await SGSST.consultar({action:"contratistaPortal",id:ID,k:K})}catch(a){e={ok:!1,error:"Sin señal."}}if(!e.ok)return $("cpSub").textContent="Enlace no válido",void($("cpMsg").innerHTML='<div class="aviso mal">'+esc(e.error||"")+"</div>");datos=e,$("cpNom").textContent=e.contratista.nombre,$("cpSub").textContent="Para "+e.empresa+(e.contratista.nit?" · NIT "+e.contratista.nit:""),$("cpCuerpo").hidden=!1;const t=UI.hoy();$("cpDocs").innerHTML=DOCS_CONTRATISTA.map(a=>{const n=e.documentos[a.k]||{},i=n.noAplica?["","No aplica"]:n.porRevisar?["pronto","Por revisar"]:n.fecha?n.vence&&n.vence<t?["mal","Vencido"]:["ok","Vigente"]:a.opcional?["","Si aplica"]:["mal","Falta"];return'<li><div class="t">'+esc(a.n)+' <span class="chip '+i[0]+'">'+i[1]+'</span></div><div class="m">'+(n.fecha?"Expedido "+esc(UI.corta(n.fecha)):"")+(n.vence?" · vence "+esc(UI.corta(n.vence)):"")+"</div>"+(n.noAplica?"":'<details><summary class="btn-mini">Subir soporte</summary><div class="cp-f"><div class="field"><label for="f_'+a.k+'">Fecha de expedición</label><input type="date" id="f_'+a.k+'" max="'+t+'"></div><div class="field"><label for="a_'+a.k+'">Archivo (PDF o foto)</label><input type="file" id="a_'+a.k+'" accept="application/pdf,image/*"></div></div><button type="button" class="btn-mini" data-subir="'+a.k+'" data-meses="'+(a.meses||0)+'">Enviar</button> <span class="status-msg" id="m_'+a.k+'"></span></details>')+"</li>"}).join(""),$("cpTrab").innerHTML=e.trabajadores.length?e.trabajadores.map(e=>'<li><div class="t">'+esc(e.nombre)+(e.porRevisar?' <span class="chip pronto">Por revisar</span>':"")+'</div><div class="m">CC '+esc(e.cedula)+(e.cargo?" · "+esc(e.cargo):"")+Object.keys(e.req||{}).map(a=>{const n=e.req[a].vence;return n?" · "+esc(a.replace(/_/g," "))+" "+(n<t?'<b class="u-mal">vencido</b>':"hasta "+esc(UI.corta(n))):""}).join("")+"</div></li>").join(""):'<li class="empty">Aún no hay personas registradas.</li>';const a=Q.get("e");$("cpInd").href="induccion-responder.html"+(a?"?e="+encodeURIComponent(a):"")}document.addEventListener("click",async e=>{const t=e.target.closest("[data-subir]");if(!t)return;const a=t.dataset.subir,n=$("a_"+a).files[0],i=$("f_"+a).value,o=$("m_"+a);if(!i||!n)return void(o.textContent="Elige la fecha y el archivo.");if(n.size>8388608)return void(o.textContent="El archivo pesa más de 8 MB.");t.disabled=!0,o.textContent="Enviando…";const r=await new Promise(e=>{const t=new FileReader;t.onload=()=>e(String(t.result).split(",")[1]),t.readAsDataURL(n)});let s;try{s=await enviar({action:"contratistaSubir",doc:a,fecha:i,meses:t.dataset.meses,nombre:n.name,mime:n.type,base64:r})}catch(e){s={ok:!1,error:"Sin señal."}}t.disabled=!1,o.textContent=s.ok?"✓ Recibido":s.error||"No se pudo",s.ok&&setTimeout(cargar,800)}),$("tOk").addEventListener("click",async()=>{const e=$("tNom").value.trim(),t=$("tCed").value.replace(/\D/g,""),a=Valida.cedula(t),n=$("tMsg");if(e.split(/\s+/).length<2)return void(n.textContent="Escribe nombre y apellido.");if(a)return void(n.textContent="Cédula: "+a+".");let i;$("tOk").disabled=!0;try{i=await enviar({action:"contratistaTrabajador",nombre:e,cedula:t,cargo:$("tCar").value.trim()})}catch(e){i={ok:!1,error:"Sin señal."}}$("tOk").disabled=!1,n.textContent=i.ok?"✓ Registrada":i.error||"No se pudo",i.ok&&(["tNom","tCed","tCar"].forEach(e=>{$(e).value=""}),cargar())}),cargar();</script>
+</body>
+</html>

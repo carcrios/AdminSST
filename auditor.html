@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-71ly2mKlsrGz6E03KTO3oIw6CIgfbTiI0s0Jfxt35Lk='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com https://drive.google.com; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; media-src 'self' data: blob:; worker-src 'self'; frame-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#151b24">
+<title>Consulta del auditor · Portal SSTA</title>
+<meta name="description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Consulta del auditor · Portal SSTA">
+<meta property="og:description" content="Gestión de seguridad y salud en el trabajo (SG-SST): preoperacionales, reportes, inspecciones, permisos y más, desde el celular.">
+<meta property="og:image" content="og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="sgsst.css">
+<style>.au-t{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.au-t button{border:1.5px solid var(--n-300);background:var(--paper);border-radius:var(--r-pill);padding:6px 12px;font:inherit;font-weight:700;cursor:pointer;min-height:40px}.au-t button.on{background:var(--tinta);color:var(--paper);border-color:var(--tinta)}.au-l{margin:0;padding:0;list-style:none}.au-l li{border-bottom:1px solid var(--n-150);padding:8px 0}.au-l button{all:unset;cursor:pointer;display:block;width:100%}.au-l .t{font-weight:700}.au-d{display:grid;grid-template-columns:minmax(120px,30%) 1fr;gap:4px 10px;font-size:var(--fs-menor)}.au-d dt{font-weight:700;color:var(--tenue,var(--ink-muted))}</style>
+</head>
+<body>
+<main class="wrap">
+<div class="screen active">
+  <div class="hdr"><div class="marca-titulo"><span class="marca" role="img" aria-label="Logo de la empresa"></span><div><div class="eyebrow">Solo lectura</div><h1>Consulta del auditor</h1><p id="auSub">Verificando el enlace…</p></div></div></div>
+  <div id="auMsg"></div>
+  <div class="card" id="auCard" hidden><div class="au-t" id="auTabs" role="tablist"></div><div class="field"><label for="auQ">Buscar</label><input type="search" id="auQ" data-no-ac placeholder="Ej.: extintor, 2026-10"></div><div id="auLista"></div></div>
+</div>
+</main>
+<script src="dialogo.js"></script>
+<script src="empresa.js"></script>
+<script src="empresa-motor.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="iconos-emoji.js"></script>
+<script src="sgsst-ui.js"></script>
+<script>const $=t=>document.getElementById(t),A=new URLSearchParams(location.search).get("a")||"",NOMBRE={trabajador:"Personal habilitado",induccion:"Inducciones",inspeccion:"Inspecciones",equipo:"Equipos",proginsp:"Programa de inspecciones",reporte:"Reportes e investigaciones",accion:"Plan de acción",plananual:"Plan anual",mes:"Indicadores del mes",politica:"Política y objetivos",peligro:"Matriz de peligros",revmatriz:"Revisiones de la matriz",legal:"Matriz legal",comite:"Comités",reunion:"Actas de reunión",entrega:"Entregas de EPP",eppcargo:"Matriz de EPP",emergencia:"Plan de emergencias",simulacro:"Simulacros",documento:"Listado maestro",auditoria:"Auditorías",revision:"Revisión por la dirección",evid0312:"Evidencias 0312",contratista:"Contratistas",proveedor:"Proveedores"};let tipos=[],tipo="",filas=[];const q=t=>SGSST.consultar(Object.assign({auditor:A},t));async function iniciar(){if(!A)return void($("auSub").textContent="Falta el enlace.");let t;try{t=await q({action:"auditorInfo"})}catch(e){t={ok:!1,error:"Sin señal."}}if(!t.ok)return $("auSub").textContent="Enlace no válido",void($("auMsg").innerHTML='<div class="aviso mal">'+esc(t.error||"")+"</div>");tipos=t.tipos,$("auSub").textContent=t.empresa+" · "+t.nombre+" · disponible hasta el "+UI.corta(t.vence),$("auCard").hidden=!1,$("auTabs").innerHTML=tipos.map(t=>'<button type="button" role="tab" data-t="'+esc(t)+'">'+esc(NOMBRE[t]||t)+"</button>").join(""),$("auTabs").addEventListener("click",t=>{const e=t.target.closest("[data-t]");e&&abrir(e.dataset.t)}),$("auQ").addEventListener("input",pintar),tipos.length&&abrir(tipos[0])}async function abrir(t){tipo=t,$("auTabs").querySelectorAll("[data-t]").forEach(e=>{e.classList.toggle("on",e.dataset.t===t),e.setAttribute("aria-selected",e.dataset.t===t)}),$("auLista").innerHTML='<div class="empty">Cargando…</div>';const e=await q({action:"list",tipo:t});filas=(e.rows||[]).sort((t,e)=>String(e.fecha||"").localeCompare(String(t.fecha||""))),pintar()}function pintar(){const t=UI.norm($("auQ").value).trim(),e=filas.filter(e=>!t||UI.norm([e.titulo,e.estado,e.fecha,JSON.stringify(e.resumen)].join(" ")).includes(t));$("auLista").innerHTML=e.length?'<ul class="au-l">'+e.slice(0,300).map(t=>'<li><button type="button" data-id="'+esc(t.id)+'"><div class="t">'+esc(t.titulo||t.id)+'</div><div class="m">'+esc([t.id,UI.corta(String(t.fecha||"").slice(0,10)),t.estado].filter(Boolean).join(" · "))+"</div></button><div data-det></div></li>").join("")+"</ul>":'<div class="empty">Sin registros.</div>'}document.addEventListener("click",async t=>{const e=t.target.closest(".au-l [data-id]");if(!e)return;const a=e.parentElement.querySelector("[data-det]");if(a.innerHTML)return void(a.innerHTML="");a.innerHTML='<div class="empty">Abriendo…</div>';const i=await q({action:"doc",id:e.dataset.id});if(!i.ok)return void(a.innerHTML='<div class="aviso mal">'+esc(i.error||"")+"</div>");const n=i.doc||{},plano=t=>Array.isArray(t)?t.map(plano).filter(Boolean).join(" · "):t&&"object"==typeof t?Object.keys(t).map(e=>e+": "+plano(t[e])).join("; "):String(t??"");a.innerHTML='<dl class="au-d">'+Object.keys(n).filter(t=>!/firma|foto|imagen|^adjuntos$|sello|^_/.test(t)).map(t=>{const e=plano(n[t]);return e&&!/^data:/.test(e)?"<dt>"+esc(t)+"</dt><dd>"+esc(e.slice(0,600))+"</dd>":""}).join("")+"</dl>"}),iniciar();</script>
+</body>
+</html>
