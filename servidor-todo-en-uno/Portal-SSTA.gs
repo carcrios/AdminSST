@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v166';
+const VERSION_PORTAL = 'v168';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5687,7 +5687,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v166';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v168';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -7659,7 +7659,7 @@ function restaurar_(body) {
   const sinPermiso = puedeEscribir_(prev.tipo, 'borrar', true) || (puedeLeer_(prev.tipo) ? null : (CTX_.u ? errPermiso_('Tu usuario no puede ver este registro.') : errSesion_()));
   if (sinPermiso) { registrarEvento_(id, 'RESTAURAR', 'RECHAZADO', sinPermiso.error, body.opId, prev.version, prev.tipo); return sinPermiso; }
   if (prev.tipo === 'queja' || prev.tipo === 'buzon') { const conf = cifradoConvivencia_(); if (!conf || !pruebaValida_(body, conf.actual)) return { ok: false, error: 'Clave del comité incorrecta.' }; }
-  regSheet_().getRange(fila, 12).setValue('');
+  regSheet_().getRange(fila, 11, 1, 2).setValues([[new Date(), '']]);   // v168: la restauración cuenta como cambio (las listas la traen)
   try { escribirVista_(prev.tipo, id, leerDoc_(id, false) || {}, false); } catch (e) {}
   registrarEvento_(id, 'RESTAURAR', 'APLICADO', '', body.opId, prev.version, prev.tipo);
   return { ok: true, id: id, tipo: prev.tipo };
@@ -8125,9 +8125,12 @@ function vinculos_(p) {
   // La cédula puede estar escrita con puntos (1.023.456.789): se buscan las dos formas.
   cedulas.forEach(function (kc) { [kc, kc.replace(/\B(?=(\d{3})+(?!\d))/g, '.')].forEach(function (q) { s.getRange(2, col, last - 1, 1).createTextFinder(q).findAll().forEach(function (r) { filas[r.getRow()] = 1; }); }); });
   if (nom.length >= 6) { const cr = COLS_REG.indexOf('responsable') + 1; s.getRange(2, cr, last - 1, 1).createTextFinder(texto_(p.nombre).trim()).matchCase(false).findAll().forEach(function (r) { filas[r.getRow()] = 1; }); }
-  const out = [];
-  Object.keys(filas).map(Number).sort(function (a, b) { return b - a; }).slice(0, 400).forEach(function (n) {
-    const v = s.getRange(n, 1, 1, COLS_REG.length).getValues()[0]; if (v[11]) return;
+  const out = [], nums = Object.keys(filas).map(Number).sort(function (a, b) { return b - a; }).slice(0, 400);
+  // v168: antes era una lectura por cada registro de la persona (100 registros = 100 llamadas a la hoja).
+  // Ahora las filas cercanas se leen juntas.
+  const leidas = filasPorTramos_(s, nums.slice().reverse(), COLS_REG.length);
+  nums.forEach(function (n) {
+    const v = leidas[n]; if (v[11]) return;
     const tipo = texto_(v[1]); if (!puedeLeer_(tipo)) return;
     let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
     let rol = '';
@@ -8447,6 +8450,85 @@ function novedadesNormas_(forzar) {
 }
 
 /* ================= LECTURA ================= */
+/* ═══ v168 · LISTAS QUE TRAEN SOLO LO QUE CAMBIÓ ═══
+   Antes, cada lista leía la hoja «Registros» completa (12 columnas) y devolvía TODOS los registros del tipo:
+   con 25.000 registros eran megas por cada pantalla. Ahora el celular guarda su copia y manda «cambios» (la
+   hora del servidor de su última lectura). El servidor lee solo 4 columnas angostas (id, tipo, cuándo cambió
+   y borrado), y devuelve completas únicamente las filas que cambiaron desde entonces, más los id borrados.
+   Cuándo NO se responde con cambios, sino con la lista completa (lo de siempre):
+     · el celular no manda «cambios» (primera vez, portal viejo, tipos reservados sin copia);
+     · cambió «gen»: se archivaron registros (salieron filas de la hoja);
+     · cambió «vista»: otro usuario u otro rol ven otra cosa;
+     · enlaces de auditor.
+   El margen cubre un guardado que estaba a medio escribir cuando se leyó la vez pasada. «total» deja que el
+   celular compruebe que su copia quedó completa; si no cuadra, pide la lista entera. */
+const LISTA_MARGEN_MS_ = 10 * 60 * 1000;
+function listaGen_() { try { return PropertiesService.getScriptProperties().getProperty('LISTA_GEN') || '1'; } catch (e) { return '1'; } }
+function subirListaGen_() { try { PropertiesService.getScriptProperties().setProperty('LISTA_GEN', String(Date.now())); } catch (e) {} }
+function listaVista_() {
+  if (!CTX_.modo) return 'abierto';
+  if (!CTX_.u) return 'sin-sesion';
+  return 'u:' + texto_(CTX_.u.usuario) + ':' + texto_(CTX_.u.rol) + (sstConSesion_() ? ':sst' : '');
+}
+function msDe_(v) { if (v instanceof Date) return v.getTime(); const x = Date.parse(texto_(v)); return isNaN(x) ? 0 : x; }
+/** Lee filas sueltas (números de fila en orden ascendente) en pocas llamadas. Las que quedan a menos de TRAMO_HUECO_
+ *  filas se leen juntas, y nunca se hacen más de TRAMOS_MAX_ llamadas: si salen más tramos, se parte solo por los
+ *  huecos más grandes. Una llamada a la hoja cuesta mucho más que leer filas de sobra. Devuelve { fila: valores }. */
+const TRAMO_HUECO_ = 500, TRAMOS_MAX_ = 12;
+function filasPorTramos_(sheet, filas, ncols) {
+  const out = {}; if (!filas.length) return out;
+  // Dónde se corta: en los huecos de más de TRAMO_HUECO_ filas; si son demasiados, solo en los más grandes.
+  let cortes = [];
+  for (let i = 1; i < filas.length; i++) if (filas[i] - filas[i - 1] > TRAMO_HUECO_) cortes.push(i);
+  if (cortes.length > TRAMOS_MAX_ - 1) {
+    cortes = cortes.sort(function (a, b) { return (filas[b] - filas[b - 1]) - (filas[a] - filas[a - 1]); }).slice(0, TRAMOS_MAX_ - 1);
+  }
+  cortes.sort(function (a, b) { return a - b; });
+  let k = 0;
+  cortes.concat(filas.length).forEach(function (hasta) {
+    const ini = filas[k], bloque = sheet.getRange(ini, 1, filas[hasta - 1] - ini + 1, ncols).getValues();
+    for (let j = k; j < hasta; j++) out[filas[j]] = bloque[filas[j] - ini];
+    k = hasta;
+  });
+  return out;
+}
+/** Una fila de «Registros» como sale en las listas, o null si este usuario no la puede ver o está borrada. */
+function filaLista_(v, libre) {
+  if (!v[0] || v[11]) return null;
+  if (!puedeLeer_(v[1]) && !(libre && v[1] === 'trabajador')) return null;
+  let res = {}; try { res = JSON.parse(v[8] || '{}'); } catch (err) {}
+  if (actaReservada_(v[1], res)) return null;
+  if (v[1] === 'trabajador' && !sstConSesion_()) sinRestricciones_(res.req);
+  if (v[1] === 'trabajador' && !CTX_.u) res = trabajadorPublico_(res);
+  return { id: v[0], tipo: v[1], version: v[2], estado: v[3], fecha: fechaISO_(v[4]), titulo: v[5], responsable: v[6], vence: fechaISO_(v[7]),
+    resumen: res, actualizado: v[10] instanceof Date ? v[10].toISOString() : texto_(v[10]), creado: v[9] instanceof Date ? v[9].toISOString() : texto_(v[9]) };
+}
+/** Lo que cambió desde `desdeMs`: filas completas de lo creado o modificado, e id de lo borrado o que ya no se puede ver. */
+function listaCambios_(tipos, libre, desdeMs) {
+  const reg = regSheet_(), n = reg.getLastRow() - 1, out = { rows: [], borrados: [] };
+  let total = 0;
+  if (n >= 1) {
+    const ids = reg.getRange(2, 1, n, 2).getValues(), marcas = reg.getRange(2, 11, n, 2).getValues(), cambiadas = [];
+    for (let i = 0; i < n; i++) {
+      const tipo = ids[i][1];
+      if (!ids[i][0] || (tipos.length && tipos.indexOf(tipo) === -1)) continue;
+      const borrado = texto_(marcas[i][1]);
+      if (!borrado && (puedeLeer_(tipo) || (libre && tipo === 'trabajador'))) total++;
+      const cuando = Math.max(msDe_(marcas[i][0]), borrado ? msDe_((/^BORRADO (\S+)/.exec(borrado) || [])[1]) : 0);
+      if (cuando && cuando < desdeMs) continue;   // sin fecha legible se manda siempre: mejor de más que de menos
+      if (borrado) out.borrados.push(texto_(ids[i][0])); else cambiadas.push(i);
+    }
+    // Las filas que cambiaron se leen completas por tramos (lo nuevo queda junto, al final de la hoja).
+    const filas = cambiadas.map(function (i) { return i + 2; }), leidas = filasPorTramos_(reg, filas, COLS_REG.length);
+    filas.forEach(function (n) {
+      const v = leidas[n], f = filaLista_(v, libre);
+      if (f) out.rows.push(f); else out.borrados.push(texto_(v[0]));
+    });
+  }
+  if (tipos.indexOf('reunion') === -1) out.total = total;   // las actas reservadas se filtran por contenido: ahí no hay conteo
+  return out;
+}
+
 function doGet(e) {
   HOJAS_CACHE_ = {};
   CTX_ = { modo: false, u: null, colUsuario: false };
@@ -8492,21 +8574,27 @@ function doGet(e) {
     // Sin usuario solo se lee el personal habilitado (lo consultan los permisos en campo).
     const libre = tipos.length === 1 && tipos[0] === 'trabajador';
     if (CTX_.modo && !CTX_.u && !libre) return jsonOut_(errSesion_());
-    const reg = regSheet_(), last = reg.getLastRow(), rows = [];
-    if (last >= 2) {
-      reg.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v) {
-        if (!v[0] || v[11]) return;
-        if (tipos.length && tipos.indexOf(v[1]) === -1) return;
-        if (!puedeLeer_(v[1]) && !(libre && v[1] === 'trabajador')) return;
-        let res = {}; try { res = JSON.parse(v[8] || '{}'); } catch (err) {}
-        if (actaReservada_(v[1], res)) return;
-        if (v[1] === 'trabajador' && !sstConSesion_()) sinRestricciones_(res.req);
-        if (v[1] === 'trabajador' && !CTX_.u) res = trabajadorPublico_(res);
-        rows.push({ id: v[0], tipo: v[1], version: v[2], estado: v[3], fecha: fechaISO_(v[4]), titulo: v[5], responsable: v[6], vence: fechaISO_(v[7]),
-                    resumen: res, actualizado: v[10] instanceof Date ? v[10].toISOString() : texto_(v[10]), creado: v[9] instanceof Date ? v[9].toISOString() : texto_(v[9]) });
-      });
+    // v168: «hasta» se toma ANTES de leer; el celular lo devuelve la próxima vez para pedir solo lo que cambió.
+    const sello = { gen: listaGen_(), vista: listaVista_(), hasta: new Date().toISOString() };
+    const desde = !p.auditor && p.cambios && p.gen === sello.gen && p.vista === sello.vista ? msDe_(p.cambios) : 0;
+    let r;
+    if (desde) {
+      r = listaCambios_(tipos, libre, desde - LISTA_MARGEN_MS_);
+      r.ok = true; r.delta = true;
+    } else {
+      const reg = regSheet_(), last = reg.getLastRow(), rows = [];
+      if (last >= 2) {
+        reg.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v) {
+          if (tipos.length && tipos.indexOf(v[1]) === -1) return;
+          const f = filaLista_(v, libre); if (f) rows.push(f);
+        });
+      }
+      r = { ok: true, rows: rows };
+      if (tipos.indexOf('reunion') === -1) r.total = rows.length;
     }
-    return jsonOut_(CTX_.modo ? { ok: true, rows: rows, usuarios: true, yo: yo_() } : { ok: true, rows: rows });
+    r.gen = sello.gen; r.vista = sello.vista; r.hasta = sello.hasta;
+    if (CTX_.modo) { r.usuarios = true; r.yo = yo_(); }
+    return jsonOut_(r);
   }
 
   if (p.action === 'doc' || p.id) {
@@ -9233,6 +9321,7 @@ function archivarAniosAnteriores() {
       if (filas.length) sh.getRange(2, 1, filas.length, ncols).setValues(filas.map(function (r) { return r.map(seguro); }));
       if (n - 1 > filas.length) sh.getRange(2 + filas.length, 1, n - 1 - filas.length, ncols).clearContent(); };
     reescribir(reg, quedan, COLS_REG.length); reescribir(dSh, D.queda, 4); reescribir(iSh, I.queda, 4);
+    subirListaGen_();   // v168: salieron filas de la hoja: cada celular vuelve a pedir sus listas completas
     Object.keys(ids).forEach(function (id) { try { escribirVista_(ids[id], id, {}, true); } catch (e) {} });
     const t = Object.keys(ids).length + ' registro(s) anteriores al ' + corte + ' movidos al archivo: ' + libro.getUrl();
     registrarEvento_('', 'ARCHIVO', 'APLICADO', t, '', '', 'archivo');
