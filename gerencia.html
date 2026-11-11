@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="sgsst.css">
 <style>.tablero{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-bottom:14px}.resumen-g a{color:var(--rojo-800,#7a1010);font-weight:700}.resumen-g ul{padding-left:18px;margin:4px 0 0}.tab-c .f,.tab-c .n{overflow:visible;white-space:normal}.tab-c{display:block;background:var(--paper,#fff);border:1px solid var(--line);border-top:5px solid var(--n-300);border-radius:var(--r-m);padding:10px 11px;color:inherit;text-decoration:none}.tab-c.ok{border-top-color:var(--ok)}.tab-c.pronto{border-top-color:var(--amber)}.tab-c.mal{border-top-color:var(--mal)}.tab-c .v{font-family:var(--font-display);font-size:var(--fs-subtitulo);font-weight:800;line-height:1.1}.tab-c .n{font-size:var(--fs-menor);font-weight:700;margin-top:2px;line-height:1.25}.tab-c .f{font-size:var(--fs-etiqueta);color:var(--muted);margin-top:4px;line-height:1.3}.sec-t{font-family:var(--font-display);font-size:var(--fs-menor);text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:14px 0 6px}.chk{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--n-150);font-size:var(--fs-base);line-height:1.35}.chk b{flex:0 0 22px;text-align:center}</style>
 </head>
-<body>
+<body data-i18n>
 <div class="wrap">
 <div class="screen active" id="scrLista">
   <div class="hdr">
@@ -37,7 +37,7 @@
   </div>
   <div id="tablero"><div class="empty">Cargando…</div></div>
   <div class="card" id="cardAnual" hidden></div>
-  <div class="version-portal">Portal SSTA · versión v168</div>
+  <div class="version-portal">Portal SSTA · versión v170</div>
 </div>
 </div>
 <script src="dialogo.js"></script>
@@ -48,6 +48,8 @@
 <script src="iconos-emoji.js"></script>
 <script src="valida.js"></script>
 <script src="sgsst-ui.js"></script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 <script src="informe-reglas.js"></script>
 <script src="registros.js"></script>
 <script src="auditorias-plantillas.js"></script>

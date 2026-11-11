@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="sgsst.css">
 <style>.barra-inf{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:10px 12px;margin-bottom:12px}.seg-p{display:flex;gap:6px;margin-bottom:8px}.seg-p button{flex:1;min-height:44px;border:1.5px solid var(--line);background:#fff;border-radius:var(--r-m);font:600 14px inherit;font-family:inherit;cursor:pointer;color:var(--ink)}.seg-p button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}.barra-inf select{width:100%;min-height:44px;border:1.5px solid var(--line);border-radius:var(--r-m);padding:0 10px;font-size:var(--fs-campo);background:#fff;font-family:inherit;margin-bottom:8px}.barra-inf .fila-btn .btn{margin:0;min-height:44px}.res-t{font-size:var(--fs-base);line-height:1.5;margin:0 0 10px}.res-t li{margin-bottom:3px}.cuenta-sug{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}.cuenta-sug span{font-size:var(--fs-menor);font-weight:700;border-radius:var(--r-s);padding:5px 10px}.pri{display:inline-block;font-size:var(--fs-menor);font-weight:700;border-radius:var(--r-xs);padding:2px 8px;white-space:nowrap}.pri.alta{background:var(--rojo-50);color:var(--rojo-800)}.pri.media{background:var(--ambar-100);color:var(--ambar-700)}.pri.baja{background:var(--bg);color:var(--n-600)}.filtros{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.filtros button{font:inherit;font-size:var(--fs-base);font-weight:600;border:1.5px solid var(--line);background:#fff;border-radius:var(--r-l);padding:0 12px;min-height:38px;cursor:pointer;color:var(--ink)}.filtros button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}.sug{border:1px solid var(--line);border-left:5px solid var(--n-300);border-radius:var(--r-m);padding:11px 12px;margin-bottom:9px;background:#fff}.sug.alta{border-left-color:var(--rojo-700)}.sug.media{border-left-color:var(--ambar-500)}.sug.baja{border-left-color:var(--n-400)}.sug-cab{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px}.sug-cab .area{font-size:var(--fs-menor);color:var(--muted);font-weight:600}.sug-t{font-weight:700;font-size:var(--fs-titulo);line-height:1.35}.sug-n,.sug-p{font-size:var(--fs-base);line-height:1.45;margin-top:4px;color:#334;overflow-wrap:anywhere}.sug-n{color:var(--muted);font-size:var(--fs-menor)}.sug-b{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.btn-s{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border-radius:var(--r-m);font:700 13.5px inherit;font-family:inherit;border:1.5px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;text-decoration:none}.btn-s.ghost{background:#fff;color:var(--ink);border-color:var(--line)}.btn-s.hecha{background:var(--verde-50);color:var(--verde-700);border-color:var(--verde-100)}.grafs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:12px}.gcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);padding:12px 12px 8px;min-width:0}.gcard h3{font-size:var(--fs-base);margin:0 0 2px;font-family:var(--font-display)}.gcard .gs{font-size:var(--fs-menor);color:var(--muted);margin-bottom:6px;line-height:1.35}.leyenda{display:flex;gap:12px;flex-wrap:wrap;font-size:var(--fs-menor);color:var(--n-700);margin-top:4px}.leyenda i{display:inline-block;width:10px;height:10px;border-radius:var(--r-xs);margin-right:4px;vertical-align:-1px}.sec-t{font-family:var(--font-display);font-size:var(--fs-menor);text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:16px 2px 8px}.tabla-scroll{overflow-x:auto}table.cif{width:100%;border-collapse:collapse;font-size:var(--fs-menor)}table.cif td{border-bottom:1px solid var(--bg);padding:6px 4px;vertical-align:top}table.cif td:first-child{color:var(--muted);width:28%}table.cif td:last-child{text-align:right;font-weight:700;white-space:nowrap}#tipGraf{position:fixed;z-index:60;background:var(--ink);color:#fff;font-size:var(--fs-menor);padding:6px 9px;border-radius:var(--r-s);pointer-events:none;max-width:240px;line-height:1.35;display:none}.graf [data-tip]{cursor:pointer}.bien li{font-size:var(--fs-base);line-height:1.45;margin-bottom:4px}@media print{#tipGraf{display:none!important}}.kpis-g{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}.u-oculto{display:none}</style>
 </head>
-<body>
+<body data-i18n>
 <div class="wrap">
 <div class="screen active" id="scrLista">
   <div class="hdr">
@@ -40,7 +40,7 @@
     <div class="fila-btn"><button type="button" class="btn amber" id="btnPdf" disabled>Sacar el PDF con firma</button><button type="button" class="btn ghost" id="btnAct">Actualizar datos</button></div>
   </div>
   <div id="contenido"><div class="empty">Revisando todo el SG-SST…</div></div>
-  <div class="version-portal">Portal SSTA · versión v168</div>
+  <div class="version-portal">Portal SSTA · versión v170</div>
 </div>
 </div>
 <div id="tipGraf" role="status" aria-live="polite"></div>
@@ -52,6 +52,8 @@
 <script src="iconos-emoji.js"></script>
 <script src="valida.js"></script>
 <script src="sgsst-ui.js"></script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 <script src="registros.js"></script>
 <script src="auditorias-plantillas.js"></script>
 <script src="evidencias-reglas.js"></script>
