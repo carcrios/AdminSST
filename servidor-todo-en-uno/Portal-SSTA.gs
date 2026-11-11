@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v168';
+const VERSION_PORTAL = 'v170';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -76,8 +76,9 @@ function despachar_(e, metodo) {
   const mods = modulosPortal_();
   if (!ruta) {
     if (metodo === 'doPost') { const pr = comandoProveedor_(e); if (pr) return salidaJson_(pr); }
-    return salidaJson_({ ok: true, servicio: 'Portal SSTA', version: VERSION_PORTAL, empresa: nombreEmpresa_(), modulos: Object.keys(mods), correos: estadoCorreos_(), capacidades: ['consultaPost', 'modulosProveedor'],
-                         apagados: modulosApagados_(), nota: 'Cada módulo responde en esta misma URL terminada en /<módulo>.' });
+    return salidaJson_({ ok: true, servicio: 'Portal SSTA', version: VERSION_PORTAL, empresa: nombreEmpresa_(), modulos: Object.keys(mods), correos: estadoCorreos_(),
+                         capacidades: ['consultaPost', 'modulosProveedor', 'uso'], apagados: modulosApagados_(), uso: usoResumen_(),
+                         nota: 'Cada módulo responde en esta misma URL terminada en /<módulo>.' });
   }
   if (!mods[ruta]) return salidaJson_({ ok: false, error: 'Módulo desconocido: ' + ruta + '. Disponibles: ' + Object.keys(mods).join(', ') });
   e = tokenPublicoComoClave_(e);
@@ -85,6 +86,7 @@ function despachar_(e, metodo) {
   if (apagado) return salidaJson_(apagado);
   const sinSesion = exigirSesionObra_(ruta, e, metodo);
   if (sinSesion) return salidaJson_(sinSesion);
+  if (metodo === 'doPost') contarUso_(ruta, e);
   try {
     const m = mods[ruta]();
     if (!m[metodo]) return salidaJson_({ ok: false, error: 'El módulo ' + ruta + ' no atiende ' + metodo });
@@ -110,7 +112,8 @@ const MODULO_DE_TIPO_ = { trabajador: 'habilitacion', reporte: 'reportes', equip
   politica: 'documental', legal: 'documental', documento: 'documental', cambio: 'documental', proveedor: 'proveedores', compraprov: 'proveedores', revision: 'revision', rendicion: 'revision',
   contratista: 'contratistas', ingreso: 'contratistas', eppcargo: 'dotacion', entrega: 'dotacion', induccion: 'induccion', programa: 'programas', pesv: 'pesv', vehiculo: 'pesv', conductor: 'pesv', siniestro: 'pesv',
   aspecto: 'ambiental', residuo: 'ambiental', consumo: 'ambiental', respel: 'ambiental', contextocal: 'calidad', riesgocal: 'calidad', objcal: 'calidad', pnc: 'calidad', encuesta: 'calidad', encuestacli: 'calidad', encresp: 'calidad',
-  preop: 'preop', preopsalud: 'preop', cierremes: 'cierre', cliente: 'asesor' };
+  preop: 'preop', preopsalud: 'preop', cierremes: 'cierre', cliente: 'asesor',
+  reintegro: 'salud', presupuesto: 'presupuesto', gasto: 'presupuesto' };   // v169
 function llaveProveedor_() {
   const p = propiedades_();
   let k = p.getProperty('LLAVE_PROVEEDOR');
@@ -119,6 +122,38 @@ function llaveProveedor_() {
 }
 function modulosApagados_() { try { const a = JSON.parse(propiedades_().getProperty('MODULOS_APAGADOS') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 function cuerpoJson_(e) { try { return JSON.parse((e && e.postData && e.postData.contents) || ''); } catch (err) { return null; } }
+/* v169 · USO POR MÓDULO: cuántos registros se guardan en cada módulo cada mes (solo el número: ningún dato de
+   las personas). La consola de quien vende el portal lo lee al revisar el servidor de cada cliente y así sabe qué
+   usa cada empresa: qué mantener, a quién capacitar y qué plan ofrecerle. Se guardan los últimos 13 meses. */
+function contarUso_(ruta, e) {
+  try {
+    const b = cuerpoJson_(e);
+    if (!b || b.__consulta || b.__proveedor) return;
+    const tipo = String(b.tipo || '').toLowerCase();
+    let mod = (tipo && MODULO_DE_TIPO_[tipo]) || (ruta === 'sgsst' && tipo ? tipo : ruta);
+    mod = String(mod).toLowerCase(); if (!/^[a-z0-9]{2,30}$/.test(mod)) return;
+    const lock = LockService.getScriptLock(); if (!lock.tryLock(300)) return;   // si hay mucho movimiento, se pierde una cuenta, nunca un registro
+    try {
+      const pr = propiedades_(), mes = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM'), k = 'USO_' + mes;
+      let u = {}; try { u = JSON.parse(pr.getProperty(k) || '{}'); } catch (x) { u = {}; }
+      u[mod] = (Number(u[mod]) || 0) + 1;
+      pr.setProperty(k, JSON.stringify(u));
+      if (pr.getProperty('USO_ULTIMO_MES') !== mes) {   // al empezar mes, se borran los de hace más de 13 meses
+        pr.setProperty('USO_ULTIMO_MES', mes);
+        const tope = Utilities.formatDate(new Date(Date.now() - 400 * 86400000), 'America/Bogota', 'yyyy-MM');
+        Object.keys(pr.getProperties()).filter(function (x) { return /^USO_\d{4}-\d{2}$/.test(x) && x.slice(4) < tope; }).forEach(function (x) { pr.deleteProperty(x); });
+      }
+    } finally { lock.releaseLock(); }
+  } catch (err) { /* contar el uso nunca impide guardar */ }
+}
+/** { 'yyyy-MM': { módulo: registros } } de los últimos 3 meses. */
+function usoResumen_() {
+  try {
+    const pr = propiedades_().getProperties(), out = {};
+    Object.keys(pr).filter(function (k) { return /^USO_\d{4}-\d{2}$/.test(k); }).sort().slice(-3).forEach(function (k) { try { out[k.slice(4)] = JSON.parse(pr[k]); } catch (x) {} });
+    return out;
+  } catch (err) { return {}; }
+}
 /** Mensaje firmado de quien vende el portal: { __proveedor: { carga: '{"apagados":[…],"ts":…}', firma } }. */
 function comandoProveedor_(e) {
   const b = cuerpoJson_(e);
@@ -5687,7 +5722,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v168';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v170';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5752,6 +5787,19 @@ const TIPOS_GEN = {
     campos: ['sveId', 'programa', 'nombre', 'cedula', 'cargo', 'area', 'clasificacion', 'origen', 'examenId', 'fechaIngreso', 'estado', 'fechaEgreso', 'proximaEvaluacion', 'ultimoSeguimiento', 'nSeguimientos', 'recomendaciones'], largos: ['recomendaciones'], largoMax: 1500, saltos: true },
   psico: { hoja: 'Riesgo psicosocial', titulo: 'fecha', fecha: 'fecha', estado: 'nivelGeneral', responsable: 'profesional', vence: 'proxima',
     campos: ['fecha', 'profesional', 'participantes', 'cobertura', 'intralaboralA', 'intralaboralB', 'extralaboral', 'estres', 'nivelGeneral', 'proxima', 'intervenciones'] },
+  // v169 · Reintegro laboral: regreso después de una incapacidad, con sus restricciones y el seguimiento a que se cumplan.
+  // Es dato de salud (solo admin y SST) y nunca lleva diagnóstico: solo lo que la persona puede o no hacer en el trabajo.
+  reintegro: { hoja: 'Reintegro laboral', titulo: 'nombre', fecha: 'fechaRetorno', estado: 'estado', responsable: 'cargo', vence: 'proximoSeguimiento',
+    campos: ['nombre', 'cedula', 'cargo', 'area', 'jefe', 'origen', 'diasIncapacidad', 'ausenciaId', 'fechaRetorno', 'evaluacionPost',
+      'tipoReintegro', 'cargoAsignado', 'restricciones', 'restringePara',
+      'temporalidad', 'venceRestriccion', 'comunicadoJefe', 'comunicadoTrabajador', 'frecuencia', 'proximoSeguimiento', 'ultimoSeguimiento',
+      'nSeguimientos', 'ultimoCumple', 'estado', 'fechaCierre', 'motivoCierre', 'estabilidad'],
+    largos: ['restricciones'], largoMax: 1500, saltos: true },
+  // v169 · Presupuesto del SG-SST (uno por año, con sus rubros) y lo que se gasta contra cada rubro (estándar 1.1.3).
+  presupuesto: { hoja: 'Presupuesto SG-SST', titulo: 'anio', fecha: 'fechaAprobacion', estado: 'estado', responsable: 'responsable', vence: '',
+    campos: ['anio', 'responsable', 'aprobadoPor', 'fechaAprobacion', 'estado', 'totalPresupuestado', 'rubros'] },
+  gasto: { hoja: 'Gastos SG-SST', titulo: 'concepto', fecha: 'fecha', estado: 'rubro', responsable: 'proveedor', vence: '',
+    campos: ['anio', 'rubroId', 'rubro', 'fecha', 'concepto', 'valor', 'proveedor', 'soporte'] },
   ausencia: { hoja: 'Ausentismo', titulo: 'nombre', fecha: 'inicio', estado: 'causa', responsable: 'cargo', vence: '',
     campos: ['nombre', 'cedula', 'cargo', 'inicio', 'fin', 'dias', 'causa', 'mes', 'prorroga'] },
   politica: { hoja: 'Política y objetivos', titulo: 'versionDoc', fecha: 'fechaFirma', estado: 'estado', responsable: 'firmante', vence: 'proximaRevision',
@@ -5812,7 +5860,7 @@ const TIPOS_GEN = {
   cliente: { hoja: 'Clientes del asesor', titulo: 'nombre', fecha: 'ultimaVisita', estado: 'estado', responsable: 'contacto', vence: 'proximaVisita',
     campos: ['nombre', 'nit', 'ciudad', 'actividad', 'trabajadores', 'claseRiesgo', 'grupo0312', 'contacto', 'correo', 'telefono', 'sitio', 'codigo', 'ultimaVisita', 'proximaVisita', 'puntaje', 'tareasAbiertas', 'tareasVencidas', 'sincronizado', 'versionServidor', 'estado', 'tareasCerradas',
       // v116: configuración publicada desde la consola y vigilancia diaria de su servidor
-      'publicado', 'modulosOn', 'modulosTotal', 'plan', 'estadoServidor', 'detalleServidor', 'revisadoServidor', 'apagadosServidor'] },
+      'publicado', 'modulosOn', 'modulosTotal', 'plan', 'estadoServidor', 'detalleServidor', 'revisadoServidor', 'apagadosServidor', 'usoServidor'] },
   plantillainsp: { hoja: 'Listas de chequeo', titulo: 'nombre', fecha: '', estado: 'activa', responsable: 'reemplaza', vence: '',
     campos: ['nombre', 'icono', 'frecuencia', 'preoperacional', 'reemplaza', 'activa', 'vencimientosTexto', 'itemsTexto'], largos: ['vencimientosTexto', 'itemsTexto'], largoMax: 6000, saltos: true },
   proginsp: { hoja: 'Programa de inspecciones', titulo: 'titulo', fecha: '', estado: 'tipoInspeccion', responsable: 'responsable', vence: '',
@@ -6068,7 +6116,7 @@ const ESCRIBE_ROL = {
   consulta: ['revision', 'aprobrec']   // v148: la alta dirección firma su revisión y aprueba recursos (Dec. 1072, art. 2.2.4.6.31; estándar 1.1.3)
 };
 const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs', 'buzon', 'habeas'];   // v162: habeas = solicitudes de derechos del titular   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
-const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'pvecaso', 'psico', 'preopsalud', 'cliente', 'habeas'];   // salud individual y conexiones a clientes
+const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'pvecaso', 'psico', 'preopsalud', 'cliente', 'habeas', 'reintegro'];   // v169: reintegro   // salud individual y conexiones a clientes
 const ITER_USUARIO = 150000;
 const USR_COLS = ['usuario', 'nombre', 'cedula', 'cargo', 'rol', 'correo', 'activo', 'salt', 'iter', 'hash', 'debeCambiar', 'sesionDesde', 'intentos', 'bloqueadoHasta', 'ultimoIngreso', 'creado', 'actualizado', 'comites'];   // v148: comites al final (las hojas viejas la ganan sola)
 const HORAS_SESION = { personal: 24 * 30, compartido: 12, sensible: 12 };   // v142: admin y SST (ven salud) 12 h
@@ -6264,7 +6312,7 @@ function puedeLeer_(tipo) {
 /** v142: Ley 1581 art. 6. Lo que la PERSONA declara de su salud (preoperacional de salud) exige su
  *  autorización expresa. Lo que registra el área SST (exámenes, ausencias, SVE, psicosocial) se trata por
  *  obligación legal: si la persona no dio la autorización en su ficha, queda escrita la base legal. */
-const TIPOS_SALUD_ = ['examen', 'sve', 'pvecaso', 'psico', 'ausencia', 'preopsalud'];
+const TIPOS_SALUD_ = ['examen', 'sve', 'pvecaso', 'psico', 'ausencia', 'preopsalud', 'reintegro'];
 const BASE_LEGAL_SST_ = 'Obligación legal del empleador (Decreto 1072 de 2015, art. 2.2.4.6.24; Resolución 1843 de 2025): vigilancia de la salud de los trabajadores. Registrado por el área SST.';
 function autorizacionSalud_(tipo, d) {
   if (TIPOS_SALUD_.indexOf(tipo) === -1) return null;
@@ -6585,6 +6633,54 @@ function claveContratista_(id) {
   const v = pr.getProperty('CTR_VER_' + id) || '1';
   return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature('ctr:' + String(id || '') + ':' + v, sec)).slice(0, 24);
 }
+/* v169 · PANTALLA DE PLANTA: un televisor en la planta muestra días sin accidentes, reportes del mes y acciones
+   vencidas. Un televisor no inicia sesión, así que entra con un enlace con clave (HMAC), que SST puede cambiar para
+   dejar sin servicio el anterior. Solo entrega CIFRAS: ningún nombre, cédula ni descripción. */
+function clavePantalla_() {
+  const pr = PropertiesService.getScriptProperties();
+  let sec = pr.getProperty('ENLACE_PANTALLA'); if (!sec) { sec = Utilities.getUuid() + Utilities.getUuid(); pr.setProperty('ENLACE_PANTALLA', sec); }
+  const v = pr.getProperty('PANTALLA_VER') || '1';
+  return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature('pantalla:' + v, sec)).slice(0, 24);
+}
+function enlacePantalla_(p) {
+  if (CTX_.modo && !sstConSesion_()) return CTX_.u ? errPermiso_('El enlace de la pantalla lo crea SST.') : errSesion_();
+  if (p.nuevo === '1') {
+    const pr = PropertiesService.getScriptProperties(); pr.setProperty('PANTALLA_VER', String(Number(pr.getProperty('PANTALLA_VER') || '1') + 1));
+    registrarEvento_('PANTALLA', 'PANTALLA', 'APLICADO', 'Enlace de la pantalla de planta cambiado (el anterior dejó de servir)', '', '', '');
+  }
+  return { ok: true, k: clavePantalla_() };
+}
+function pantallaPlanta_(p) {
+  if (!p.k || texto_(p.k) !== clavePantalla_()) return { ok: false, codigoError: 'CLAVE', error: 'Este enlace de pantalla ya no sirve. Pide uno nuevo al área SST.' };
+  const hoy = hoyISO_(), mes = hoy.slice(0, 7), reg = regSheet_(), last = reg.getLastRow();
+  const filas = last < 2 ? [] : reg.getRange(2, 1, last - 1, COLS_REG.length).getValues();
+  const acc = [], rep = { actos: 0, condiciones: 0, incidentes: 0, accidentes: 0, total: 0 };
+  let abiertas = 0, vencidas = 0, inspMes = 0;
+  filas.forEach(function (v) {
+    if (!v[0] || v[11]) return; const tipo = v[1];
+    if (tipo !== 'reporte' && tipo !== 'accion' && tipo !== 'inspeccion') return;
+    let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
+    if (tipo === 'reporte') {
+      const f = texto_(r.fecha).slice(0, 10), c = texto_(r.clase);
+      if (/Accidente de trabajo/i.test(c) && /^\d{4}-\d{2}-\d{2}$/.test(f)) acc.push(f);
+      if (f.slice(0, 7) !== mes) return;
+      rep.total++;
+      if (/Accidente/i.test(c)) rep.accidentes++; else if (/Incidente/i.test(c)) rep.incidentes++; else if (/Acto/i.test(c)) rep.actos++; else if (/Condici/i.test(c)) rep.condiciones++;
+    } else if (tipo === 'accion' && v[3] !== 'CERRADA') {
+      abiertas++; const fc = texto_(r.fechaCompromiso).slice(0, 10); if (fc && fc < hoy) vencidas++;
+    } else if (tipo === 'inspeccion' && texto_(r.fecha).slice(0, 7) === mes) inspMes++;
+  });
+  acc.sort();
+  const dias = function (a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000); };
+  const ultimo = acc.length ? acc[acc.length - 1] : '';
+  let record = 0; for (let i = 1; i < acc.length; i++) record = Math.max(record, dias(acc[i - 1], acc[i]));
+  const sinAcc = ultimo ? Math.max(0, dias(ultimo, hoy)) : null;
+  if (sinAcc !== null) record = Math.max(record, sinAcc);
+  const perfil = perfilEmpresa_();
+  const accAnio = acc.filter(function (f) { return f.slice(0, 4) === hoy.slice(0, 4); }).length;
+  return { ok: true, empresa: nombreEmpresa_(perfil), hoy: hoy, diasSinAccidente: sinAcc, ultimoAccidente: ultimo, record: record, accidentesAnio: accAnio,
+    reportesMes: rep, accionesAbiertas: abiertas, accionesVencidas: vencidas, inspeccionesMes: inspMes, generado: new Date().toISOString() };
+}
 function contratistaDeEnlace_(id, k) {
   id = texto_(id); if (!/^CTR-|^CON-|^[A-Z]{2,5}-/.test(id) || !k || texto_(k) !== claveContratista_(id)) return null;
   const f = filaDe_(id); if (f === -1) return null; const r = leerFila_(f); if (r.borrado || r.tipo !== 'contratista') return null;
@@ -6852,6 +6948,13 @@ function resumen_(tipo, d) {
              fechaEjecucion: texto_(d.fechaEjecucion), auditor: corto_(d.auditor && d.auditor.nombre, 60), alcance: corto_(d.alcance, 160),
              estado: texto_(d.estado || 'PROGRAMADA'), puntaje: d.puntaje == null ? null : Number(d.puntaje), valoracion: texto_(d.valoracion),
              hallazgos: h, items: items.length, respondidos: items.filter(function (i) { return i && i.r; }).length, acciones: (d.acciones || []).length };
+  }
+  if (tipo === 'presupuesto') {   // v169: los rubros van en la lista (la pantalla compara cada uno con lo gastado)
+    const rub = (Array.isArray(d.rubros) ? d.rubros : []).slice(0, 60).map(function (r) {
+      return { id: corto_(r && r.id, 40), rubro: corto_(r && r.rubro, 120), valor: Math.round(Number(r && r.valor) || 0) };
+    });
+    return { anio: texto_(d.anio), responsable: corto_(d.responsable, 120), aprobadoPor: corto_(d.aprobadoPor, 120), fechaAprobacion: texto_(d.fechaAprobacion), estado: texto_(d.estado),
+      totalPresupuestado: rub.reduce(function (a, r) { return a + r.valor; }, 0), rubros: rub };
   }
   if (TIPOS_GEN[tipo]) {
     const o = {};
@@ -7227,6 +7330,13 @@ function guardar_(body) {
     const pa = prev && (prevResFallo || Number(prevRes._adjTotal) > 0) ? prevDoc().adjuntos : null;
     if (pa && pa.length) doc.adjuntos = pa; else delete doc.adjuntos;
   }
+  // v169 · Un gasto del SG-SST tiene un valor positivo y razonable, y un año de 4 cifras.
+  if (tipo === 'gasto') {
+    const val = Number(doc.valor);
+    const eg = !isFinite(val) || val <= 0 || val > 1e11 ? 'El valor del gasto debe ser un número mayor que cero.' : !/^\d{4}$/.test(texto_(doc.anio)) ? 'Falta el año del gasto.' : '';
+    if (eg) { registrarEvento_(id, body.action, 'RECHAZADO', eg, body.opId, versionActual, tipo); return { ok: false, error: eg }; }
+    doc.valor = Math.round(val);
+  }
   // v164 · Maestro de personas: el personaId y las cédulas anteriores los pone el servidor, nunca el celular.
   if (tipo === 'trabajador') {
     const ef = identidadPersona_(doc, prev ? prevDoc() : null, !!body._interno, id);
@@ -7285,6 +7395,10 @@ function guardar_(body) {
     } catch (e) { registrarEvento_(id, 'CORREO', 'RECHAZADO', 'No salió el aviso de la tarea: ' + e.message, '', '', tipo); }
   }
   if (tipo === 'trabajador' && limpio.fusionadoCon && (!prev || texto_(prevDoc().fusionadoCon) !== texto_(limpio.fusionadoCon))) { try { efectoFusion_(id, limpio); } catch (e) { registrarEvento_(id, 'PERSONA', 'RECHAZADO', 'No se pasaron las cédulas a la ficha que queda: ' + e.message, '', '', tipo); } }
+  if (tipo === 'reintegro' && !body._sistema) {
+    try { efectoReintegro_(id, limpio); }
+    catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se pasó la restricción del reintegro a Personal habilitado: ' + e.message, '', '', tipo); }
+  }
   if (tipo === 'examen' && !body._sistema) { try { efectoExamen_(id, limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se pasó la restricción a Personal habilitado: ' + e.message, '', '', tipo); } }
   if (tipo === 'induccion' && !body._sistema) { try { efectoInduccion_(limpio); } catch (e) { registrarEvento_(id, 'HABILITACION', 'RECHAZADO', 'No se actualizó Personal habilitado: ' + e.message, '', '', tipo); } }
   if ((tipo === 'reporte' || tipo === 'preop') && !prev && !body._sistema) { try { efectoAccionAuto_(tipo, id, limpio); } catch (e) { registrarEvento_(id, 'ACCION', 'RECHAZADO', 'No se creó la acción automática: ' + e.message, '', '', tipo); } }
@@ -7310,6 +7424,30 @@ function efectoExamen_(id, d) {
   if (d.concepto === 'No apto') para.push('todo');
   const campos = { restriccionMed: { para: para, hasta: d.temporalidad === 'Temporales' ? texto_(d.venceRestriccion) : '', concepto: texto_(d.concepto), fecha: texto_(d.fecha), fuente: id } };
   const r = guardar_({ action: 'parche', tipo: 'trabajador', id: tid, campos: campos, opId: '', _interno: true, _sistema: true });
+  if (!r.ok) throw new Error(r.error || 'error');
+}
+/* v169 · El reintegro con restricciones bloquea en Personal habilitado los trabajos que la persona no puede hacer
+   (igual que un examen con restricciones), mientras el caso esté en seguimiento. Al cerrarlo con las restricciones
+   levantadas, se quita ese bloqueo (si lo puso este reintegro). */
+function efectoReintegro_(id, d) {
+  if (!d.cedula) return;
+  const tid = fichaDePersona_(d.cedula);
+  if (clavePersonaCed_(d.cedula).length < 3 || filaDe_(tid) === -1) return;
+  const actual = leerDoc_(tid, false) || {}, ya = actual.restriccionMed || null;
+  if (texto_(d.estado) === 'CERRADO') {
+    if (ya && ya.fuente === id) {
+      const r0 = guardar_({ action: 'parche', tipo: 'trabajador', id: tid, campos: { restriccionMed: null }, opId: '', _interno: true, _sistema: true });
+      if (!r0.ok) throw new Error(r0.error || 'error');
+    }
+    return;
+  }
+  const lista = Array.isArray(d.restringePara) ? d.restringePara : String(d.restringePara || '').split(/\s*[,;|]\s*/);
+  const para = lista.map(function (x) { return RESTRINGE_[texto_(x)] || ''; }).filter(Boolean);
+  if (!para.length) return;
+  const fecha = texto_(d.fechaRetorno);
+  if (ya && ya.fuente !== id && texto_(ya.fecha) > fecha) return;   // hay una restricción más reciente (examen o reintegro)
+  const restr = { para: para, hasta: d.temporalidad === 'Temporales' ? texto_(d.venceRestriccion) : '', concepto: 'Reintegro con restricciones', fecha: fecha, fuente: id };
+  const r = guardar_({ action: 'parche', tipo: 'trabajador', id: tid, campos: { restriccionMed: restr }, opId: '', _interno: true, _sistema: true });
   if (!r.ok) throw new Error(r.error || 'error');
 }
 /* v159 · Acciones automáticas: un acto o condición insegura, un incidente o un preoperacional con novedad crean
@@ -8539,6 +8677,7 @@ function doGet(e) {
   // v162: calendario de vencimientos para Google Calendar / Outlook (lo pide el calendario, sin sesión: la llave va en el enlace).
   if (p.action === 'ics') return calendarioIcs_(p);
   if (p.action === 'verificarCertificado') return jsonOut_(verificarCertificado_(p));
+  if (p.action === 'pantalla') return jsonOut_(pantallaPlanta_(p));   // v169: el televisor de la planta, con su enlace (solo cifras)
   if (p.action === 'contratistaPortal') return jsonOut_(contratistaPortal_(p));   // v162: el contratista ve lo suyo con su enlace   // v162: el QR del certificado, sin usuario
   if (!checkToken_(p.token)) return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
   iniciarContexto_(p.sesion);
@@ -8553,6 +8692,7 @@ function doGet(e) {
   if (p.action === 'misAvisos') { if (!CTX_.modo || !CTX_.u) return jsonOut_(errSesion_()); return jsonOut_({ ok: true, pref: prefAvisos_(CTX_.u), roles: CTX_.u.rol === 'admin' ? prefsAvisos_('AVISOS_ROL') : undefined, correo: !!CTX_.u.correo }); }
   if (p.action === 'enlacesAuditor') { const no = soloAdmin_(); if (no) return jsonOut_(no); return jsonOut_({ ok: true, enlaces: enlacesAuditor_().map(function (x) { return { id: x.id, nombre: x.nombre, grupos: x.grupos, vence: x.vence, creado: x.creado, revocado: x.revocado || '' }; }).reverse() }); }
   if (p.action === 'enlaceContratista') return jsonOut_(enlaceContratista_(p));
+  if (p.action === 'enlacePantalla') return jsonOut_(enlacePantalla_(p));
   if (p.action === 'certificadoClave') { if (CTX_.modo && !CTX_.u) return jsonOut_(errSesion_()); if (!puedeLeer_('induccion')) return jsonOut_(errPermiso_('Tu usuario no puede ver inducciones.')); return jsonOut_({ ok: true, k: claveCert_(texto_(p.id)) }); }
   if (p.action === 'icsEnlace') { if (CTX_.modo && !sstConSesion_()) return jsonOut_(CTX_.u ? errPermiso_('El calendario lo activa SST.') : errSesion_()); return jsonOut_(icsEnlace_(p.nuevo === '1')); }
   if (p.action === 'personas') return jsonOut_(personas_(p));   // v164: el maestro de personas (SST)
@@ -8716,13 +8856,16 @@ function vigilarClientes_(conCorreo) {
   const ahora = new Date().toISOString(), resultados = [], problemas = [];
   lista.forEach(function (x, i) {
     const d = docs[i], k = idx.indexOf(i);
-    let est = 'sin', det = 'Sin servidor registrado', ver = '', apag = null;
+    let est = 'sin', det = 'Sin servidor registrado', ver = '', apag = null, uso = null;
     if (k !== -1) {
       const res = respuestas[k];
       let j = null; try { j = res ? JSON.parse(res.getContentText()) : null; } catch (e) {}
       if (!res) { est = 'mal'; det = 'No respondió'; }
       else if (!j) { est = 'mal'; det = 'Responde una página, no datos (¿implementación pública?)'; }
-      else if (j.ok) { est = 'ok'; ver = texto_(j.version); det = 'Responde' + (ver ? ' · ' + ver : ''); if (Array.isArray(j.apagados)) apag = j.apagados.slice().sort(); }
+      else if (j.ok) {
+        est = 'ok'; ver = texto_(j.version); det = 'Responde' + (ver ? ' · ' + ver : ''); if (Array.isArray(j.apagados)) apag = j.apagados.slice().sort();
+        if (j.uso && typeof j.uso === 'object') uso = JSON.stringify(j.uso).slice(0, 4000);   // v169: registros por módulo y mes
+      }
       else if (j.codigoError === 'CLAVE') { est = 'mal'; det = 'No acepta la clave guardada para este cliente'; }
       else if (j.codigoError === 'SESION') { est = 'ok'; det = 'Responde (pide usuario)'; }
       else { est = 'mal'; det = texto_(j.error) || 'Error del servidor'; }
@@ -8732,7 +8875,8 @@ function vigilarClientes_(conCorreo) {
     let reenvio = null;
     if (est === 'ok' && apag && d.config && d.llaveProveedor && JSON.stringify(apag) !== JSON.stringify(apagadosDe_(d.config))) { reenvio = enviarModulos_(d); if (reenvio.ok) apag = apagadosDe_(d.config); }
     const antes = texto_(x.resumen.estadoServidor);
-    guardar_({ action: 'parche', tipo: 'cliente', id: x.id, campos: { estadoServidor: est, detalleServidor: det, revisadoServidor: ahora, versionServidor: ver || texto_(x.resumen.versionServidor), apagadosServidor: apag ? apag.join(',') : texto_(x.resumen.apagadosServidor) },
+    guardar_({ action: 'parche', tipo: 'cliente', id: x.id, campos: { estadoServidor: est, detalleServidor: det, revisadoServidor: ahora, versionServidor: ver || texto_(x.resumen.versionServidor), apagadosServidor: apag ? apag.join(',') : texto_(x.resumen.apagadosServidor),
+                         usoServidor: uso || texto_(x.resumen.usoServidor) },
                opId: 'vig-' + x.id + '-' + ahora, _interno: true, _sinVersion: true, _sistema: true });
     const r = { id: x.id, nombre: texto_(x.resumen.nombre), estado: est, detalle: det, version: ver, nuevo: antes !== est || texto_(x.resumen.detalleServidor) !== det, reenvioModulos: reenvio };
     resultados.push(r);
@@ -8891,7 +9035,7 @@ function instalarAvisosDiarios() {
    pendientes del inicio. Cada pendiente:
    {nivel: 'vencido'|'pronto', texto, fecha, responsable, modulo, tipo, id, diario}
    (diario: false → no va en el correo diario; son tareas del mes, no vencimientos). */
-const MODULO_TIPO_ = { habeas: 'habeas.html', solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
+const MODULO_TIPO_ = { reintegro: 'salud.html', habeas: 'habeas.html', solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
   auditoria: 'auditorias.html', sustancia: 'quimicos.html', gestquim: 'quimicos.html', lugarquim: 'quimicos.html', respel: 'ambiental.html#residuos', medicion: 'peligros.html', emergencia: 'emergencias.html', examen: 'salud.html', psico: 'salud.html',
   politica: 'documental.html', legal: 'documental.html', documento: 'documental.html', proveedor: 'proveedores.html', compraprov: 'proveedores.html', cambio: 'documental.html', contratista: 'contratistas.html',
   induccion: 'induccion.html', programa: 'programas.html', pesv: 'pesv.html', vehiculo: 'pesv.html', conductor: 'pesv.html', cliente: 'asesor.html', pqrs: 'calidad.html',
@@ -8945,6 +9089,15 @@ function pendientes_(dias) {
     // v157: más fuentes en los pendientes (bandeja de cada persona)
     if (tipo === 'equipo' && r.activo !== false && r.mantTipo && r.mantTipo !== 'No aplica') anotar(r.mantProximo, (r.codigo || r.nombre) + ' — mantenimiento ' + String(r.mantTipo).toLowerCase(), { modulo: 'inspecciones.html#' + v[0] });
     if (tipo === 'solrepo' && r.estado !== 'ENTREGADA') add(sumarHabiles_(r.fecha, 3) < hoy ? 'vencido' : 'pronto', 'Entregar reposición de EPP a ' + r.nombre + ': ' + corto_(r.elementosTexto, 80), sumarHabiles_(r.fecha, 3), Object.assign({}, base, { modulo: 'entrega-epp.html' }));
+    if (tipo === 'reintegro' && r.estado !== 'CERRADO') {   // v169
+      anotar(r.proximoSeguimiento, 'Reintegro: seguimiento a las restricciones de ' + r.nombre, { modulo: 'salud.html#reintegro' });
+      const aQuien = !r.comunicadoJefe ? 'al jefe' : 'al trabajador', enRei = Object.assign({}, base, { modulo: 'salud.html#reintegro' });
+      if (!r.comunicadoJefe || !r.comunicadoTrabajador) {
+        add('vencido', 'Reintegro de ' + r.nombre + ': falta comunicar las restricciones ' + aQuien + ' (Ley 776 de 2002, art. 4)', texto_(r.fechaRetorno), enRei);
+      }
+      const txtVence = 'Reintegro: vencen las restricciones de ' + r.nombre + ' (pedir concepto de control antes de levantarlas)';
+      if (r.temporalidad === 'Temporales') anotar(r.venceRestriccion, txtVence, { modulo: 'salud.html#reintegro' });
+    }
     if (tipo === 'pvecaso' && r.estado !== 'Egresado') anotar(r.proximaEvaluacion, 'PVE ' + corto_(r.programa, 40) + ': evaluación de ' + r.nombre, { modulo: 'pve.html' });
     if (tipo === 'trabajador' && r.activo !== false && r.restr && r.restr.hasta) anotar(r.restr.hasta, r.nombre + ' — termina la restricción médica (pedir concepto de control)', { tipo: 'examen', modulo: 'salud.html' });
     // v107: las tareas del asesor salen siempre (no solo a 15 días), destacadas y con su responsable.
