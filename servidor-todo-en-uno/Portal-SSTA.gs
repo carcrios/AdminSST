@@ -39,7 +39,7 @@ const CONTACTO_EPP = { nombre: 'Responsable de SST', whatsapp: '' };
 
 // Los datos de la empresa (nombre, correos, WhatsApp de EPP) están en 01-Empresa.gs:
 // así una actualización del portal puede reemplazar este archivo sin tocarlos.
-const VERSION_PORTAL = 'v173';
+const VERSION_PORTAL = 'v174';
 
 /* ════════════════════════════════════════════════════════════
    De aquí para abajo no hace falta tocar nada.
@@ -5743,7 +5743,7 @@ function modulo_sgsst_() {
    Avisos diarios por correo: se programan solos (v136). Para apagarlos: propiedad AVISOS_APAGADOS = 1.
    ============================================================ */
 
-const VERSION_SGSST = 'v173';   // la muestra el panel del asesor para saber qué clientes están desactualizados
+const VERSION_SGSST = 'v174';   // la muestra el panel del asesor para saber qué clientes están desactualizados
 const API_TOKEN = tokenPortal_();
 const CORREOS_AVISO = correosPortal_();
 // Otras hojas que se copian en el respaldo semanal junto con esta (permisos, ATS,
@@ -5819,6 +5819,9 @@ const TIPOS_GEN = {
   // v169 · Presupuesto del SG-SST (uno por año, con sus rubros) y lo que se gasta contra cada rubro (estándar 1.1.3).
   presupuesto: { hoja: 'Presupuesto SG-SST', titulo: 'anio', fecha: 'fechaAprobacion', estado: 'estado', responsable: 'responsable', vence: '',
     campos: ['anio', 'responsable', 'aprobadoPor', 'fechaAprobacion', 'estado', 'totalPresupuestado', 'rubros'] },
+  // v174 · Tareas y recordatorios propios (calendario de Gestión): cada quien anota lo suyo y el correo diario se lo recuerda.
+  tarea: { hoja: 'Tareas y recordatorios', titulo: 'titulo', fecha: 'fecha', estado: 'estado', responsable: 'responsable', vence: '',
+    campos: ['titulo', 'fecha', 'hora', 'recordar', 'notas', 'responsable', 'usuario', 'estado'] },
   gasto: { hoja: 'Gastos SG-SST', titulo: 'concepto', fecha: 'fecha', estado: 'rubro', responsable: 'proveedor', vence: '',
     campos: ['anio', 'rubroId', 'rubro', 'fecha', 'concepto', 'valor', 'proveedor', 'soporte'] },
   ausencia: { hoja: 'Ausentismo', titulo: 'nombre', fecha: 'inicio', estado: 'causa', responsable: 'cargo', vence: '',
@@ -6132,9 +6135,9 @@ function opIdYaAplicado_(opId) {
        individuales los ven solo Administrador y SST. */
 const ROLES = { admin: 'Administrador', sst: 'SST (todo el SG-SST)', supervisor: 'Supervisor / campo', comite: 'Integrante de comité', consulta: 'Solo consulta (gerencia, auditor)' };
 const ESCRIBE_ROL = {
-  supervisor: ['reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'solrepo', 'dotacion', 'dotaperfil', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro', 'plantillaform'],
-  comite: ['reunion', 'queja', 'buzon', 'comite', 'informecc', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
-  consulta: ['revision', 'aprobrec']   // v148: la alta dirección firma su revisión y aprueba recursos (Dec. 1072, art. 2.2.4.6.31; estándar 1.1.3)
+  supervisor: ['tarea', 'reporte', 'inspeccion', 'equipo', 'accion', 'simulacro', 'ingreso', 'entrega', 'solrepo', 'dotacion', 'dotaperfil', 'induccion', 'siniestro', 'preop', 'preopsalud', 'encpeligro', 'plantillaform'],
+  comite: ['tarea', 'reunion', 'queja', 'buzon', 'comite', 'informecc', 'accion', 'reporte', 'inspeccion', 'proginsp', 'preop', 'preopsalud', 'encpeligro'],
+  consulta: ['tarea', 'revision', 'aprobrec']   // v148: la alta dirección firma su revisión y aprueba recursos (Dec. 1072, art. 2.2.4.6.31; estándar 1.1.3)
 };
 const LIBRE_SIN_SESION = ['reporte', 'accion', 'preop', 'preopsalud', 'encresp', 'encpeligro', 'induccion', 'pqrs', 'buzon', 'habeas'];   // v162: habeas = solicitudes de derechos del titular   // crear (no editar) sin usuario (el preoperacional lo llena quien usa el equipo; encresp: el cliente responde la encuesta del enlace, ver validarRespuestaEnc_; pqrs: v109, la arma el servidor con limpiarPqrsPublica_)
 const SOLO_SST = ['examen', 'ausencia', 'perfil', 'sve', 'pvecaso', 'psico', 'preopsalud', 'cliente', 'habeas', 'reintegro'];   // v169: reintegro   // salud individual y conexiones a clientes
@@ -6893,7 +6896,7 @@ function resumen_(tipo, d) {
       req[k] = { fecha: texto_(r.fecha), vence: texto_(r.vence), apto: texto_(r.apto), restricciones: corto_(r.restricciones, 120), soporte: !!r.soporte };
     });
     const aut = d.autorizacionDatos || null;
-    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), personaId: texto_(d.personaId), cedulasAnteriores: (Array.isArray(d.cedulasAnteriores) ? d.cedulasAnteriores : []).map(texto_).slice(0, 20), fusionadoCon: texto_(d.fusionadoCon), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), celular: texto_(d.celular).replace(/\D/g, '').slice(0, 15), empresa: corto_(d.empresa, 60), activo: d.activo !== false, porRevisar: d.porRevisar ? true : undefined, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
+    return { nombre: corto_(d.nombre, 90), cedula: texto_(d.cedula), personaId: texto_(d.personaId), cedulasAnteriores: (Array.isArray(d.cedulasAnteriores) ? d.cedulasAnteriores : []).map(texto_).slice(0, 20), fusionadoCon: texto_(d.fusionadoCon), cargo: corto_(d.cargo, 60), area: corto_(d.area, 60), fechaIngreso: texto_(d.fechaIngreso), celular: texto_(d.celular).replace(/\D/g, '').slice(0, 15), empresa: corto_(d.empresa, 60), activo: d.activo !== false, porRevisar: d.porRevisar ? true : undefined, origen: d.porRevisar ? corto_(d.origen, 60) : undefined, descartado: d.descartado ? true : undefined, tipoDoc: /^(TI|CE|PPT|PEP|PA)$/.test(texto_(d.tipoDoc)) ? texto_(d.tipoDoc) : undefined, pensionEspecial: d.pensionEspecial === 'Sí' ? 'Sí' : '', req: req, emer: !!(d.emergencia && d.emergencia.telefono), restr: d.restriccionMed && (d.restriccionMed.para || []).length ? { para: d.restriccionMed.para.slice(0, 10), hasta: texto_(d.restriccionMed.hasta), fecha: texto_(d.restriccionMed.fecha) } : null,   // v140: el contacto viaja solo en el registro (pide usuario)
              autorizacion: aut ? { general: aut.general === true, sensibles: aut.sensibles === true, fecha: texto_(aut.fecha) } : null };
   }
   if (tipo === 'reporte') {
@@ -7515,7 +7518,8 @@ function efectoInduccion_(d) {
   // v110: la autorización de datos firmada con la inducción queda en la ficha de la persona (Salud la consulta).
   const aut = d.autorizacionDatos;
   if (aut && typeof aut === 'object') campos.autorizacionDatos = { general: aut.general === true, sensibles: aut.sensibles === true, version: texto_(aut.version), fecha: texto_(d.fecha), fuente: d.id };
-  if (!actual) Object.assign(campos, { nombre: d.nombre, cedula: d.cedula, cargo: d.cargo || '', empresa: d.empresa || '', activo: true });
+  // v174: quien llega por una inducción queda «por revisar»: SST decide si es del personal.
+  if (!actual) Object.assign(campos, { nombre: d.nombre, cedula: d.cedula, cargo: d.cargo || '', empresa: d.empresa || '', activo: true, porRevisar: true, origen: 'Inducción' });
   const r = guardar_({ action: 'parche', tipo: 'trabajador', id: tid, campos: campos, opId: '', _interno: true, _sistema: true });
   if (!r.ok) throw new Error(r.error || 'error');
 }
@@ -8139,7 +8143,7 @@ function calendarioIcs_(p) {
   if (last >= 2) reg.getRange(2, 1, last - 1, COLS_REG.length).getValues().forEach(function (v) {
     if (!v[0] || v[11]) return; const tipo = v[1]; if (TIPOS_SALUD_.indexOf(tipo) !== -1 || SOLO_SST.indexOf(tipo) !== -1) return;
     let r = {}; try { r = JSON.parse(v[8] || '{}'); } catch (e) { return; }
-    if (tipo === 'trabajador' && r.activo !== false) Object.keys(r.req || {}).forEach(function (q) { if (q === 'medico' || q === 'alimentos') return; add((r.req[q] || {}).vence, 'Vence ' + q.replace(/_/g, ' ') + ': ' + texto_(r.nombre), 'Personal habilitado', v[0] + '-' + q); });
+    if (tipo === 'trabajador' && r.activo !== false && !r.porRevisar) Object.keys(r.req || {}).forEach(function (q) { if (q === 'medico' || q === 'alimentos') return; add((r.req[q] || {}).vence, 'Vence ' + q.replace(/_/g, ' ') + ': ' + texto_(r.nombre), 'Personal habilitado', v[0] + '-' + q); });
     if (tipo === 'equipo' && r.activo !== false) { Object.keys(r.vencimientos || {}).forEach(function (q) { add(r.vencimientos[q], q + ': ' + texto_(r.codigo || r.nombre), 'Inventario de equipos', v[0] + '-' + q); }); if (r.mantTipo && r.mantTipo !== 'No aplica') add(r.mantProximo, 'Mantenimiento ' + texto_(r.mantTipo).toLowerCase() + ': ' + texto_(r.codigo || r.nombre), 'Inventario de equipos', v[0] + '-mant'); }
     if (tipo === 'accion' && v[3] !== 'CERRADA') add(r.fechaCompromiso, 'Acción: ' + corto_(r.accion || v[5], 80), 'Plan de acción · ' + texto_(r.responsable), v[0]);
     if (tipo === 'entrega') texto_(r.vencimientos).split(/\s*;\s*/).forEach(function (x, i) { const q = x.split('|'); if (q[1]) add(q[1], 'Reponer ' + q[0] + ': ' + texto_(r.nombre), 'EPP por vida útil', v[0] + '-' + i); });
@@ -8700,10 +8704,13 @@ function doGet(e) {
   if (p.action === 'verificarCertificado') return jsonOut_(verificarCertificado_(p));
   if (p.action === 'pantalla') return jsonOut_(pantallaPlanta_(p));   // v169: el televisor de la planta, con su enlace (solo cifras)
   if (p.action === 'contratistaPortal') return jsonOut_(contratistaPortal_(p));   // v162: el contratista ve lo suyo con su enlace   // v162: el QR del certificado, sin usuario
-  if (!checkToken_(p.token)) return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
-  iniciarContexto_(p.sesion);
   // v162 · Modo auditor: un enlace con vencimiento, solo lectura y solo de los módulos que se le dieron.
-  if (p.auditor) { const ra = contextoAuditor_(p); if (ra) return jsonOut_(ra); }
+  // v174: el enlace ES la llave del auditor; no se le pide la clave del portal (antes la pedía y la rechazaba).
+  if (p.auditor) { iniciarContexto_(''); const ra = contextoAuditor_(p); if (ra) return jsonOut_(ra); }
+  else {
+    if (!checkToken_(p.token)) return jsonOut_({ ok: false, error: 'La clave del portal no es correcta. Pídele la clave vigente al líder SST y vuelve a entrar.', codigoError: 'CLAVE' });
+    iniciarContexto_(p.sesion);
+  }
   if (p.action === 'ping') return jsonOut_({ ok: true, servicio: 'SG-SST', version: VERSION_SGSST, usuarios: CTX_.modo, yo: yo_() });
   if (p.action === 'sal') return jsonOut_(Object.assign({ ok: true }, salDe_(p.usuario)));
   if (p.action === 'historial') return jsonOut_(historial_(p));
@@ -9057,7 +9064,7 @@ function instalarAvisosDiarios() {
    pendientes del inicio. Cada pendiente:
    {nivel: 'vencido'|'pronto', texto, fecha, responsable, modulo, tipo, id, diario}
    (diario: false → no va en el correo diario; son tareas del mes, no vencimientos). */
-const MODULO_TIPO_ = { reintegro: 'salud.html', habeas: 'habeas.html', solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
+const MODULO_TIPO_ = { tarea: 'index.html#agenda', reintegro: 'salud.html', habeas: 'habeas.html', solrepo: 'entrega-epp.html', pvecaso: 'pve.html', sve: 'pve.html', informecc: 'convivencia.html', dotacion: 'dotacion.html', dotaperfil: 'dotacion.html', custodiahc: 'matrices-iso.html?m=custodiahc', evid0312: 'evidencias.html', competencia: 'matrices-iso.html', auditorint: 'matrices-iso.html?m=auditorint', calibracion: 'matrices-iso.html?m=calibracion', comunicacion: 'matrices-iso.html', retencion: 'matrices-iso.html', trabajador: 'habilitacion.html', equipo: 'inspecciones.html', accion: 'plan-accion.html', reporte: 'reportes.html', queja: 'convivencia.html',
   auditoria: 'auditorias.html', sustancia: 'quimicos.html', gestquim: 'quimicos.html', lugarquim: 'quimicos.html', respel: 'ambiental.html#residuos', medicion: 'peligros.html', emergencia: 'emergencias.html', examen: 'salud.html', psico: 'salud.html',
   politica: 'documental.html', legal: 'documental.html', documento: 'documental.html', proveedor: 'proveedores.html', compraprov: 'proveedores.html', cambio: 'documental.html', contratista: 'contratistas.html',
   induccion: 'induccion.html', programa: 'programas.html', pesv: 'pesv.html', vehiculo: 'pesv.html', conductor: 'pesv.html', cliente: 'asesor.html', pqrs: 'calidad.html',
@@ -9106,7 +9113,7 @@ function pendientes_(dias) {
       const x = Object.assign({}, base, extra || {});
       if (fecha < hoy) add('vencido', txt, fecha, x); else if (fecha <= en15) add('pronto', txt, fecha, x);
     };
-    if (tipo === 'trabajador' && r.activo !== false) Object.keys(r.req || {}).forEach(function (k) { anotar(r.req[k].vence, r.nombre + ' — ' + (NOMBRE_REQ_[k] || k)); });
+    if (tipo === 'trabajador' && r.activo !== false && !r.porRevisar) Object.keys(r.req || {}).forEach(function (k) { anotar(r.req[k].vence, r.nombre + ' — ' + (NOMBRE_REQ_[k] || k)); });
     if (tipo === 'equipo' && r.activo !== false) Object.keys(r.vencimientos || {}).forEach(function (k) { anotar(r.vencimientos[k], (r.codigo || r.nombre) + ' — ' + k, { modulo: 'inspecciones.html#' + v[0] }); });
     // v157: más fuentes en los pendientes (bandeja de cada persona)
     if (tipo === 'equipo' && r.activo !== false && r.mantTipo && r.mantTipo !== 'No aplica') anotar(r.mantProximo, (r.codigo || r.nombre) + ' — mantenimiento ' + String(r.mantTipo).toLowerCase(), { modulo: 'inspecciones.html#' + v[0] });
@@ -9119,6 +9126,11 @@ function pendientes_(dias) {
       }
       const txtVence = 'Reintegro: vencen las restricciones de ' + r.nombre + ' (pedir concepto de control antes de levantarlas)';
       if (r.temporalidad === 'Temporales') anotar(r.venceRestriccion, txtVence, { modulo: 'salud.html#reintegro' });
+    }
+    if (tipo === 'tarea' && r.estado !== 'HECHA' && r.fecha) {   // v174: tareas propias y su recordatorio
+      const ext = { responsable: texto_(r.responsable), modulo: 'index.html#agenda' }, antes = { 'Un día antes': 1, 'Tres días antes': 3, 'Una semana antes': 7 }[r.recordar] || 0;
+      anotar(r.fecha, 'Tarea: ' + corto_(r.titulo, 90) + (r.hora ? ' (' + texto_(r.hora).slice(0, 5) + ')' : ''), ext);
+      if (antes) { const f = sumarDias_(r.fecha, -antes); if (f >= hoy) anotar(f, 'Recordatorio: «' + corto_(r.titulo, 80) + '» es el ' + r.fecha, Object.assign({ recordatorio: true }, ext)); }
     }
     if (tipo === 'pvecaso' && r.estado !== 'Egresado') anotar(r.proximaEvaluacion, 'PVE ' + corto_(r.programa, 40) + ': evaluación de ' + r.nombre, { modulo: 'pve.html' });
     if (tipo === 'trabajador' && r.activo !== false && r.restr && r.restr.hasta) anotar(r.restr.hasta, r.nombre + ' — termina la restricción médica (pedir concepto de control)', { tipo: 'examen', modulo: 'salud.html' });
@@ -9374,7 +9386,17 @@ function guardarMisAvisos_(body) {
 }
 function avisosPorRol_(body) {
   const no = soloAdmin_(); if (no) return no;
-  const r = {}; Object.keys(body.roles || {}).forEach(function (k) { if (ROLES[k] && FREC_AVISOS_.indexOf(body.roles[k]) !== -1) r[k] = { frec: body.roles[k] }; });
+  // v174: además de la frecuencia, cada rol puede tener correos adicionales (varios) que reciben el resumen de ese rol.
+  const malos = [], r = {};
+  Object.keys(body.roles || {}).forEach(function (k) {
+    if (!ROLES[k] || FREC_AVISOS_.indexOf(body.roles[k]) === -1) return;
+    const cs = [];
+    String((body.correos || {})[k] || '').split(/[\s,;]+/).filter(Boolean).forEach(function (c) {
+      const v = correoValido_(c); if (!v) malos.push(c); else if (cs.indexOf(v) === -1) cs.push(v);
+    });
+    r[k] = { frec: body.roles[k] }; if (cs.length) r[k].correos = cs.slice(0, 8);
+  });
+  if (malos.length) return { ok: false, error: 'Revisa estos correos: ' + malos.slice(0, 5).join(', ') + '.' };
   PropertiesService.getScriptProperties().setProperty('AVISOS_ROL', JSON.stringify(r)); return { ok: true, roles: r };
 }
 function avisoPersonalDiario_() {
@@ -9400,6 +9422,28 @@ function avisoPersonalDiario_() {
       'Hola ' + texto_(u.nombre).split(' ')[0] + ',\n\n' + nuevo.map(ln).join('\n') + (atras ? '\n\nTienes ' + atras + ' pendiente(s) atrasado(s).' : '') +
       '\n\nÁbrelo en el portal: Gestión → Hoy.' + (sitio ? '\n' + sitio : '') + '\n\nCorreo automático del Portal SSTA.');
     n++;
+  });
+  // v174 · Correos adicionales por rol: reciben lo de ese rol (SST y administrador: todo; los demás: lo que no es solo de SST).
+  const porRol = prefsAvisos_('AVISOS_ROL'), dia2 = new Date(hoy + 'T12:00:00').getDay(), en7b = sumarDias_(hoy, 7);
+  Object.keys(porRol).forEach(function (rol) {
+    const pr = porRol[rol] || {}, sst = rol === 'admin' || rol === 'sst';
+    if (!Array.isArray(pr.correos) || pr.frec === 'no' || dia2 === 0 || dia2 === 6 || (pr.frec === 'semanal' && dia2 !== 1)) return;
+    const suyos = items.filter(function (x) { return sst || SOLO_SST.indexOf(x.tipo) === -1; });
+    const nuevo = suyos.filter(function (x) {
+      if (pr.frec === 'criticos') return x.nivel === 'vencido' && (x.fecha === ayer || dia2 === 1);
+      if (pr.frec === 'semanal') return x.fecha && x.fecha <= en7b;
+      return x.fecha && (x.fecha === hoy || x.fecha === manana || x.fecha === ayer);
+    });
+    if (!nuevo.length) return;
+    pr.correos.forEach(function (c) {
+      const correo = correoValido_(c); if (!correo || ya[correo]) return; ya[correo] = true;
+      if (!puedeEnviarCorreo_('baja')) return;
+      MailApp.sendEmail(correo, 'SG-SST ' + emp + ' (' + (ROLES[rol] || rol) + '): ' + nuevo.length + ' pendiente(s)',
+        'Resumen para el rol ' + (ROLES[rol] || rol) + ':\n\n' + nuevo.slice(0, 60).map(function (x) { return '· ' + (x.fecha ? x.fecha + ': ' : '') + x.texto; }).join('\n') +
+        '\n\nÁbrelo en el portal: Gestión → Hoy.' + (sitio ? '\n' + sitio : '') +
+        '\n\nCorreo automático del Portal SSTA. Para dejar de recibirlo, pídele al administrador que quite tu correo del rol.');
+      n++;
+    });
   });
   return n;
 }
